@@ -1,0 +1,8 @@
+export const propertiesApi = '/propiedades/'
+export const propertyStatusApi = '/propiedad/status-choices/'
+export const propertyViewApi = '/propiedad/vista-choices/'
+export const propertyAgeApi = '/propiedad/antiguedad-choices/'
+export const propertyAlternativesApi = '/propiedad/alternativas-choices/'
+export const propertyFurnishedApi = '/propiedad/amoblado-choices/'
+export const propertyNegotiationApi = '/propiedad/tipo-negociacion-choices/'
+export const propertyTypesApi = '/tiposinmuebles/'
