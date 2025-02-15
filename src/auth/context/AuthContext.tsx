@@ -5,10 +5,11 @@ import React, { useEffect, createContext, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import AuthService from '@auth/services/authService'
-import type { User } from '@auth/types/UsuarioTypes'
+import type { User, Session } from '@auth/types/UserTypes'
 
 interface AuthContextType {
-  session: User | null
+  session: Session | null
+  user: User | null
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   // states constains the loading and isAuthenticated states
@@ -19,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [session, setSession] = useState<User | null>(null)
+  const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const router = useRouter()
 
@@ -27,12 +28,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const session = localStorage.getItem('session')
     
     if (session) {
-      const parsedUser = JSON.parse(session)
-      console.log(parsedUser)
+      const parsedSession = JSON.parse(session)
+      console.log(parsedSession)
 
-      if (!isAccessTokenExpired(parsedUser.access_token_expires)) {
+      if (!isAccessTokenExpired(parsedSession.expires_in)) {
         
-        setSession(parsedUser)
+        setSession(parsedSession)
       } else {
         logout()
       }
@@ -48,10 +49,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 
   const login = async (email: string, password: string) => {
-    const userData = await AuthService.login(email, password)
+    const sessionData = await AuthService.login(email, password)
 
-    localStorage.setItem('session', JSON.stringify(userData))
-    setSession(userData)
+    localStorage.setItem('session', JSON.stringify(sessionData))
+    setSession(sessionData)
   }
 
   const logout = async () => {
@@ -62,7 +63,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return <AuthContext.Provider value={{ 
       session, login, logout,
-      loading, isAuthenticated: !!session
+      loading, isAuthenticated: !!session,
+      user: session?.user || null
     }}>
     {children}
   </AuthContext.Provider>

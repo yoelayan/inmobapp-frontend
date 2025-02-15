@@ -2,13 +2,13 @@
 
 // authService.ts
 import ApiClient from '@server/apiClient'
-import type { User } from '@auth/types/UsuarioTypes'
+import type { Session } from '@/auth/types/UserTypes'
 
 class AuthService {
   private apiClient = ApiClient.getInstance()
 
-  async login(email: string, password: string): Promise<User> {
-    const data: User = await this.apiClient.post<User>('/token/', { email, password })
+  async login(email: string, password: string): Promise<Session> {
+    const data: Session = await this.apiClient.post<Session>('/token/', { email, password })
     return data
   }
 }

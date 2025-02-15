@@ -1,4 +1,4 @@
-import type { User } from '../../auth/types/UsuarioTypes'
+import type { User } from '../../auth/types/UserTypes'
 
 export type MedioContacto = {
   id: number
