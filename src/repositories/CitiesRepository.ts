@@ -1,4 +1,4 @@
-import type { Ciudad } from '@/types/apps/ubigeoTypes'
+import type { Ciudad } from '@/types/apps/LocationsTypes'
 import { citiesApi } from '@/app/api/apps/ubigeo/route'
 import BaseRepository from './BaseRepository'
 

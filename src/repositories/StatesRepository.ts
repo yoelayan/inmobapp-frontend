@@ -1,4 +1,4 @@
-import type { Estado } from '@/types/apps/ubigeoTypes'
+import type { Estado } from '@/types/apps/LocationsTypes'
 import { statesApi } from '@/app/api/apps/ubigeo/route'
 import BaseRepository from './BaseRepository'
 

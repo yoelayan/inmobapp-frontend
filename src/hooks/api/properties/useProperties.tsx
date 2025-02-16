@@ -1,7 +1,7 @@
 import PropertiesRepository from '@/repositories/properties/PropertiesRepository'
 import useBaseHookApi from '@hooks/useBaseHookApi'
-import type { Propiedad } from '@/types/apps/PropiedadesTypes'
+import type { Property } from '@/types/apps/RealtstateTypes'
 
 export default function useProperties(defaultFilters?: Record<string, any>) {
-    return useBaseHookApi<Propiedad>(PropertiesRepository, defaultFilters)
+    return useBaseHookApi<Property>(PropertiesRepository, defaultFilters)
 }

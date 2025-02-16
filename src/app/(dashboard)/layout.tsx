@@ -24,8 +24,8 @@ import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 const Layout = async ({ children }: ChildrenType) => {
   // Vars
   const direction = 'ltr'
-  const mode = getMode()
-  const systemMode = getSystemMode()
+  const mode = await getMode()
+  const systemMode = await getSystemMode()
 
   return (
     <Providers direction={direction}>

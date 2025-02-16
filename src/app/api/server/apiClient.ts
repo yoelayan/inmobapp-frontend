@@ -62,8 +62,9 @@ class ApiClient {
         if (!session) {
           return ApiClient.instance
         }
+        console.log(session)
 
-        const token = session.access_token
+        const token = session.access
 
         if (token) {
           ApiClient.instance.setToken(token)
@@ -80,6 +81,9 @@ class ApiClient {
   private handlerError(error: any): void {
     switch (error.response?.status) {
       case 401:
+        this.removeToken()
+        break
+      case 403:
         this.removeToken()
         break
       default:
@@ -109,6 +113,10 @@ class ApiClient {
       if (error.message === 'Network Error') {
         this.notificationCallback('Network Error: Please check your internet connection or Server is down')
 
+        return
+      } else if (error.code === 'token_not_valid') {
+        this.notificationCallback('Token not valid: Please login again')
+        this.removeToken()
         return
       }
 

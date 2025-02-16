@@ -1,4 +1,4 @@
-export const propertiesApi = '/propiedades/'
+export const propertiesApi = '/realstate/'
 export const propertyStatusApi = '/propiedad/status-choices/'
 export const propertyViewApi = '/propiedad/vista-choices/'
 export const propertyAgeApi = '/propiedad/antiguedad-choices/'

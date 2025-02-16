@@ -16,6 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import useStates from '@/hooks/api/useStates'
 import useFranchises from '@/hooks/api/useFranchises'
 import useCities from '@/hooks/api/useCities'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 // Table Component
 import type { Header, TableAction } from '@components/table/TableComponent'
@@ -36,9 +37,9 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
 
   const { fetchData: getFranchises, refreshData: refreshFranchises, data: franchises } = useFranchises()
 
+  const router = useRouter()
 
   const handleStateChange = async (StateSelected: Record<string, any>) => {
-    console.log('e', StateSelected)
 
     if (!StateSelected || StateSelected.value === '') {
       return
@@ -93,10 +94,10 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
 
   const actions: TableAction[] = [
     {
-      label: 'Ver',
+      label: 'Ver / Editar',
       icon: <EyeIcon />,
       onClick: (row: Record<string, any>) => {
-        console.log(row)
+        router.push(`/propiedades/ver/${row.id}`)
       }
     },
     {
@@ -136,14 +137,14 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
     },
 
     {
-      key: 'nombre',
+      key: 'name',
       label: 'Nombre',
       filterable: true,
       slot: 'default',
       filter_name: 'search'
     },
     {
-      key: 'estado__nombre',
+      key: 'state__name',
       filter_name: 'estado',
       label: 'Estado',
       filterable: true,
@@ -161,7 +162,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
     },
 
     {
-      key: 'ciudad__nombre',
+      key: 'city__name',
       filter_name: 'ciudad',
       label: 'Ciudad',
       filterable: true,
@@ -176,8 +177,8 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
         searchble: true
       }
     },
-    { key: 'tipo_inmueble__descripcion', label: 'Tipo de Inmueble', filterable: false, slot: 'default' },
-    { key: 'precio_usd', label: 'Precio (USD)', filterable: false, slot: 'default' },
+    { key: 'type_negotiation__name', label: 'Tipo de Inmueble', filterable: false, slot: 'default' },
+    { key: 'price', label: 'Precio (USD)', filterable: false, slot: 'default' },
     { key: 'created_at', label: 'Fecha de Creación', filterable: false, slot: 'default' }
   ]
 
