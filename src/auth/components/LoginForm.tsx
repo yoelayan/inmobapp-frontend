@@ -12,7 +12,7 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import Typography from '@mui/material/Typography'
 
 // API Imports
-import ApiClient from '@api/server/apiClient'
+import ApiClient from '@/api/apiClient'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 // Hooks Imports

@@ -8,7 +8,7 @@ import { Box, Modal, Button, Typography, IconButton, Container } from '@mui/mate
 import CloseIcon from '@mui/icons-material/Close'
 import Grid from '@mui/material/Grid2'
 
-import useClients from '@/hooks/api/clients/useClients'
+import useClients from '@/hooks/api/crm/useClients'
 
 // Components
 import { ClientForm } from '@views/apps/clients/form/ClientForm'

@@ -13,11 +13,11 @@ import SelectFieldAsync from '@/components/form/SelectFieldAsync'
 import NumberField from '@/components/form/NumberField'
 
 // Hooks
-import useCities from '@hooks/api/useCities'
-import useStates from '@hooks/api/useStates'
-import usePropertyAge from '@/hooks/api/properties/usePropertyAge'
-import usePropertyView from '@/hooks/api/properties/usePropertyView'
-import usePropertyFurnished from '@/hooks/api/properties/usePropertyFurnished'
+import useCities from '@/hooks/api/locations/useCities'
+import useStates from '@/hooks/api/locations/useStates'
+import usePropertyAge from '@/hooks/api/realstate/usePropertyAge'
+import usePropertyView from '@/hooks/api/realstate/usePropertyView'
+import usePropertyFurnished from '@/hooks/api/realstate/usePropertyFurnished'
 
 const FeaturesTab = ({ control, errors, setValue, getValues }: PropertyTabProps) => {
   const [defaultFiltersCities, setDefaultFiltersCities] = useState<any>(getValues('estado'))

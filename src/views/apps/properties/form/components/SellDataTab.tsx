@@ -9,9 +9,9 @@ import Grid from '@mui/material/Grid2'
 import type { PropertyTabProps } from '../PropertyForm'
 
 // Hooks
-import usePropertiyNegotiation from '@/hooks/api/properties/useProperyNegotiation'
-import usePropertyTypes from '@/hooks/api/properties/usePropertyTypes'
-import useFranchises from '@/hooks/api/useFranchises'
+import usePropertiyNegotiation from '@/hooks/api/realstate/useProperyNegotiation'
+import usePropertyTypes from '@/hooks/api/realstate/usePropertyTypes'
+import useFranchises from '@/hooks/api/realstate/useFranchises'
 
 // Fields Components
 import SwitchFieldProps from '@components/form/SwitchField'

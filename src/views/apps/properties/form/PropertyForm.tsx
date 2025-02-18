@@ -20,7 +20,7 @@ import type { Propiedad } from '@/types/apps/PropiedadesTypes'
 // Hooks
 import useTab from './hooks/useTab'
 import usePropertyForm from './hooks/usePropertyForm'
-import useProperties from '@/hooks/api/properties/useProperties'
+import useProperties from '@/hooks/api/realstate/useProperties'
 import { useNotification } from '@/hooks/useNotification'
 import { useParams } from 'next/navigation'
 

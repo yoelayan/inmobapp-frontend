@@ -17,7 +17,7 @@ import SelectField from '@/components/form/SelectField'
 import ImageField from '@/components/form/ImageField'
 
 // Hooks
-import usePropertyStatus from '@/hooks/api/properties/usePropertyStatus'
+import usePropertyStatus from '@/hooks/api/realstate/usePropertyStatus'
 
 interface SidebarProps {
   control: any

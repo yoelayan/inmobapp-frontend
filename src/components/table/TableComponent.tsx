@@ -77,7 +77,7 @@ import tableStyles from '@core/styles/table.module.css'
 
 // Types
 
-import type { ResponseAPI } from '@/repositories/BaseRepository'
+import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 import type { GridProps } from './components/TableGrid'
 
 

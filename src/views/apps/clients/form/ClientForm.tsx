@@ -21,9 +21,9 @@ import type { Cliente } from '@/types/apps/ClientesTypes'
 
 // Hooks
 import useClientForm from './hooks/useClientForm'
-import useClients from '@/hooks/api/clients/useClients'
-import useFranchises from '@/hooks/api/useFranchises'
-import useClientStatus from '@/hooks/api/clients/useClientStatus'
+import useClients from '@/hooks/api/crm/useClients'
+import useFranchises from '@/hooks/api/realstate/useFranchises'
+import useClientStatus from '@/hooks/api/crm/useClientStatus'
 
 import { Controller } from 'react-hook-form'
 import { FieldError } from 'react-hook-form'

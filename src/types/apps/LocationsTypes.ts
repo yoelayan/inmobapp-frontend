@@ -1,8 +1,4 @@
-export type State = {
-  id: number
-  name: string
-}
-export type City = {
+export type GeoItem = {
   id: number
   name: string
 }

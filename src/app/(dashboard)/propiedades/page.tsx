@@ -8,7 +8,7 @@ import PropertiesTable from '@views/apps/properties/list/PropertiesTable'
 import PropertiesCard from '@views/apps/properties/list/PropertiesCard'
 
 // Hooks
-import useProperties from '@hooks/api/properties/useProperties'
+import useProperties from '@/hooks/api/realstate/useProperties'
 
 // MUI Imports
 import Grid from '@mui/material/Grid2'

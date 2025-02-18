@@ -5,7 +5,7 @@ import { MenuItem } from '@mui/material'
 
 import { Controller } from 'react-hook-form'
 
-import type { ResponseAPI } from '@/repositories/BaseRepository'
+import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 import type FieldProps from '@/components/form/BaseField'
 
 // MUI Imports

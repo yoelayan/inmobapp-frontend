@@ -9,7 +9,7 @@ import type { Column, Table } from '@tanstack/react-table'
 import { MenuItem } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
 
-import type { ResponseAPI } from '@/repositories/BaseRepository'
+import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 import CustomTextField from '@core/components/mui/TextField'
 
 interface OptionType {

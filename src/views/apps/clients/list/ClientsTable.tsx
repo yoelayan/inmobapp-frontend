@@ -14,8 +14,8 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
 // Hooks Imports
-import useClients from '@/hooks/api/clients/useClients'
-import useFranchises from '@/hooks/api/useFranchises'
+import useClients from '@/hooks/api/crm/useClients'
+import useFranchises from '@/hooks/api/realstate/useFranchises'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 const Table: React.FC = () => {

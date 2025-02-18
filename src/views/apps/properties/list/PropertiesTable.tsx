@@ -13,9 +13,9 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
 // Hooks
-import useStates from '@/hooks/api/useStates'
-import useFranchises from '@/hooks/api/useFranchises'
-import useCities from '@/hooks/api/useCities'
+import useStates from '@/hooks/api/locations/useStates'
+import useFranchises from '@/hooks/api/realstate/useFranchises'
+import useCities from '@/hooks/api/locations/useCities'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 // Table Component

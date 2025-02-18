@@ -4,7 +4,7 @@ import React from 'react'
 // Server Imports
 import Button from '@mui/material/Button'
 
-import type { ResponseAPI } from '@/repositories/BaseRepository'
+import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 
 // Component Imports
 import type { Header, TableAction } from '@components/table/TableComponent';
