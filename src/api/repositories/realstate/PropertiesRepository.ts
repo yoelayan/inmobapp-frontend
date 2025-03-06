@@ -1,8 +1,8 @@
-import type { RealProperty } from '@/types/apps/RealtstateTypes'
+import { IRealProperty } from '@/types/apps/RealtstateTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class PropertyRepository extends BaseRepository<RealProperty> {
+class PropertyRepository extends BaseRepository<IRealProperty> {
   private static instance: PropertyRepository
 
   private constructor() {

@@ -1,8 +1,8 @@
-import type { GeoItem } from '@/types/apps/LocationsTypes'
+import { IGeoItem } from '@/types/apps/LocationsTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class CitiesRepository extends BaseRepository<GeoItem> {
+class CitiesRepository extends BaseRepository<IGeoItem> {
   private static instance: CitiesRepository
 
   private constructor() {

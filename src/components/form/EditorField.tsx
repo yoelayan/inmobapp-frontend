@@ -60,7 +60,7 @@ const EditorField = ({ value, label, name, control, error, setValue }: EditorFie
 return (
     <Card className='mt-4'>
       <Controller
-        name='descripcion'
+        name={name}
         control={control}
         render={({ field }) => (
           <CardContent>

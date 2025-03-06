@@ -15,7 +15,7 @@ import Grid from '@mui/material/Grid2'
 import { ThemeProvider } from '@mui/material/styles'
 
 // Types imports
-import type { Propiedad } from '@/types/apps/PropiedadesTypes'
+import { IRealProperty } from '@/types/apps/RealtstateTypes'
 
 // Hooks
 import useTab from './hooks/useTab'
@@ -33,6 +33,7 @@ import ClienDataTab from './components/ClienDataTab'
 
 // Sidebar
 import Sidebar from './components/Sidebar'
+import { on } from 'events'
 
 export interface PropertyTabProps {
     control: any
@@ -54,6 +55,9 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ id }) => {
         createData: createProperty,
         updateData: updateProperty,
         item: property,
+        loading,
+        errors: errorsProperty,
+        error
     } = useProperties()
 
 
@@ -65,28 +69,9 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ id }) => {
     const { currentTab, handleTabChange } = useTab('info')
 
     const { 
-        control, handleSubmit, errors,
+        control, handleSubmit, errors, setError,
         setValue, getValues, getFormattedValues
     } = usePropertyForm()
-
-    const setDefaultValues = (property: Propiedad) => {
-        // Recorrer el objeto y asignar los valores a cada campo
-
-        Object.entries(property).forEach(([key, value]) => {
-            if (value !== null) {
-                if (typeof value === 'object' && value.id && value.nombre) {
-                    setValue(key as any, {
-                        value: value.id,
-                        label: value.nombre
-                    })
-                } else {
-                    setValue(key as any, value)
-                }
-            }
-        })
-    
-        
-    }
 
     useEffect(() => {
         if (id) {
@@ -96,29 +81,37 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ id }) => {
     }, [id])
 
     useEffect(() => {
-        if (property) {
-            setDefaultValues(property)
+        
+        if (errorsProperty){
+            notify('No se ha podido crear la propiedad', 'error')
+            Object.keys(errorsProperty).forEach(key => {
+                setError(key as any, {
+                    type: 'manual',
+                    message: errorsProperty[key][0]
+                })
+            })
         }
-    }, [property])
+    }, [error])
 
 
 
+    const onError = async () => {
+        return error
+    }
 
-    const onSubmit = () => {
-        const data = getFormattedValues()
-        console.log(data)
+    const onSubmit = async (e: any) => {
+        e.preventDefault()
+        const data = await getFormattedValues()
         
         try {
             if (isUpdate && property) {
-                updateProperty(property.id, data)
+                await updateProperty(property.id, data)
                 notify('Propiedad actualizada con éxito', 'success')
                 return
             } else {
-                createProperty(data)
+                await createProperty(data)
                 notify('Propiedad creada con éxito', 'success')
-                if (property){
-                    window.location.href = `/propiedades/actualizar/${property.id}`
-                }
+                
             }
             
                 
@@ -128,9 +121,14 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ id }) => {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
+        // prevent default
+        <form onSubmit={e => onSubmit(e)}>
             <Grid container spacing={2}>
-                <Grid size={8}>
+                <Grid size={{
+                    md: 8,
+                    xs: 12,
+                    sm: 12
+                }}>
                     <Card>
                         <CardContent>
                             <Divider />
@@ -162,7 +160,11 @@ const PropertyForm: React.FC<PropertyFormProps> = ({ id }) => {
                         </CardContent>
                     </Card>
                 </Grid>
-                <Grid size={4}>
+                <Grid size={{
+                    md: 4,
+                    xs: 12,
+                    sm: 12
+                }}>
                     <Sidebar control={control} errors={errors} setValue={setValue} getValues={getValues} />
                 </Grid>
             </Grid>

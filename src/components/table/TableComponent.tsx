@@ -123,7 +123,6 @@ declare module '@tanstack/table-core' {
 }
 
 const CustomFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-  console.log('CustomFilter', row, columnId, value, addMeta)
 
   if (Array.isArray(value)) {
     const [min, max] = value
@@ -145,35 +144,58 @@ const CustomFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 }
 
 const extractProperties = (data: any[], headers: Header[], grid_params?: GridProps) => {
-  let keys = headers.map(header => header.key)
+  const allKeys = new Set<string>();
+  const definedKeys = new Set<string>();
 
+  // Collect keys from headers
+  headers.forEach(header => {
+    allKeys.add(header.key);
+    definedKeys.add(header.key);
+  });
 
-  // extract grid params
+  // Collect keys from grid_params
   if (grid_params) {
-    keys = keys.concat(Object.values(grid_params))
+    Object.values(grid_params).forEach(value => {
+      if (typeof value === 'string') {
+          allKeys.add(value);
+      }
+    });
+    if (grid_params.tags) {
+      grid_params.tags.forEach(tag => {
+        allKeys.add(tag.name);
+      });
+    }
   }
-
-  if (grid_params?.tags) {
-    keys = keys.concat(grid_params.tags.map(tag => tag.name))
-  }
-
-  keys = keys.map(key => key.toString())
+  
+  // Collect all keys from data objects
+  data.forEach(item => {
+    const keys = Object.keys(item);
+    keys.forEach(key => {
+      allKeys.add(key);
+    });
+  });
 
   // add id to keys
-  keys.push('id')
+  allKeys.add('id')
 
   return (data || []).map(item => {
-    const filteredItem: { [key: string]: any } = {}
+    const filteredItem: { [key: string]: any } = {};
 
-    keys.forEach(key => {
-      const value = key.split('__').reduce((acc, part) => acc && acc[part], item)
+    Array.from(allKeys).forEach(key => {
+      const value = key.split('__').reduce((acc, part) => {
+        if(acc && typeof acc === 'object'){
+          return acc[part]
+        }else{
+          return undefined
+        }
+      }, item);
 
-      filteredItem[key] = value !== undefined ? value : '' // Ensure no nested objects
-    })
+      filteredItem[key] = value !== undefined ? value : '';
+    });
 
-    return filteredItem
-  })
-}
+    return filteredItem;
+  });
+};
 
 const slotComponents: { [key: string]: React.FC<{ value: any }> } = {
   default: DefaultSlot,

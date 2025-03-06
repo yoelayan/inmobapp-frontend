@@ -14,7 +14,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 // Hooks
 import useStates from '@/hooks/api/locations/useStates'
-import useFranchises from '@/hooks/api/realstate/useFranchises'
+import useUsersByFranchise from '@/hooks/api/realstate/useUsersByFranchise'
 import useCities from '@/hooks/api/locations/useCities'
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -35,7 +35,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
 
   const { fetchData: getCities, refreshData: refreshCities, data: cities } = useCities(defaultFiltersCities)
 
-  const { fetchData: getFranchises, refreshData: refreshFranchises, data: franchises } = useFranchises()
+  const { fetchData: getUsers, refreshData: refreshUsers, data: users } = useUsersByFranchise()
 
   const router = useRouter()
 
@@ -45,49 +45,58 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
       return
     }
 
-    setDefaultFiltersCities({ estado: StateSelected.value })
+    setDefaultFiltersCities({ state: StateSelected.value })
 
     if (refreshCities) {
-      refreshCities({ estado: StateSelected.value })
+      refreshCities({ state: StateSelected.value })
     }
+  }
+
+  const searchOnTag = (tag: any, row: any) => {
+    if (row.characteristics === null || row.characteristics.length === 0) return null
+
+    const value = row.characteristics.find((item: any) => item.code === tag.name)
+
+    return value ? value.value : null
+    
   }
 
   useEffect(() => {
     getStates()
     getCities()
-    getFranchises()
+    getUsers()
   }, [])
-
-  useEffect(() => {
-    console.log('properties', properties)
-  }, [properties])
 
   const grid_params: GridProps = {
     feature_image: 'first_image_url',
-    title: 'nombre',
-    subtitle: 'franquicia__nombre',
-    feature_value: 'precio_usd',
-    sub_feature_value: 'direccion',
+    title: 'name',
+    subtitle: 'assigned_to__email',
+    feature_value: 'price',
+    sub_feature_value: 'address',
     tags: [
       {
         label: 'Mt2',
-        name: 'metros_cuadrados_terreno',
-        icon: <SquareFootIcon fontSize='large' />
+        name: 'age',
+        icon: <SquareFootIcon fontSize='large' />,
+        searchOn: searchOnTag
       },
       {
         label: 'Habt.',
-        name: 'habitaciones',
-        icon: <DoorFrontIcon fontSize='large' />
+        name: 'rooms',
+        icon: <DoorFrontIcon fontSize='large' />,
+        searchOn: searchOnTag
       },
       {
         label: 'Baños',
-        name: 'numero_banios',
-        icon: <BathtubIcon fontSize='large' />
+        name: 'bathrooms',
+        icon: <BathtubIcon fontSize='large' />,
+        searchOn: searchOnTag
       },
       {
         label: 'Est.',
-        name: 'ptos_estacionamiento',
-        icon: <DirectionsCarIcon fontSize='large' />
+        name: 'parking_spaces',
+        icon: <DirectionsCarIcon fontSize='large' />,
+        searchOn: searchOnTag
       }
     ]
   }
@@ -95,17 +104,9 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
   const actions: TableAction[] = [
     {
       label: 'Ver / Editar',
-      icon: <EyeIcon />,
+      icon: <><EyeIcon /><EditIcon /></>,
       onClick: (row: Record<string, any>) => {
-        router.push(`/propiedades/ver/${row.id}`)
-      }
-    },
-    {
-      label: 'Editar',
-      icon: <EditIcon />,
-      onClick: (row: Record<string, any>) => {
-        console.log('Editar', row)
-        window.location.href = `/propiedades/actualizar/${row.id}`
+        router.push(`/propiedades/actualizar/${row.id}`)
       }
     },
     {
@@ -119,18 +120,19 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
 
   const headers: Header[] = [
     {
-      key: 'franquicia__nombre',
-      label: 'Franquicia',
+      key: 'assigned_to__email',
+      label: 'Asignado a',
       filterable: true,
       slot: 'default',
       filter: 'select',
+      filter_name: 'assigned_to',
       filter_params: {
-        response: franchises,
+        response: users,
         dataMap: {
           value: 'id',
-          label: 'nombre'
+          label: 'email'
         },
-        refreshData: refreshFranchises,
+        refreshData: refreshUsers,
         searchble: true,
         filter_name: 'search'
       }
@@ -145,7 +147,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
     },
     {
       key: 'state__name',
-      filter_name: 'estado',
+      filter_name: 'state',
       label: 'Estado',
       filterable: true,
       filter: 'select',
@@ -153,7 +155,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
         response: states,
         dataMap: {
           value: 'id',
-          label: 'nombre'
+          label: 'name'
         },
         refreshData: refreshStates,
         searchble: true,
@@ -163,7 +165,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
 
     {
       key: 'city__name',
-      filter_name: 'ciudad',
+      filter_name: 'city',
       label: 'Ciudad',
       filterable: true,
       filter: 'select',
@@ -171,7 +173,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
         response: cities,
         dataMap: {
           value: 'id',
-          label: 'nombre'
+          label: 'name'
         },
         refreshData: refreshCities,
         searchble: true

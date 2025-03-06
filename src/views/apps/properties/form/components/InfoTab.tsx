@@ -9,31 +9,45 @@ import ImageField from '@components/form/ImageField'
 // Types
 import type { PropertyTabProps } from '../PropertyForm'
 
+const fields = [
+  {
+    label: 'Descripcion',
+    name: 'description',
+    component: EditorField
+  },
+  {
+    label: 'Imagenes',
+    name: 'images',
+    component: ImageField,
+    props: {
+      multiple: true
+    }
+  }
+]
+
 const InfoTab = ({ control, errors, setValue, getValues }: PropertyTabProps) => {
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
-        <Grid size={12}>
-          <EditorField
-            label='Descripción'
-            name='descripcion'
-            control={control}
-            error={errors.descripcion}
-            setValue={setValue}
-            value={getValues('descripcion')}
-          />
-        </Grid>
-        <Grid size={12}>
-          <ImageField
-            multiple
-            label='Imagenes'
-            name='imagenes'
-            control={control}
-            error={errors.imagenes}
-            setValue={setValue}
-            value={getValues('imagenes')}
-          />
-        </Grid>
+        {fields.map((field, index) => {
+          const Component = field.component
+
+          return (
+            <Grid size={12} key={index}>
+              <Component
+                name={field.name}
+                control={control}
+                setValue={setValue}
+                error={errors[field.name]}
+                label={field.label}
+                value={getValues(field.name)}
+                {...(field.props || {})}
+
+              />
+            </Grid>
+          )
+        })}
+
       </Grid>
     </Box>
   )

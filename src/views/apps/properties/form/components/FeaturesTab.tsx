@@ -8,28 +8,18 @@ import { Controller } from 'react-hook-form'
 
 import type { PropertyTabProps } from '../PropertyForm'
 import CustomTextField from '@core/components/mui/TextField'
-import SwitchFieldProps from '@components/form/SwitchField'
+import SwitchField from '@components/form/SwitchField'
 import SelectFieldAsync from '@/components/form/SelectFieldAsync'
 import NumberField from '@/components/form/NumberField'
-
+import TextField from '@/components/form/TextField'
 // Hooks
 import useCities from '@/hooks/api/locations/useCities'
 import useStates from '@/hooks/api/locations/useStates'
-import usePropertyAge from '@/hooks/api/realstate/usePropertyAge'
-import usePropertyView from '@/hooks/api/realstate/usePropertyView'
-import usePropertyFurnished from '@/hooks/api/realstate/usePropertyFurnished'
 
 const FeaturesTab = ({ control, errors, setValue, getValues }: PropertyTabProps) => {
   const [defaultFiltersCities, setDefaultFiltersCities] = useState<any>(getValues('estado'))
 
   const { data: states, refreshData: refreshStates, fetchData: fetchStates } = useStates()
-  const { data: propertyAges, refreshData: refreshPropertyAges, fetchData: fetchPropertyAges } = usePropertyAge()
-
-  const {
-    data: propertyFurnisheds,
-    refreshData: refreshPropertyFurnisheds,
-    fetchData: fetchPropertyFurnished
-  } = usePropertyFurnished()
 
   const { data: cities, refreshData: refreshCities, fetchData: fetchCities } = useCities(defaultFiltersCities)
 
@@ -37,7 +27,7 @@ const FeaturesTab = ({ control, errors, setValue, getValues }: PropertyTabProps)
     if (!stateSelected) {
       setDefaultFiltersCities(null)
       
-return
+      return
     }
 
     setDefaultFiltersCities({ estado: stateSelected.value })
@@ -46,8 +36,6 @@ return
 
   useEffect(() => {
     fetchStates()
-    fetchPropertyAges()
-    fetchPropertyFurnished()
     fetchCities()
   }, [])
 
@@ -62,191 +50,167 @@ return
     }
   }, [getValues('estado')])
 
-  const renderSelects = () => {
-    const selects = [
-      {
-        label: 'Antiguedad del inmueble',
-        name: 'antiguedadInmueble',
-        data: propertyAges,
-        refreshData: refreshPropertyAges
-      },
-      {
-        label: 'Amoblado',
-        name: 'amoblado',
-        data: propertyFurnisheds,
-        refreshData: refreshPropertyFurnisheds
-      }
-    ]
+  const fields = [
+    {
+      label: 'Estado',
+      name: 'state',
+      component: SelectFieldAsync,
+    },
+    {
+      label: 'Ciudad',
+      name: 'city',
+      component: SelectFieldAsync
+    },
+    {
+      label: 'Dirección',
+      name: 'address',
+      component: TextField
+    },
+    {
+      label: 'Mts2',
+      name: 'characteristics__mts2',
+      component: NumberField
+    },
+    {
+      label: 'Mts2 Construidos',
+      name: 'characteristics__mts2_build',
+      component: NumberField
+    },
+    {
+      label: 'Plantas',
+      name: 'characteristics__floors',
+      component: NumberField
+    },
+    {
+      label: 'Habitaciones',
+      name: 'characteristics__rooms',
+      component: NumberField
+    },
+    {
+      label: 'Baños',
+      name: 'characteristics__bathrooms',
+      component: NumberField
+    },
 
-    
-return selects.map((item, index) => (
-      <Grid size={6} key={index}>
-        <SelectFieldAsync
-          label={item.label}
-          name={item.name}
-          control={control}
-          error={errors[item.name]}
-          response={item.data}
-          refreshData={item.refreshData}
-          setValue={setValue}
-          value={getValues(item.name)}
-          dataMap={{ value: 'id', label: 'nombre' }}
-        />
-      </Grid>
-    ))
-  }
+    {
+      label: 'Baños de Servicio',
+      name: 'characteristics__service_bathrooms',
+      component: NumberField
+    },
+    {
+      label: 'Habitaciones de Servicio',
+      name: 'characteristics__service_rooms',
+      component: NumberField
+    },
 
-  const renderSwitchs = () => {
-    const switchs = [
-      { label: 'Sala de Estar', name: 'salaEstar' },
-      { label: 'Estudio', name: 'estudio' },
-      { label: 'Terraza / Jardin', name: 'terrazaJardin' },
-      { label: 'Lavadero', name: 'lavadero' },
-      { label: 'Maletero / Bodega', name: 'maleteroBodega' },
-      { label: 'Tanque de Agua', name: 'tanqueAgua' },
-      { label: 'Planta Electrica', name: 'plantaElectrica' }
-    ]
+    {
+      label: 'Ptos de Estacionamiento',
+      name: 'characteristics__parking_spots',
+      component: NumberField
+    },
 
-    
-return switchs.map((item, index) => (
-      <Grid size={12} key={index}>
-        <SwitchFieldProps
-          label={item.label}
-          name={item.name}
-          control={control}
-          setValue={setValue}
-          value={getValues(item.name)}
-        />
-      </Grid>
-    ))
-  }
+    {
+      label: 'Sala de Estar',
+      name: 'characteristics__has_living_room',
+      component: SwitchField
+    },
 
-  const renderNumberInputs = () => {
-    const numberInputs = [
-      {
-        label: 'Mts2',
-        name: 'mts2',
-        integer: false
-      },
-      {
-        label: 'Mts2 Construidos',
-        name: 'mts2Construidos',
-        integer: false
-      },
-      {
-        label: 'Plantas',
-        name: 'plantas',
-        integer: true
-      },
-      {
-        label: 'Habitaciones',
-        name: 'habitaciones',
-        integer: true
-      },
-      {
-        label: 'Baños',
-        name: 'banos',
-        integer: true
-      },
-      {
-        label: 'Baños de Servicio',
-        name: 'banosServicio',
-        integer: true
-      },
-      {
-        label: 'Habitaciones de Servicio',
-        name: 'habitacionesServicio',
-        integer: true
-      },
-      {
-        label: 'Ptos de Estacionamiento',
-        name: 'ptosEstacionamiento',
-        integer: true
-      }
-    ]
+    {
+      label: 'Estudio',
+      name: 'characteristics__has_studio',
+      component: SwitchField
+    },
 
-    
-return numberInputs.map((item, index) => (
-      <Grid size={4} key={index}>
-        <NumberField
-          label={item.label}
-          name={item.name}
-          control={control}
-          error={errors[item.name]}
-          setValue={setValue}
-          value={getValues(item.name)}
-          integer={item.integer}
-        />
-      </Grid>
-    ))
-  }
+    {
+      label: 'Terraza / Jardin',
+      name: 'characteristics__has_garden',
+      component: SwitchField
+    },
+    {
+      label: 'Lavadero',
+      name: 'characteristics__has_washer',
+      component: SwitchField
+    },
 
-  const renderUbigeo = () => {
-    return (
-      <Grid container size={12} className='mt-4'>
-        <Grid size={6}>
-          <SelectFieldAsync
-            label='Estado'
-            name='estado'
-            control={control}
-            error={errors.estado}
-            response={states}
-            refreshData={refreshStates}
-            dataMap={{ value: 'id', label: 'nombre' }}
-            filter_name='search'
-            onChange={handleStateChange}
-            setValue={setValue}
-            value={getValues('estado')}
-          />
-        </Grid>
-        <Grid size={6}>
-          <SelectFieldAsync
-            label='Ciudad'
-            name='ciudad'
-            control={control}
-            error={errors.ciudad}
-            response={cities}
-            refreshData={refreshCities}
-            dataMap={{ value: 'id', label: 'nombre' }}
-            filter_name='search'
-            isDisabled={!defaultFiltersCities}
-            setValue={setValue}
-            value={getValues('ciudad')}
-          />
-        </Grid>
-        <Grid size={12}>
-          <Controller
-            name='direccion'
-            control={control}
-            render={({ field }) => (
-              <CustomTextField
-                fullWidth
-                label='Dirección'
-                {...field}
-                error={!!errors.direccion}
-                helperText={errors.direccion?.message}
-              />
-            )}
-          />
-        </Grid>
-      </Grid>
-    )
-  }
+    {
+      label: 'Maletero / Bodega',
+      name: 'characteristics__has_garage',
+      component: SwitchField
+    },
+    {
+      label: 'Planta Electrica',
+      name: 'characteristics__has_electric_plant',
+      component: SwitchField
+    }
+
+  ]
+
+
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container spacing={2}>
-        {renderUbigeo()}
+        {fields.map((field, index) => {
+          const Component = field.component
+          let response = null
+          let refreshData = null
+          let dataMap = undefined
+          let onChange = undefined
 
-        <Grid container size={12} className='mt-4'>
-          {renderSelects()}
-        </Grid>
-        <Grid container size={8} className='mt-4'>
-          {renderNumberInputs()}
-        </Grid>
-        <Grid container size={4}>
-          {renderSwitchs()}
-        </Grid>
+          if (field.name === 'state') {
+            response = states
+            refreshData = refreshStates
+            dataMap = { value: 'id', label: 'name' }
+            onChange = handleStateChange
+          } else if (field.name === 'city') {
+            response = cities
+            refreshData = refreshCities
+            dataMap = { value: 'id', label: 'name' }
+          }
+
+          return (
+            <Grid size={{
+              md: 6,
+              xs: 12,
+            }} key={index}>
+              {Component === SelectFieldAsync ? (
+                <Component
+                  name={field.name}
+                  control={control}
+                  setValue={setValue}
+                  error={errors[field.name]}
+                  label={field.label}
+                  value={getValues(field.name)}
+                  response={response}
+                  refreshData={refreshData}
+                  dataMap={dataMap}
+                  onChange={onChange}
+                />
+              ) : Component === SwitchField ? (
+                <Component
+                  name={field.name}
+                  control={control}
+                  setValue={setValue}
+                  error={errors[field.name]}
+                  label={field.label}
+                  value={getValues(field.name)}
+                />
+              ) : (
+                
+                  <Component
+                    name={field.name}
+                    control={control}
+                    setValue={setValue}
+                    label={field.label}
+                    value={getValues(field.name)}
+                    {...field}
+                    error={errors[field.name]}
+                  />
+              )}
+            </Grid>
+          )
+        })}
+
       </Grid>
     </Box>
   )

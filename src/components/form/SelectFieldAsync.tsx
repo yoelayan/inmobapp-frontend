@@ -107,7 +107,7 @@ const SelectFieldAsync = ({
           onChange={handleSelectChange}
           clearText='Limpiar'
           options={items ?? []}
-          sx={{ minWidth: 200 }}
+          
           getOptionLabel={(option: OptionType) => option.label ?? ''}
           disabled={isDisabled}
           renderInput={params => (

@@ -30,6 +30,8 @@ export interface GridTag {
     label?: string
     icon?: React.ReactNode
     condition?: string
+    searchOn?: (tag: any, row: any) => any
+
 }
 
 export interface GridProps {
@@ -49,8 +51,22 @@ interface TableGridProps {
     renderFilter: (column: any) => React.ReactNode;
 }
 
+
+const getTagValue = (tag: GridTag, row: any) => {
+    let value = null
+    // obtener el value  para usar el metodo searchOn si existe enviando row.original
+    if (tag.searchOn) {
+        value = tag.searchOn(tag, row.original)
+    } else {
+        value = row.original[tag.name]
+    }
+
+    return value
+
+}
+
 const TableGrid = (
-    { table, headers, grid_params, actions, renderFilter}
+    { table, headers, grid_params, actions, renderFilter }
     : TableGridProps) => {
     return (
         <>
@@ -99,7 +115,14 @@ const TableGrid = (
                                         />
                                     )}
                                     {grid_params.feature_image && (
-                                        <CardMedia component='img' height='140' src={row.original[grid_params.feature_image]} />
+                                        <CardMedia 
+                                            sx={{
+                                                objectFit: 'cover'
+                                            }}
+                                            component='img'
+                                            height='140' 
+                                            src={row.original[grid_params.feature_image]}
+                                        />
                                     )}
 
                                     <CardContent>
@@ -117,7 +140,12 @@ const TableGrid = (
                                             <Grid container spacing={4} className='mt-4'>
                                                 {grid_params.tags.map((tag, index) => (
                                                     <Grid key={index} size={{ xs: 6, md: 3 }} className='flex flex-col items-center'>
-                                                        <Badge badgeContent={row.original[tag.name] ?? 0} color='primary' showZero max={999999}>
+                                                        <Badge 
+                                                            badgeContent={getTagValue(tag, row) ?? 0} 
+                                                            color='primary' 
+                                                            showZero 
+                                                            max={999999}
+                                                        >
                                                             {tag.icon}
                                                         </Badge>
                                                         <Typography variant='body2' color='textSecondary' component='p'>

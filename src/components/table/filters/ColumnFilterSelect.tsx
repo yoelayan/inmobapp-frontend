@@ -56,14 +56,12 @@ const ColumnFilterSelect = ({
   const [inputValue, setInputValue] = useState<string>('')
 
   const buildItems = () => {
-    console.log('Options', response)
 
     if (options) {
       setItems(options as OptionType[])
     } else if (response) {
       const data = response.results
 
-      console.log('Data', data)
       setItems(
         data.map((item: Record<string, any>) => ({
           value: item[dataMap?.value],

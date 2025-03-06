@@ -1,11 +1,13 @@
 import { useState, useCallback } from 'react'
 
+
 import type { ResponseAPI, InterfaceRepositoryAPI } from '@/api/repositories/BaseRepository'
 
 type FetchState<T> = {
     data: ResponseAPI<T> | null
     loading: boolean
     error: string | null
+    errors: any
     item: T | null
 }
 
@@ -17,7 +19,8 @@ export default function useBaseHookApi<T>(
         data: null,
         loading: true,
         error: null,
-        item: null
+        item: null,
+        errors: null,
     })
 
     const createData = useCallback(
@@ -38,10 +41,13 @@ export default function useBaseHookApi<T>(
                     },
                     loading: false,
                     error: null,
+                    errors: null,
                     item: response
                 })
             } catch (error: any) {
-                setState({ data: null, loading: false, error: error.message, item: null })
+                console.log(error)
+
+                setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
             }
         },
         [repository]
@@ -64,11 +70,12 @@ export default function useBaseHookApi<T>(
                     },
                     loading: false,
                     error: null,
-                    item: response
+                    item: response,
+                    errors: null,
                 })
             } catch (error: any) {
                 setState({ data: null, loading: false, error: error.message,
-                    item: null
+                    item: null, errors: error.response.data
                 })
             }
         },
@@ -81,9 +88,9 @@ export default function useBaseHookApi<T>(
         try {
             const response = await repository.getAll(defaultFilters)
 
-            setState({ data: response, loading: false, error: null, item: null })
+            setState({ data: response, loading: false, error: null, item: null, errors: null, })
         } catch (error: any) {
-            setState({ data: null, loading: false, error: error.message, item: null })
+            setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
         }
     }, [repository, defaultFilters])
 
@@ -105,10 +112,12 @@ export default function useBaseHookApi<T>(
                     },
                     loading: false,
                     error: null,
-                    item: response
+                    item: response,
+                    errors: null,
+                    
                 })
             } catch (error: any) {
-                setState({ data: null, loading: false, error: error.message, item: null })
+                setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
             }
         },
         [repository]
@@ -123,7 +132,7 @@ export default function useBaseHookApi<T>(
 
                 const result = await repository.refresh(filters)
 
-                setState({ data: result, loading: false, error: null, item: null })
+                setState({ data: result, loading: false, error: null, item: null, errors: null, })
             }
         },
         [state.data, fetchData]

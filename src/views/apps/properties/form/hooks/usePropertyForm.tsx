@@ -2,115 +2,165 @@ import { useEffect } from 'react'
 
 import { useForm } from 'react-hook-form'
 import { valibotResolver } from '@hookform/resolvers/valibot'
-import {
-  object,
-  minLength,
-  number,
-  string,
-  pipe,
-  nonEmpty,
-  mimeType,
-  blob,
-  maxSize,
-  minValue,
-  array
-} from 'valibot'
 
-import type { InferInput } from 'valibot'
+import { IRealProperty } from '@/types/apps/RealtstateTypes'
 
-import { editorMinLength } from '@components/form/validators/editorMinLength'
-import { select } from '@components/form/validators/select'
+type SelectField = {
+  value: number
+  label: string
+}
 
-const schema = object({
-  nombre: pipe(
-    string('Se requiere un nombre'),
-    nonEmpty('Este campo es requerido'),
-    minLength(3, 'El nombre debe tener al menos 3 caracteres')
-  ),
-  status_inmueble: select(),
-  descripcion: pipe(
-    string('Se requiere una descripción'),
-    editorMinLength(10, 'La descripción debe tener al menos 10 caracteres')
-  ),
-  images: array(
-    pipe(
-      blob(),
-      maxSize(1024 * 1024 * 10, 'La imagen no debe pesar más de 10MB'),
-      mimeType(['image/png', 'image/jpeg'], 'Solo se permiten imagenes PNG y JPEG')
-    )
-  ),
-  first_image_url: array(
-    pipe(
-      blob(),
-      maxSize(1024 * 1024 * 10, 'La imagen no debe pesar más de 10MB'),
-      mimeType(['image/png', 'image/jpeg'], 'Solo se permiten imagenes PNG y JPEG')
-    )
-  ),
-  tipoPropiedad: select(),
-  franquicia: select(),
-  negociacion: select(),
-  estado: select(),
-  ciudad: select(),
-  antiguedadInmueble: select(),
-  amoblado: select(),
-  cliente: select(),
-  direccion: string('Se requiere una dirección'),
-  mts2: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  mts2Construidos: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  plantas: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  habitaciones: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  banos: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  banosServicio: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  habitacionesServicio: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  ptosEstacionamiento: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  precioVenta: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0')),
-  precioAlquiler: pipe(number('Se requiere un valor numérico'), minValue(0, 'El valor mínimo es 0'))
-})
+type RealPropertyForm = {
+  name: string
+  description: string
+  images: Array<File | string>
+  status_id?: number
+  type_property_id?: number
+  type_negotiation_id?: number
+  state_id?: number
+  city_id?: number
+  status: SelectField
+  type_property: SelectField
+  type_negotiation: SelectField
+  state: SelectField
+  city: SelectField
+  initial_price: number
+  rent_price: number
+  characteristics__has_mortgage: boolean
+  characteristics__has_catalog: boolean
+  characteristics__is_principal: boolean
+  characteristics__has_financing: boolean
+  characteristics__has_33: boolean
+  assigned_to: any
+  address: string
+  characteristics__mts2: number
+  characteristics__mts2_build: number
+  characteristics__floors: number
+  characteristics__rooms: number
+  characteristics__bathrooms: number
+  characteristics__service_bathrooms: number
+  characteristics__service_rooms: number
+  characteristics__parking_spots: number
+  characteristics__has_living_room: boolean
+  characteristics__has_studio: boolean
+  characteristics__has_garden: boolean
+  characteristics__has_washer: boolean
+  characteristics__has_garage: boolean
+  characteristics__has_water_tank: boolean
+  characteristics__has_electric_plant: boolean
+  characteristics__has_elevator: boolean
+  characteristics__has_private_security: boolean
+  characteristics__has_playground: boolean
+  characteristics__has_swimming_pool: boolean
+  characteristics__has_gym: boolean
+  characteristics__has_grill: boolean
+  characteristics__has_party_room: boolean
+  characteristics__has_sports_field: boolean
+  characteristics__has_deep_well: boolean
+  characteristics__has_common_electric_plant: boolean
 
-type FormData = InferInput<typeof schema>
+}
 
-const usePropertyForm = (defaultValues?: FormData) => {
-  const initValues = {
-    nombre: '',
-    status_inmueble: {
-      value: 'None'
-    },
-    descripcion: '',
-    imagenes: [],
-    first_image_url: [],
-    estado: {
-      value: 'None'
-    },
-    ciudad: {
-      value: 'None'
-    },
-    antiguedadInmueble: {
-      value: 'None'
-    },
-    amoblado: {
-      value: 'None'
-    },
-    tipoPropiedad: {
-      value: 'None'
-    },
-    franquicia: {
-      value: 'None'
-    },
-    negociacion: {
-      value: 'None'
-    },
-    direccion: '',
-    mts2: 0,
-    mts2Construidos: 0,
-    plantas: 0,
-    habitaciones: 0,
-    banos: 0,
-    banosServicio: 0,
-    habitacionesServicio: 0,
-    ptosEstacionamiento: 0,
-    precioVenta: 0,
-    precioAlquiler: 0
+const getFormattedValues = async (values: RealPropertyForm) => {
+
+  // los valores que empiecen por characteristics formatearlo dentro de un objeto
+  // characteristics: []
+  // {code: name_field, value: value_field}
+  const characteristics = Object.keys(values)
+    .filter(key => key.startsWith('characteristics__'))
+    .reduce((obj, key) => {
+      const newKey = key.replace('characteristics__', '')
+      obj.push({ code: newKey, value: values[key as keyof RealPropertyForm] })
+
+      return obj
+    }, [] as any[])
+  // eliminar los characteristics
+  const keysToRemove = Object.keys(values).filter(key => key.startsWith('characteristics__'))
+  keysToRemove.forEach(key => delete values[key as keyof RealPropertyForm])
+  
+  /**
+   * status_inmueble
+    type_property
+    type_negotiation
+    state
+    city
+    obtener el value del select
+   */
+    
+  values.status_id = values.status.value
+  values.type_property_id = values.type_property.value
+  values.type_negotiation_id = values.type_negotiation.value
+  values.state_id = values.state.value
+  values.city_id = values.city.value
+
+  // remove
+  delete values.status
+  delete values.type_property
+  delete values.type_negotiation
+  delete values.state
+  delete values.city
+
+
+
+  
+  return {
+    ...values,
+    characteristics: characteristics
   }
+}
+
+const usePropertyForm = (defaultValues?: RealPropertyForm) => {
+  const initValues = {
+    name: '',
+    status: null,
+    description: '',
+    type_property: null,
+    type_negotiation: null,
+    initial_price: 0,
+    rent_price: 0, 
+    state: null,
+    city: null,
+    address: '',
+    assigned_to: null,
+    characteristics__has_mortgage: false,
+    characteristics__has_catalog: false,
+    characteristics__is_principal: false,
+    characteristics__has_financing: false,
+    characteristics__has_33: false,
+    characteristics__mts2: 0,
+    characteristics__mts2_build: 0,
+    characteristics__floors: 0,
+    characteristics__rooms: 0,
+    characteristics__bathrooms: 0,
+    characteristics__service_bathrooms: 0,
+    characteristics__service_rooms: 0,
+    characteristics__parking_spots: 0,
+    characteristics__has_living_room: false,
+    characteristics__has_studio: false,
+    characteristics__has_garden: false,
+    characteristics__has_washer: false,
+    characteristics__has_garage: false,
+    characteristics__has_water_tank: false,
+    characteristics__has_electric_plant: false,
+    characteristics__has_elevator: false,
+    characteristics__has_private_security: false,
+    characteristics__has_playground: false,
+    characteristics__has_swimming_pool: false,
+    characteristics__has_gym: false,
+    characteristics__has_grill: false,
+    characteristics__has_party_room: false,
+    characteristics__has_sports_field: false,
+    characteristics__has_deep_well: false,
+    characteristics__has_common_electric_plant: false,
+    images: []
+  }
+
+  useEffect(() => {
+    if (defaultValues) {
+      reset(defaultValues)
+    }
+  }, [defaultValues])
+
 
   const {
     control,
@@ -120,34 +170,11 @@ const usePropertyForm = (defaultValues?: FormData) => {
     setError,
     setValue,
     getValues
-  } = useForm<FormData>({
-    resolver: valibotResolver(schema),
+  } = useForm<RealPropertyForm>({
     defaultValues: initValues
   })
 
-  // crear metodo que obtenga los valores y los formatee para enviarlos al backend
-
-  const getFormattedValues = () => {
-    const values = getValues()
-
-    return {
-      ...values,
-      status_inmueble: values.status_inmueble.value,
-      estado: values.estado.value,
-      ciudad: values.ciudad.value,
-      antiguedad: values.antiguedadInmueble.value,
-      amoblado: values.amoblado.value,
-      tipoPropiedad: values.tipoPropiedad.value,
-      franquicia: values.franquicia.value,
-      negociacion: values.negociacion.value,
-      cliente: values.cliente.value
-    }
-  }
     
-
-  useEffect(() => {
-    reset(defaultValues)
-  }, [defaultValues, reset])
 
   return {
     control,
@@ -157,7 +184,7 @@ const usePropertyForm = (defaultValues?: FormData) => {
     setError,
     setValue,
     getValues,
-    getFormattedValues
+    getFormattedValues: () => getFormattedValues(getValues())
   }
 }
 

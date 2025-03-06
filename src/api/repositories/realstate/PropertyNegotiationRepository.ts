@@ -1,8 +1,8 @@
-import type { TypeNegotiation } from '@/types/apps/RealtstateTypes'
+import { IType } from '@/types/apps/RealtstateTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class PropertyNegotiationRepository extends BaseRepository<TypeNegotiation> {
+class PropertyNegotiationRepository extends BaseRepository<IType> {
   private static instance: PropertyNegotiationRepository
 
   private constructor() {

@@ -7,14 +7,9 @@ import Grid from '@mui/material/Grid2'
 
 // React Hook Form imports
 import type { FieldError } from 'react-hook-form';
-import { Controller } from 'react-hook-form'
-
-// Components Imports
-import CustomTextField from '@core/components/mui/TextField'
-
 // Fields Components
 import SelectField from '@/components/form/SelectField'
-import ImageField from '@/components/form/ImageField'
+import TextField from '@/components/form/TextField';
 
 // Hooks
 import usePropertyStatus from '@/hooks/api/realstate/usePropertyStatus'
@@ -34,53 +29,43 @@ const Sidebar = ({ control, errors, setValue, getValues }: SidebarProps) => {
   }, [])
 
   return (
-    <Box sx={{ position: 'fixed', top: 95, width: '24%' }}>
+    <Box>
       <Card>
         <CardContent>
           <Box sx={{ flexGrow: 1 }}>
             <Grid container spacing={2}>
               <Grid size={12}>
-                <ImageField
-                  name='first_image_url'
+                <TextField 
+                  label='Nombre del Inmueble'
+                  name='name'
                   control={control}
+                  error={errors.name}
+                  value={getValues('name')}
                   setValue={setValue}
-                  error={errors.first_image_url}
-                  label='Imagen Destacada'
-                  value={getValues('first_image_url')}
-                />
-              </Grid>
-              <Grid size={12}>
-                <Controller
-                  name='nombre'
-                  control={control}
-                  render={({ field }) => (
-                    <CustomTextField
-                      fullWidth
-                      label='Nombre del Inmueble'
-                      {...field}
-                      error={!!errors.nombre}
-                      helperText={errors.nombre?.message}
-                    />
-                  )}
                 />
               </Grid>
               <Grid size={12}>
                 <SelectField
-                  value={getValues('status_inmueble')}
+                  value={getValues('status')}
                   label='Estado'
-                  name='status_inmueble'
+                  name='status'
                   control={control}
-                  error={errors.status_inmueble as FieldError}
+                  error={errors.status as FieldError}
                   response={statues}
                   setValue={setValue}
-                  dataMap={{ value: 'id', label: 'nombre' }}
+                  dataMap={{ value: 'id', label: 'name' }}
                 />
               </Grid>
             </Grid>
           </Box>
         </CardContent>
         <CardActions>
-          <Button fullWidth type='submit' color='primary' variant='contained'>
+          <Button 
+            fullWidth
+            type='submit'
+            color='primary'
+            variant='contained'
+          >
             Guardar
           </Button>
         </CardActions>

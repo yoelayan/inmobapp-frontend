@@ -1,49 +1,45 @@
-import type { GeoItem } from '@/types/apps/LocationsTypes'
-import type { Franquicia } from '@/types/apps/FranquiciaTypes'
-import type { Status } from '@/types/apps/CatalogTypes'
 
-export interface TypeNegotiation {
-    id: number
-    name: string
-    code: string
-}
-export interface PropertyType {
-    id: number
-    name: string
-    code: string
-}
-export interface Characteristic {
-    id: number
-    name: string
-    code: string
-    type_value: string
-}
-export interface RealProperty {
-    id: number
-    name: string
-    code: string
-    description: string
-    property_type: PropertyType
-    status: Status
-    type_negotiation: TypeNegotiation
-    price: number
-    initial_price: number
-    rent_price: number
-    country: Franquicia
-    state: GeoItem
-    city: GeoItem
-    address: string
-}
-export interface PropertyCharacteristic {
-    id: number
-    parent: RealProperty
-    characteristic: Characteristic
-    value: string
-}
-export interface PropertyImage {
-    id: number
-    parent: RealProperty
-    image: string
-}
+import { IFranchise } from '@/types/apps/FranquiciaTypes'
+import { IUser } from '@/types/apps/UserTypes'
+import { IGeoItem } from '@/types/apps/LocationsTypes'
 
 
+export interface IRealProperty {
+  id: number;
+  created_by?: IUser;
+  updated_by?: IUser;
+  assigned_to?: IUser;
+  created_at?: string;
+  updated_at?: string;
+  status: string;
+  name: string;
+  description: string;
+  characteristics: ICharacteristic[];
+  code: string;
+  price: string;
+  initial_price: string;
+  rent_price: string;
+  images: IImage[];
+  first_image_url: string;
+  type_negotiation: IType;
+  type_property: IType;
+  state: IGeoItem;
+  city: IGeoItem;
+  franchise?: IFranchise;
+}
+
+export interface IType {
+  id: number;
+  name: string;
+}
+
+interface IImage {
+  id: number;
+  image: string;
+  order: number;
+}
+
+interface ICharacteristic {
+  value: boolean | number | string;
+  characteristic: string;
+}

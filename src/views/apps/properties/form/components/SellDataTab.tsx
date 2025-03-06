@@ -14,7 +14,7 @@ import usePropertyTypes from '@/hooks/api/realstate/usePropertyTypes'
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 
 // Fields Components
-import SwitchFieldProps from '@components/form/SwitchField'
+import SwitchField from '@components/form/SwitchField'
 import NumberField from '@/components/form/NumberField'
 import SelectField from '@/components/form/SelectField'
 import SelectFieldAsync from '@/components/form/SelectFieldAsync'
@@ -27,13 +27,12 @@ const SellDataTab = ({ control, errors, setValue, getValues }: PropertyTabProps)
   const [priceRentdisabled, setPriceRentdisabled] = useState(true)
 
   const handleEnabledPricesFields = (negotiation: any) => {
-    console.log(negotiation)
 
     if (negotiation === undefined) {
       setPriceSelldisabled(true)
       setPriceRentdisabled(true)
-      
-return
+
+      return
     }
 
 
@@ -48,9 +47,51 @@ return
       setPriceSelldisabled(false)
       setPriceRentdisabled(false)
     }
-
-    console.log(priceSelldisabled, priceRentdisabled)
   }
+
+  const switchFields = [
+    {
+      label: 'Posee Hipoteca',
+      name: 'characteristics__has_mortgage',
+    },
+    {
+      label: 'Ficha Catastral Actualizada',
+      name: 'characteristics__has_catalog',
+    },
+    {
+      label: 'Vivienda Principal',
+      name: 'characteristics__is_principal',
+    },
+    {
+      label: 'Financiamiento',
+      name: 'characteristics__has_financing',
+    },
+    {
+      label: 'Forma 33',
+      name: 'characteristics__has_33',
+    }
+
+  ]
+  const selectFields = [
+    {
+      label: 'Tipo de Propiedad',
+      name: 'type_property',
+    },
+    {
+      label: 'Negociación',
+      name: 'type_negotiation',
+    },
+  ]
+  const numberFields = [
+    {
+      label: 'Precio de Venta',
+      name: 'initial_price',
+    },
+    {
+      label: 'Precio de Alquiler',
+      name: 'rent_price',
+    },
+  ]
 
   const {
     data: propertyNegotiations,
@@ -59,113 +100,99 @@ return
   } = usePropertiyNegotiation()
 
   const { data: propertyTypes, refreshData: refreshPropertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
-  const { data: franchises, refreshData: refreshFranchises, fetchData: fetchFranchises } = useFranchises()
 
   useEffect(() => {
     fetchPropertyNegotiations()
     fetchPropertyTypes()
-    fetchFranchises()
   }, [])
 
-  const renderSwichts = () => {
-    const switchs = [
-      { name: 'poseeHipoteca', label: 'Posee Hipoteca' },
-      { name: 'fichaCatastral', label: 'Ficha Catastral Actualizada' },
-      { name: 'viviendaPrincipal', label: 'Vivienda Principal' },
-      { name: 'financiamiento', label: 'Financiamiento' },
-      { name: 'forma33', label: 'Forma 33' }
-    ]
-    
-return switchs.map((item: any) => {
-      return (
-        <Grid size={12} key={item.name}>
-          <SwitchFieldProps
-            label={item.label}
-            name={item.name}
-            control={control}
-            value={getValues(item.name)}
-            setValue={setValue}
-          />
-        </Grid>
-      )
-    })
-  }
 
   return (
     <Box sx={{ flexGrow: 1 }}>
       <Grid container size={12} spacing={4}>
-        <Grid container size={8}>
-          <Grid size={12} container spacing={2}>
-            <Grid size={6}>
+
+
+        {selectFields.map((field, index) => {
+          let response = null
+          let refreshData = null
+          let onChange = undefined
+
+          if (field.name === 'type_negotiation') {
+            response = propertyNegotiations
+            refreshData = refreshPropertyNegotiations
+            onChange = handleEnabledPricesFields
+          } else if (field.name === 'type_property') {
+            response = propertyTypes
+            refreshData = refreshPropertyTypes
+          }
+
+          return (
+            <Grid size={{
+              md: 6,
+              xs: 12
+            }} key={index}>
               <SelectFieldAsync
-                name='tipoPropiedad'
+                name={field.name}
                 control={control}
-                label='Tipo Propiedad'
-                error={errors.tipoPropiedad}
+                label={field.label}
+                error={errors[field.name]}
                 setValue={setValue}
-                value={getValues('tipoPropiedad')}
-                refreshData={refreshPropertyTypes}
-                response={propertyTypes}
-                dataMap={{ value: 'id', label: 'nombre' }}
-              />
+                value={getValues(field.name)}
+                refreshData={refreshData}
+                response={response}
+                onChange={onChange}
+                dataMap={{ value: 'id', label: 'name' }}
+                />
             </Grid>
-            <Grid size={6}>
-              <SelectFieldAsync
-                name='franquicia'
-                control={control}
-                label='Franquicia'
-                error={errors.franquicia}
-                setValue={setValue}
-                value={getValues('franquicia')}
-                refreshData={refreshFranchises}
-                response={franchises}
-                dataMap={{ value: 'id', label: 'nombre' }}
-              />
-            </Grid>
-          </Grid>
-          <Grid size={12} container className='mt-4' spacing={2}>
-            <Grid size={4}>
-              <SelectField
-                name='negociacion'
-                control={control}
-                label='Negociación'
-                error={errors.negociacion}
-                value={getValues('negociacion')}
-                setValue={setValue}
-                response={propertyNegotiations}
-                dataMap={{ value: 'id', label: 'nombre' }}
-                onChange={handleEnabledPricesFields}
-              />
-            </Grid>
-            <Grid size={4}>
+          )
+        })}
+
+        {numberFields.map((field, index) => {
+          
+          let isDisabled = false
+
+          if (field.name === 'initial_price') {
+            isDisabled = priceSelldisabled
+          } else if (field.name === 'rent_price') {
+            isDisabled = priceRentdisabled
+          }
+
+          return (
+            <Grid size={{
+              md: 6,
+              xs: 12
+            }} key={index}>
               <NumberField
-                name='precioVenta'
+                name={field.name}
                 control={control}
-                label='Precio de Venta'
-                error={errors.precioVenta}
-                value={getValues('precioVenta')}
                 setValue={setValue}
-                disabled={priceSelldisabled}
+                error={errors[field.name]}
+                label={field.label}
+                value={getValues(field.name)}
+                integer
+                disabled={isDisabled}
               />
             </Grid>
-            <Grid size={4}>
-              <NumberField
-                name='precioAlquiler'
+          )
+        })}
+
+        {switchFields.map((field, index) => {
+
+          return (
+            <Grid size={{
+              md: 4,
+              xs: 12
+            }} key={index}>
+              <SwitchField
+                label={field.label}
+                name={field.name}
                 control={control}
-                label='Precio de Alquiler'
-                error={errors.precioAlquiler}
-                value={getValues('precioAlquiler')}
+                value={getValues(field.name)}
                 setValue={setValue}
-                disabled={priceRentdisabled}
               />
             </Grid>
-          </Grid>
-        </Grid>
-        <Grid size={4}>
-          <Box sx={{ flexGrow: 1 }} className='mt-4'>
-            {renderSwichts()}
-          </Box>
-        </Grid>
+          )
+        })}
       </Grid>
     </Box>
   )
