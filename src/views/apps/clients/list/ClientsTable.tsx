@@ -4,25 +4,32 @@
 import React, { useEffect } from 'react'
 
 // Component Imports
+import { useRouter } from 'next/navigation'
+
+import EditIcon from '@mui/icons-material/Edit'
+
+import DeleteIcon from '@mui/icons-material/Delete'
+
 import GenericTable from '@/views/shared/list/GenericTable'
-import type { 
+import type {
   Header, TableAction
 } from '@components/table/TableComponent'
+
 import type { GridProps } from '@components/table/components/TableGrid'
-import EyeIcon from '@mui/icons-material/RemoveRedEye'
-import EditIcon from '@mui/icons-material/Edit'
-import DeleteIcon from '@mui/icons-material/Delete'
+
+
 
 // Hooks Imports
 import useClients from '@/hooks/api/crm/useClients'
+
 import useFranchises from '@/hooks/api/realstate/useFranchises'
-import { useRouter, useSearchParams } from 'next/navigation'
+
 
 const Table: React.FC = () => {
 
   const router = useRouter()
 
-  const { 
+  const {
     data: franchises,
     fetchData: fetchFranchises,
     refreshData: refreshFranchises
@@ -34,20 +41,14 @@ const Table: React.FC = () => {
     subtitle: 'status__nombre',
     feature_value: 'franquicia__usuario_asignado__full_name',
   }
+
   const actions: TableAction[] = [
-    {
-      label: 'Ver',
-      icon: <EyeIcon />,
-      onClick: (row: Record<string, any>) => {
-        router.push('/clientes/agregar/')
-      }
-    },
     {
       label: 'Editar',
       icon: <EditIcon />,
       onClick: (row: Record<string, any>) => {
         console.log('Editar', row)
-        window.location.href = `/propiedades/actualizar/${row.id}`
+        router.push(`/clientes/${row.id}/`)
       }
     },
     {
@@ -70,14 +71,14 @@ const Table: React.FC = () => {
         response: franchises,
         dataMap: {
           value: 'id',
-          label: 'nombre'
+          label: 'name'
         },
         refreshData: refreshFranchises,
         searchble: true,
         filter_name: 'search'
       }
     },
-    { key: 'nombre', label: 'Nombre', filterable: true, slot: 'default' },
+    { key: 'name', label: 'Nombre', filterable: true, slot: 'default' },
     { key: 'email', label: 'Correo Electrónico', filterable: true, slot: 'default' },
     {
       key: 'franquicia__usuario_asignado__full_name',
@@ -94,7 +95,7 @@ const Table: React.FC = () => {
   useEffect(() => {
     fetchFranchises()
     fetchData()
-  }, [fetchData])
+  }, [fetchData, fetchFranchises])
 
   return (
     <GenericTable

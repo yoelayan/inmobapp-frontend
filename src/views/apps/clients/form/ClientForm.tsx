@@ -1,244 +1,129 @@
+
 'use client'
 
-// React Imports
-import { useEffect, useState } from 'react'
+import React from 'react'
 
-// MUI Imports
-import Card from '@mui/material/Card'
-import Box from '@mui/material/Box'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import Button from '@mui/material/Button'
-import Grid from '@mui/material/Grid2'
 
-// Fields
-import SelectFieldAsync from '@/components/form/SelectFieldAsync'
-import CustomTextField from '@core/components/mui/TextField'
-import SelectField from '@/components/form/SelectField'
+import { Button, Box, CircularProgress, Grid2 as Grid } from '@mui/material'
 
-// Types imports
-import type { Cliente } from '@/types/apps/ClientesTypes'
+import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 
-// Hooks
-import useClientForm from './hooks/useClientForm'
-import useClients from '@/hooks/api/crm/useClients'
-import useFranchises from '@/hooks/api/realstate/useFranchises'
-import useClientStatus from '@/hooks/api/crm/useClientStatus'
+import { useClientForm } from './hooks/useClientForm'
 
-import { Controller } from 'react-hook-form'
-import { FieldError } from 'react-hook-form'
+import TextField from '@/components/form/TextField'; // Ajusta la ruta [20]
+import SelectField from '@/components/form/SelectField'; // Ajusta la ruta [18
 
 import { useNotification } from '@/hooks/useNotification'
-import { useParams, useRouter } from 'next/navigation'
+import type { Status } from '@/types/apps/CatalogTypes';
 
-
-
+// --- Props del Componente ---
 interface ClientFormProps {
-    id?: string
+  clientId?: string // ID opcional para modo actualización
+  statuses: ResponseAPI<Status> // Lista de 'status' disponibles
+  // Puedes añadir más props si necesitas, como una lista de 'status' disponibles
+  onSuccess?: () => void // Callback opcional para después de un envío exitoso
 }
 
+export const ClientForm: React.FC<ClientFormProps> = ({ clientId, statuses}) => {
+  const {
+    control,
+    handleSubmit,
+    errors,
+    isSubmitting,
+    isLoading,
+    serverError,
+    setValue, // Obtenido del hook actualizado
+    watch // Obtenido del hook actualizado
+  } = useClientForm(clientId)
+
+  const { notify } = useNotification()
 
 
-const ClientForm: React.FC<ClientFormProps> = ({ id }) => {
+  // --- Preparar datos para SelectField ---
+  // SelectField [18] espera un objeto 'response' con una propiedad 'results'
+  const statusDataMap = { value: 'id', label: 'name' }
 
-    const {
-        fetchItemById: fetchClient,
-        createData: createClient,
-        updateData: updateClient,
-        item: client,
-    } = useClients()
-
-    const router = useRouter()
-
-    const {
-        data: franchises,
-        refreshData: refreshFranchises,
-        fetchData: fetchFranchises
-    } = useFranchises()
-    const {
-        data: clientStatus,
-        refreshData: refreshClientStatus,
-        fetchData: fetchClientStatus
-    } = useClientStatus()
-
-
-    const [isUpdate, setIsUpdate] = useState(id ? true : false)
-    const { notify } = useNotification()
-
-
-    const {
-        control, handleSubmit, errors,
-        setValue, getValues, getFormattedValues
-    } = useClientForm()
-
-    const setDefaultValues = (client: Cliente) => {
-        // Recorrer el objeto y asignar los valores a cada campo
-
-        Object.entries(client).forEach(([key, value]) => {
-            if (value !== null) {
-                if (typeof value === 'object' && value.id && value.nombre) {
-                    setValue(key as any, {
-                        value: value.id,
-                        label: value.nombre
-                    })
-                } else {
-                    setValue(key as any, value)
-                }
-            }
-        })
-
-
-    }
-
-    useEffect(() => {
-        fetchFranchises()
-        fetchClientStatus()
-        if (id) {
-            fetchClient(id)
-
-        }
-    }, [id])
-
-    useEffect(() => {
-        if (client) {
-            setDefaultValues(client)
-        }
-    }, [client])
-
-
-
-
-    const onSubmit = () => {
-        const data = getFormattedValues()
-        console.log(data)
-
-        try {
-            if (isUpdate && client) {
-                updateClient(client.id, data)
-                notify('Cliente actualizado con éxito', 'success')
-                return
-            } else {
-                createClient(data)
-                notify('Cliente creado con éxito', 'success')
-                if (client) {
-                    return
-                }
-            }
-
-
-        } catch (error) {
-            notify('Error al crear el Cliente', 'error')
-        }
-    }
-
+  // --- Renderizado Condicional (Carga/Error Inicial) ---
+  if (isLoading) {
     return (
-        <form onSubmit={handleSubmit(onSubmit)}>
-            <Grid container spacing={2}>
-                <Grid size={8}>
-                    <Card>
-                        <CardContent>
-                            <Grid
-                                container
-                                size={12}
-                                columns={{ xs: 4, sm: 8, md: 12 }}
-                                direction={'row'}
-                                spacing={2}
-                            >
-                                <Grid size={12}>
-                                    <SelectFieldAsync
-                                        name='franquicia'
-                                        control={control}
-                                        label='Franquicia'
-                                        error={errors.franquicia as FieldError}
-                                        setValue={setValue}
-                                        value={getValues('franquicia')}
-                                        refreshData={refreshFranchises}
-                                        response={franchises}
-                                        dataMap={{ value: 'id', label: 'nombre' }}
-                                    />
-                                </Grid>
-                                
-                                <Grid size={6}>
-                                    <Controller
-                                        name='email'
-                                        control={control}
-                                        render={({ field }) => (
-                                            <CustomTextField
-                                                fullWidth
-                                                label='Email'
-                                                {...field}
-                                                error={!!errors.email}
-                                                helperText={errors.email?.message}
-                                            />
-                                        )}
-                                    />
-                                </Grid>
-                                <Grid size={6}>
-                                    <Controller
-                                        name='numero_telefono'
-                                        control={control}
-                                        render={({ field }) => (
-                                            <CustomTextField
-                                                fullWidth
-                                                label='Número de Teléfono'
-                                                {...field}
-                                                error={!!errors.numero_telefono}
-                                                helperText={errors.numero_telefono?.message}
-                                            />
-                                        )}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </CardContent>
-                    </Card>
-                </Grid>
-                <Grid size={4}>
-                    <Box sx={{ position: 'fixed', top: 95, width: '24%' }}>
-                        <Card>
-                            <CardContent>
-                                <Box sx={{ flexGrow: 1 }}>
-                                    <Grid container spacing={2}>
-                                        <Grid size={12}>
-                                            <Controller
-                                                name='nombre'
-                                                control={control}
-                                                render={({ field }) => (
-                                                    <CustomTextField
-                                                        fullWidth
-                                                        label='Nombre del Cliente'
-                                                        {...field}
-                                                        error={!!errors.nombre}
-                                                        helperText={errors.nombre?.message}
-                                                    />
-                                                )}
-                                            />
-                                        </Grid>
-                                        <Grid size={12}>
-                                            <SelectField
-                                                name='status'
-                                                control={control}
-                                                label='Status'
-                                                error={errors.status as FieldError}
-                                                setValue={setValue}
-                                                value={getValues('status')}
-                                                response={clientStatus}
-                                                dataMap={{ value: 'id', label: 'nombre' }}
-                                            />
-                                        </Grid>
-                                    </Grid>
-                                </Box>
-                            </CardContent>
-                            <CardActions>
-                                <Button fullWidth type='submit' color='primary' variant='contained'>
-                                    Guardar
-                                </Button>
-                            </CardActions>
-                        </Card>
-                    </Box>
-                </Grid>
-            </Grid>
-        </form>
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
+        <CircularProgress />
+        <span style={{ marginLeft: '10px' }}>Cargando datos del cliente...</span>
+      </Box>
     )
-}
+  }
 
-export { ClientForm }
+  // Muestra un error general si ocurrió durante la carga inicial o el envío
+  // y no está asociado a un campo específico.
+  if (serverError && !isLoading && !isSubmitting) {
+    notify(serverError, 'error')
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <Grid container spacing={3}>
+        {/* --- Campo Nombre (Usando TextField) --- */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            name='name'
+            label='Nombre'
+            control={control}
+            error={errors.name}
+            setValue={setValue}
+            value={watch('name')} // Pasar el valor actual
+            // Puedes añadir reglas de validación aquí si quieres duplicar las del hook,
+            // pero generalmente es mejor mantenerlas centralizadas en useForm dentro del hook.
+          />
+        </Grid>
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            name='phone'
+            label='Telefono'
+            control={control}
+            error={errors.phone}
+            setValue={setValue}
+            value={watch('phone')} // Pasar el valor actual
+            // Puedes añadir reglas de validación aquí si quieres duplicar las del hook,
+            // pero generalmente es mejor mantenerlas centralizadas en useForm dentro del hook.
+          />
+        </Grid>
+        {/* --- Campo Email (Usando TextField) --- */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <TextField
+            name='email'
+            label='Email'
+            control={control}
+            error={errors.email}
+            setValue={setValue}
+            value={watch('email')} // Pasar el valor actual
+          />
+          {/* Nota: TextField no tiene una prop 'type="email"', la validación
+              de formato vendría de las 'rules' en useForm (si las defines)
+              o principalmente del backend. */}
+        </Grid>
+        {/* --- Campo Status (Usando SelectField) --- */}
+        {statuses.results.length > 0 && (
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <SelectField
+              name='status'
+              label='Status'
+              control={control}
+              error={errors.status}
+              setValue={setValue}
+              value={watch('status')} // Pasar el valor actual (debería ser el ID)
+              response={statuses} // Pasar los datos formateados
+              dataMap={statusDataMap} // Pasar el mapeo de campos
+              // isDisabled={...} // Puedes añadir lógica de deshabilitado si es necesario
+            />
+          </Grid>
+        )}
+        {/* --- Botón de Envío --- */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Button type='submit' variant='contained' disabled={isSubmitting || isLoading}>
+            {isSubmitting ? 'Guardando...' : clientId ? 'Actualizar Cliente' : 'Crear Cliente'}
+          </Button>
+        </Grid>
+      </Grid>
+    </form>
+  )
+}

@@ -1,16 +1,15 @@
-import type { ContactoCliente } from './ContactoClienteTypes'
-import type { Franquicia } from './FranquiciaTypes'
+
+import type { Status } from './CatalogTypes'
+import type { IFranchise } from './FranquiciaTypes'
 
 
-export type ClienteStatus = {
+export interface IClient {
   id: number
-  nombre: string
-}
+  name: string
+  email?: string
+  phone?: string
+  status?: Status
+  franchise?: IFranchise
 
-export type Cliente = {
-  id: number
-  nombre: string
-  email: StringConstructor
-  status: ClienteStatus
-  created_at: string
+
 }

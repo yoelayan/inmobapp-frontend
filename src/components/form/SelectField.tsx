@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 // Types
 import { MenuItem } from '@mui/material'
@@ -40,13 +40,9 @@ const SelectField = ({
 }: SelectFieldAsyncProps) => {
   const [items, setItems] = useState<OptionType[]>([])
 
-  const [selectedItem, setSelectedItem] = useState<OptionType | null>(value || null)
+  const [selectedItem, setSelectedItem] = useState<OptionType | null>(null)
 
-  useEffect(() => {
-    buildItems()
-  }, [response])
-
-  const buildItems = () => {
+  const buildItems = useCallback(() => {
     if (response) {
       const data = response.results || []
 
@@ -57,14 +53,26 @@ const SelectField = ({
         }))
       )
     }
-  }
+
+    if (value !== undefined && value !== null) {
+
+      const foundItem = items.find(item => item.value === value)
+
+      setSelectedItem(foundItem || null)
+
+    }
+  }, [value,response, dataMap]) // Add dependencies
+
+  useEffect(() => {
+    buildItems()
+  }, [buildItems, response])
 
   const handleSelectChange = (value: string) => {
     const item = items.find((item: OptionType) => item.value === value)
 
     if (item) {
       setSelectedItem(item)
-      setValue(name, item)
+      setValue(name, item.value)
     } else {
       setSelectedItem(null)
       setValue(name, null)
@@ -75,8 +83,7 @@ const SelectField = ({
     }
   }
 
-  
-return (
+  return (
     <Controller
       name={name}
       control={control}

@@ -1,100 +1,69 @@
-import { useEffect } from 'react'
+// src/hooks/useClientForm.tsx
+import type { IClient } from '@/types/apps/ClientesTypes'
+import ClientsRepository from '@/api/repositories/crm/ClientsRepository' // Ensure correct path
+import { useNotification } from '@/hooks/useNotification'
+import { useBaseForm } from '@/hooks/useBaseForm'
 
-import { useForm } from 'react-hook-form'
-import { valibotResolver } from '@hookform/resolvers/valibot'
-import {
-    object,
-    minLength,
-    number,
-    string,
-    pipe,
-    nonEmpty,
-    mimeType,
-    blob,
-    maxSize,
-    minValue,
-    array,
-    email,
-} from 'valibot'
-
-import type { InferInput } from 'valibot'
-
-import { editorMinLength } from '@components/form/validators/editorMinLength'
-import { select } from '@components/form/validators/select'
-
-const schema = object({
-    /*
-    nombre: '',
-      email: '',
-      franquicia: null,
-      status: 1,
-      tipo: 'email',
-      valor: ''
-
-    */
-    nombre: pipe(string(), minLength(1, 'Máximo 200 caracteres')),
-    email: pipe(string(), email(), nonEmpty()),
-    franquicia: select(),
-    status: select(),
-    numero_telefono: pipe(string(), minLength(1, 'Máximo 200 caracteres')),
-
-})
-
-type FormData = InferInput<typeof schema>
-
-const usePropertyForm = (defaultValues?: FormData) => {
-    const initValues = {
-        nombre: '',
-        email: '',
-        franquicia: {
-            value: 'None'
-        },
-        status: {
-            value: 'None'
-        },
-        numero_telefono: ''
-    }
-
-    const {
-        control,
-        reset,
-        handleSubmit,
-        formState: { errors },
-        setError,
-        setValue,
-        getValues
-    } = useForm<FormData>({
-        resolver: valibotResolver(schema),
-        defaultValues: initValues
-    })
-
-    // crear metodo que obtenga los valores y los formatee para enviarlos al backend
-
-    const getFormattedValues = () => {
-        const values = getValues()
-
-        return {
-            ...values,
-            franquicia: values.franquicia.value,
-            status: values.status.value
-        }
-    }
-
-
-    useEffect(() => {
-        reset(defaultValues)
-    }, [defaultValues, reset])
-
-    return {
-        control,
-        reset,
-        handleSubmit,
-        errors,
-        setError,
-        setValue,
-        getValues,
-        getFormattedValues
-    }
+// Form data type (can be the same as before or adjusted)
+type ClientFormData = Omit<IClient, 'id' | 'created_at' | 'status' | 'user' | 'tags'> & {
+  status?: number // Assuming status ID is used in the form
+  user?: number // Assuming user ID is used in the form
+  tags?: number[] // Assuming tag IDs are used in the form
+  // Add other fields specific to the form if they differ from IClient
 }
 
-export default usePropertyForm
+// Payload type (what the API expects for create/update)
+// Often similar to ClientFormData, but adjust if API needs different structure
+type ClientPayload = ClientFormData
+
+// Default values for creating a new client
+const defaultClientValues: Partial<ClientFormData> = {
+  name: '',
+  email: '',
+  phone: '',
+  status: undefined, // Or a default status ID if applicable
+  user: undefined, // Or a default user ID
+}
+
+// Function to transform backend client data (IClient) into form data (ClientFormData)
+const transformClientDataForForm = (client: IClient): Partial<ClientFormData> => {
+  // Create a copy to avoid modifying the original object if it's cached elsewhere
+  const formData: Partial<ClientFormData> = {}
+
+  // Iterate over keys expected in the form data
+  for (const key in defaultClientValues) {
+    const formKey = key as keyof ClientFormData
+    const clientKey = key as keyof IClient
+
+    if (client.hasOwnProperty(clientKey)) {
+        // Direct assignment for other matching keys
+        formData[formKey] = client[clientKey] as any
+      }
+    }
+
+  // You might need to handle specific type conversions here if necessary
+  return formData
+}
+
+// Optional: Function to prepare payload if it differs from form data
+// const prepareClientPayload = (formData: ClientFormData): ClientPayload => {
+//   // Example: If API expects status ID directly but form uses object
+//   // return { ...formData, status: formData.status?.id };
+//   return formData; // If payload is same as form data
+// };
+
+export const useClientForm = (clientId?: string) => {
+  const notificationHook = useNotification()
+
+  // Use the base form hook
+  const baseForm = useBaseForm<IClient, ClientFormData, string, ClientPayload>({
+    id: clientId,
+    repository: ClientsRepository, // Pass the specific repository
+    defaultValues: defaultClientValues,
+    transformDataForForm: transformClientDataForForm,
+    notificationHook: notificationHook
+  })
+
+  // Return the result from the base hook
+  return baseForm
+}

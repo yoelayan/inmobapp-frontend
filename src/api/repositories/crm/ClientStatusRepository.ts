@@ -1,12 +1,12 @@
-import type { Cliente } from '@/types/apps/ClientesTypes'
+import type { Status } from '@/types/apps/CatalogTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class ClientStatusRepository extends BaseRepository<Cliente> {
+class ClientStatusRepository extends BaseRepository<Status> {
   private static instance: ClientStatusRepository
 
   private constructor() {
-    super(apiRoutes.crm.clientStatus, true)
+    super(apiRoutes.crm.clientStatus, false)
   }
 
   public static getInstance(): ClientStatusRepository {
