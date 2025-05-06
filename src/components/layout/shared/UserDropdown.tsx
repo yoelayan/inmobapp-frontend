@@ -5,6 +5,8 @@ import { useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 
 // Next Imports
+import React from 'react'
+
 import { useRouter } from 'next/navigation'
 
 // MUI Imports
@@ -26,7 +28,6 @@ import LogoutButton from '@auth/components/LogoutButton'
 // Hook Imports
 import { useSettings } from '@core/hooks/useSettings'
 import { useAuth } from '@/auth/hooks/useAuth'
-import React from 'react'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({

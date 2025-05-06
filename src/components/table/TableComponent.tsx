@@ -53,11 +53,13 @@ import {
 } from '@mui/material'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewModuleIcon from '@mui/icons-material/ViewModule'
+
+import classnames from 'classnames'
+
 import CustomTextField from '@core/components/mui/TextField'
 
 // Utils imports
 
-import classnames from 'classnames'
 
 // Components imports
 import TableActions from './components/TableActions'
@@ -160,6 +162,7 @@ const extractProperties = (data: any[], headers: Header[], grid_params?: GridPro
           allKeys.add(value);
       }
     });
+
     if (grid_params.tags) {
       grid_params.tags.forEach(tag => {
         allKeys.add(tag.name);
@@ -170,6 +173,7 @@ const extractProperties = (data: any[], headers: Header[], grid_params?: GridPro
   // Collect all keys from data objects
   data.forEach(item => {
     const keys = Object.keys(item);
+
     keys.forEach(key => {
       allKeys.add(key);
     });
@@ -230,6 +234,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const handleClose = () => {
     setAnchorEl(null)
   }
+
   const [columnVisibility, setColumnVisibility] = useState({})
   const isMobile = useMediaQuery('(max-width: 768px)')
 
@@ -321,7 +326,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
   const renderFilter = (column: any) => {
     const FilterComponent = FilterComponents[column.columnDef.meta.filter || 'default']
-    return <FilterComponent column={column} table={table} {...column.columnDef.meta.filter_params} />
+
+    
+return <FilterComponent column={column} table={table} {...column.columnDef.meta.filter_params} />
   }
   
 

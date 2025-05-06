@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 
 // Types
 import { MenuItem } from '@mui/material'
@@ -42,7 +42,7 @@ const SelectField = ({
 
   const [selectedItem, setSelectedItem] = useState<OptionType | null>(null)
 
-  const buildItems = useCallback(() => {
+  useEffect(() => {
     if (response) {
       const data = response.results || []
 
@@ -53,19 +53,15 @@ const SelectField = ({
         }))
       )
     }
+  }, [response, value, dataMap])
 
+  useEffect(() => {
     if (value !== undefined && value !== null) {
-
       const foundItem = items.find(item => item.value === value)
 
       setSelectedItem(foundItem || null)
-
     }
-  }, [value,response, dataMap]) // Add dependencies
-
-  useEffect(() => {
-    buildItems()
-  }, [buildItems, response])
+  }, [value, items])
 
   const handleSelectChange = (value: string) => {
     const item = items.find((item: OptionType) => item.value === value)

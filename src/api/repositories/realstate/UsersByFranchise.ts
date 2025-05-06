@@ -1,4 +1,4 @@
-import { IUser } from '@/types/apps/UserTypes'
+import type { IUser } from '@/types/apps/UserTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
@@ -14,7 +14,7 @@ class UsersByFranchiseRepository extends BaseRepository<IUser> {
       UsersByFranchiseRepository.instance = new UsersByFranchiseRepository()
     }
 
-    
+
 return UsersByFranchiseRepository.instance
   }
 }

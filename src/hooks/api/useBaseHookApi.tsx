@@ -28,7 +28,8 @@ export default function useBaseHookApi<T>(
             setState(prev => ({ ...prev, loading: true, error: null }))
 
             try {
-                const response = await repository.create(data)
+              const response = await repository.create(data)
+
                 setState({
                     data: {
                         count: 1,
@@ -52,12 +53,14 @@ export default function useBaseHookApi<T>(
         },
         [repository]
     )
+
     const updateData = useCallback(
         async (id: string | number, data: Record<string, any>) => {
             setState(prev => ({ ...prev, loading: true, error: null }))
 
             try {
-                const response = await repository.update(id.toString(), data)
+              const response = await repository.update(id.toString(), data)
+
                 setState({
                     data: {
                         count: 1,
@@ -99,7 +102,8 @@ export default function useBaseHookApi<T>(
             setState(prev => ({ ...prev, loading: true, error: null }))
 
             try {
-                const response = await repository.get(id.toString())
+              const response = await repository.get(id.toString())
+
                 setState({
                     data: {
                         count: 1,
@@ -114,7 +118,7 @@ export default function useBaseHookApi<T>(
                     error: null,
                     item: response,
                     errors: null,
-                    
+
                 })
             } catch (error: any) {
                 setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
@@ -135,7 +139,7 @@ export default function useBaseHookApi<T>(
                 setState({ data: result, loading: false, error: null, item: null, errors: null, })
             }
         },
-        [state.data, fetchData]
+        [state.data, defaultFilters, repository]
     )
 
     const getData = useCallback(() => {

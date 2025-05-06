@@ -19,16 +19,18 @@ import CustomTextField from '@core/components/mui/TextField'
 interface OptionType {
   value: string
   label: string
+  custom?: boolean
 }
 
 interface SelectFieldAsyncProps extends FieldProps {
   response: ResponseAPI<any> | null
-  refreshData: (filters?: Record<string, any>) => Promise<void>
+  refreshData?: (filters?: Record<string, any>) => Promise<void>
   dataMap: Record<string, any>
   filter_name?: string
   onChange?: (item: any) => void
   defaultFilter?: Record<string, any>
-  isDisabled?: boolean
+  isDisabled?: boolean,
+  children?: React.ReactNode
 }
 
 const SelectFieldAsync = ({
@@ -43,23 +45,16 @@ const SelectFieldAsync = ({
   onChange,
   isDisabled,
   error,
-  setValue
+  setValue,
+  children
 }: SelectFieldAsyncProps) => {
   const [items, setItems] = useState<OptionType[]>([])
-  const [selectedItem, setSelectedItem] = useState<OptionType | null>(value || null)
+
+  const [selectedItem, setSelectedItem] = useState<OptionType | null>(null)
+
   const [inputValue, setInputValue] = useState<string>('')
 
   useEffect(() => {
-    buildItems()
-  }, [response])
-
-  useEffect(() => {
-    if (!selectedItem) {
-      setValue(name, null)
-    }
-  }, [selectedItem])
-
-  const buildItems = () => {
     if (response) {
       const data = response.results || []
 
@@ -70,7 +65,15 @@ const SelectFieldAsync = ({
         }))
       )
     }
-  }
+  }, [response, value, dataMap])
+
+  useEffect(() => {
+    if (value !== undefined && value !== null) {
+      const foundItem = items.find(item => item.value === value)
+
+      setSelectedItem(foundItem || null)
+    }
+  }, [value, items])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (refreshData) {
@@ -80,11 +83,11 @@ const SelectFieldAsync = ({
     setInputValue(e.target.value)
   }
 
-  const handleSelectChange = (event: React.SyntheticEvent<Element, Event>, item: OptionType | null, reason: string) => {
+  const handleSelectChange = (event: React.SyntheticEvent<Element, Event>, item: OptionType | null) => {
     // Handle the change event
     if (item) {
       setSelectedItem(item)
-      setValue(name, item)
+      setValue(name, item.value)
     } else {
       setSelectedItem(null)
       setValue(name, null)
@@ -94,6 +97,9 @@ const SelectFieldAsync = ({
       onChange(item)
     }
   }
+
+  const combinedItems = [...(children ? [{ value: 'custom-children', label: '', custom: true }] : []), ...items]
+
 
   return (
     <Controller
@@ -106,8 +112,7 @@ const SelectFieldAsync = ({
           value={selectedItem}
           onChange={handleSelectChange}
           clearText='Limpiar'
-          options={items ?? []}
-          
+          options={combinedItems ?? []}
           getOptionLabel={(option: OptionType) => option.label ?? ''}
           disabled={isDisabled}
           renderInput={params => (
@@ -123,11 +128,22 @@ const SelectFieldAsync = ({
               sx={{ minWidth: 100 }}
             />
           )}
-          renderOption={(props, option: OptionType) => (
-            <MenuItem {...props} key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          )}
+          renderOption={(props, option: OptionType) => {
+
+            if (option.custom) {
+              return (
+                <div key="custom-children">
+                  {children}
+                </div>
+              )
+            }
+
+            return (
+              <MenuItem {...props} key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            )
+          }}
         />
       )}
     />

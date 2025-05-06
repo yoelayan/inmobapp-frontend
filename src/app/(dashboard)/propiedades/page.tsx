@@ -4,6 +4,8 @@
 import React, { useEffect } from 'react'
 
 // Component Imports
+import Grid from '@mui/material/Grid2'
+
 import PropertiesTable from '@views/apps/properties/list/PropertiesTable'
 import PropertiesCard from '@views/apps/properties/list/PropertiesCard'
 
@@ -11,7 +13,6 @@ import PropertiesCard from '@views/apps/properties/list/PropertiesCard'
 import useProperties from '@/hooks/api/realstate/useProperties'
 
 // MUI Imports
-import Grid from '@mui/material/Grid2'
 
 const Properties: React.FC = () => {
 
@@ -24,7 +25,8 @@ const Properties: React.FC = () => {
   useEffect(() => {
     getProperties()
   }, [])
-  return (
+  
+return (
     <Grid container spacing={6}>
       <Grid size={12}>
         <PropertiesCard />

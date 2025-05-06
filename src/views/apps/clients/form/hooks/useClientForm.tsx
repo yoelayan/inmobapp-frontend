@@ -5,24 +5,20 @@ import { useNotification } from '@/hooks/useNotification'
 import { useBaseForm } from '@/hooks/useBaseForm'
 
 // Form data type (can be the same as before or adjusted)
-type ClientFormData = Omit<IClient, 'id' | 'created_at' | 'status' | 'user' | 'tags'> & {
-  status?: number // Assuming status ID is used in the form
-  user?: number // Assuming user ID is used in the form
-  tags?: number[] // Assuming tag IDs are used in the form
-  // Add other fields specific to the form if they differ from IClient
-}
+type ClientFormData = IClient
 
 // Payload type (what the API expects for create/update)
 // Often similar to ClientFormData, but adjust if API needs different structure
-type ClientPayload = ClientFormData
+type ClientPayload = IClient
 
 // Default values for creating a new client
 const defaultClientValues: Partial<ClientFormData> = {
   name: '',
   email: '',
   phone: '',
+  franchise: undefined, // Or a default franchise ID if applicable
   status: undefined, // Or a default status ID if applicable
-  user: undefined, // Or a default user ID
+  assigned_to: undefined // Or a default user ID
 }
 
 // Function to transform backend client data (IClient) into form data (ClientFormData)
@@ -52,7 +48,7 @@ const transformClientDataForForm = (client: IClient): Partial<ClientFormData> =>
 //   return formData; // If payload is same as form data
 // };
 
-export const useClientForm = (clientId?: string) => {
+export const useClientForm = (clientId?: string, onSuccess?: (response: IClient) => void) => {
   const notificationHook = useNotification()
 
   // Use the base form hook
@@ -61,7 +57,12 @@ export const useClientForm = (clientId?: string) => {
     repository: ClientsRepository, // Pass the specific repository
     defaultValues: defaultClientValues,
     transformDataForForm: transformClientDataForForm,
-    notificationHook: notificationHook
+    notificationHook: notificationHook,
+    onSuccess: (response: IClient) => {
+      if (onSuccess) {
+        onSuccess(response)
+      }
+    }
   })
 
   // Return the result from the base hook

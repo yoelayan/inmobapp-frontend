@@ -4,11 +4,12 @@
 import React, { useState, useEffect } from 'react'
 
 // Mui Imports
+import { useRouter } from 'next/navigation'
+
 import SquareFootIcon from '@mui/icons-material/SquareFoot'
 import DoorFrontIcon from '@mui/icons-material/DoorFront'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
 import BathtubIcon from '@mui/icons-material/Bathtub'
-import EyeIcon from '@mui/icons-material/RemoveRedEye'
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
@@ -16,7 +17,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import useStates from '@/hooks/api/locations/useStates'
 import useUsersByFranchise from '@/hooks/api/realstate/useUsersByFranchise'
 import useCities from '@/hooks/api/locations/useCities'
-import { useRouter, useSearchParams } from 'next/navigation'
 
 // Table Component
 import type { Header, TableAction } from '@components/table/TableComponent'
@@ -58,14 +58,14 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
     const value = row.characteristics.find((item: any) => item.code === tag.name)
 
     return value ? value.value : null
-    
+
   }
 
   useEffect(() => {
     getStates()
     getCities()
     getUsers()
-  }, [])
+  }, [getStates, getCities, getUsers])
 
   const grid_params: GridProps = {
     feature_image: 'first_image_url',
@@ -103,10 +103,10 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
 
   const actions: TableAction[] = [
     {
-      label: 'Ver / Editar',
-      icon: <><EyeIcon /><EditIcon /></>,
+      label: 'Editar',
+      icon: <><EditIcon /></>,
       onClick: (row: Record<string, any>) => {
-        router.push(`/propiedades/actualizar/${row.id}`)
+        router.push(`/propiedades/${row.id}/`)
       }
     },
     {

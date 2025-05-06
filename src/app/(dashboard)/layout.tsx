@@ -18,23 +18,24 @@ import VerticalFooter from '@components/layout/vertical/Footer'
 import HorizontalFooter from '@components/layout/horizontal/Footer'
 import ScrollToTop from '@core/components/scroll-to-top'
 import AuthGuard from '@auth/hocs/AuthGuard'
-// Util Imports
-import { getMode, getSystemMode } from '@core/utils/serverHelpers'
 
-const Layout = async ({ children }: ChildrenType) => {
+// Config Imports
+import themeConfig from '@configs/themeConfig'
+
+const Layout = ({ children }: ChildrenType) => {
   // Vars
   const direction = 'ltr'
-  const mode = await getMode()
-  const systemMode = await getSystemMode()
+  const defaultMode = themeConfig.mode
+  const defaultSystemMode = 'light'
 
   return (
     <Providers direction={direction}>
       <AuthGuard>
         <LayoutWrapper
-          systemMode={systemMode}
+          systemMode={defaultSystemMode}
           verticalLayout={
             <VerticalLayout
-              navigation={<Navigation mode={mode} systemMode={systemMode} />}
+              navigation={<Navigation mode={defaultMode} systemMode={defaultSystemMode} />}
               navbar={<Navbar />}
               footer={<VerticalFooter />}
             >

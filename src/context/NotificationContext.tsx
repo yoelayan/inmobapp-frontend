@@ -1,46 +1,61 @@
 'use client'
-import type { ReactNode } from 'react';
-import React, { createContext, useContext, useState } from 'react'
 
-// Component Imports
+import React, { createContext, useCallback } from 'react'
+
+import type { ReactNode } from 'react'
+
+import { SnackbarProvider, useSnackbar, closeSnackbar } from 'notistack'
+
+import Alert from '@mui/material/Alert'
+
+// Tipos para las notificaciones
 import type { AlertColor } from '@mui/material/Alert'
 
-import Notification from '@components/dialogs/notifications/Notification'
-
-// Mui Imports
 
 interface NotificationContextType {
-  notify: (
-    message: string,
-    severity?: AlertColor
-  ) => void
+  notify: (message: string, severity?: AlertColor) => void
 }
 
-const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
+export const NotificationContext = createContext<NotificationContextType | undefined>(undefined)
 
+// Proveedor del contexto de notificaciones
 export const NotificationProvider = ({ children }: { children: ReactNode }) => {
-  const [message, setMessage] = useState<string | null>(null)
-  const [severity, setSeverity] = useState<AlertColor>('error')
-  const [open, setOpen] = useState<boolean>(false)
-
-  const notify = (msg: string, severity: AlertColor = 'error') => {
-    
-    setSeverity(severity)
-    setMessage(msg)
-    setOpen(true)
-  }
-
-  const clearMessage = () => {
-    setMessage(null)
-    setOpen(false)
-  }
-
   return (
-    <NotificationContext.Provider value={{ notify }}>
-      {children}
-      {message && <Notification severity={severity} message={message} open={open} handleClose={clearMessage} />}
-    </NotificationContext.Provider>
+    <SnackbarProvider
+      maxSnack={5} // Número máximo de notificaciones visibles al mismo tiempo
+      anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Posición de las notificaciones
+      Components={
+        {
+          default: ({ message, closeToast, variant }) => (
+            <Alert severity={variant as AlertColor} onClose={closeToast}>
+              {message}
+            </Alert>
+          )
+        }
+
+      }
+    >
+      <NotificationContextWrapper>{children}</NotificationContextWrapper>
+    </SnackbarProvider>
   )
 }
 
-export { NotificationContext }
+// Wrapper para usar el contexto de Notistack
+const NotificationContextWrapper = ({ children }: { children: ReactNode }) => {
+  const { enqueueSnackbar } = useSnackbar()
+
+  const notify = useCallback(
+    (message: string, severity: AlertColor = 'info') => {
+      enqueueSnackbar(message, {
+        variant: severity,
+        action: key => <i className='tabler-x' onClick={() => closeSnackbar(key)} />
+
+      }) // Mostrar la notificación
+    },
+    [enqueueSnackbar]
+  )
+
+  return <NotificationContext.Provider value={{ notify }}>{children}</NotificationContext.Provider>
+}
+
+export default NotificationContext

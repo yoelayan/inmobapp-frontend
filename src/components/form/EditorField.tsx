@@ -1,5 +1,5 @@
 // React Imports
-import React, { useState, useEffect } from 'react'
+import React, { useEffect } from 'react'
 
 // Third-party Imports
 import { useEditor, EditorContent } from '@tiptap/react'
@@ -12,7 +12,7 @@ import type { Editor } from '@tiptap/core'
 import '@/libs/styles/tiptapEditor.css'
 
 // MUI Imports
-import { Card, CardContent, Typography, Divider } from '@mui/material'
+import { Box, CardContent, Typography, Divider } from '@mui/material'
 
 import FormHelperText from '@mui/material/FormHelperText'
 
@@ -29,6 +29,7 @@ const EditorField = ({ value, label, name, control, error, setValue }: EditorFie
 
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({
@@ -56,25 +57,23 @@ const EditorField = ({ value, label, name, control, error, setValue }: EditorFie
     }
   }, [value, editor])
 
-  
-return (
-    <Card className='mt-4'>
-      <Controller
-        name={name}
-        control={control}
-        render={({ field }) => (
-          <CardContent>
-            <Typography variant='h6'>{label}</Typography>
-            <EditorToolbar editor={editor} />
-            <Divider />
-            <EditorContent editor={editor} name={name} />
 
-            {error && <FormHelperText error>{error.message}</FormHelperText>}
-          </CardContent>
-        )}
-      />
-    </Card>
-  )
+return (
+  <Controller
+    name={name}
+    control={control}
+    render={({ field }) => (
+      <Box>
+        <Typography variant='h6'>{label}</Typography>
+        <EditorToolbar editor={editor} />
+        <Divider />
+        <EditorContent editor={editor} name={name} />
+
+        {error && <FormHelperText error>{error.message}</FormHelperText>}
+      </Box>
+    )}
+  />
+)
 }
 
 const EditorToolbar = ({ editor }: { editor: Editor | null }) => {

@@ -1,6 +1,6 @@
 'use client'
 import type { ReactNode } from 'react';
-import React, { useEffect, createContext, useState } from 'react'
+import React, { useEffect, createContext, useState, useCallback } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -12,7 +12,6 @@ interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
-  // states constains the loading and isAuthenticated states
   loading: boolean
   isAuthenticated: boolean
 }
@@ -24,28 +23,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true)
   const router = useRouter()
 
-  useEffect(() => {
-    const session = localStorage.getItem('session')
-    
-    if (session) {
-      const parsedSession = JSON.parse(session)
-      console.log(parsedSession)
-
-      if (!isAccessTokenExpired(parsedSession.expires_in)) {
-        
-        setSession(parsedSession)
-      } else {
-        logout()
-      }
-    }
-    setLoading(false)
-  }, [])
-
-  const isAccessTokenExpired = (accessTokenExpiresTimestamp: number) => {
-    
-    const currentTime = Math.floor(Date.now() / 1000)
-    return accessTokenExpiresTimestamp < currentTime
-  }
 
 
   const login = async (email: string, password: string) => {
@@ -55,13 +32,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setSession(sessionData)
   }
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     localStorage.removeItem('session')
     setSession(null)
     router.push('/login')
+  }, [router])
+
+  useEffect(() => {
+    const session = localStorage.getItem('session')
+
+    if (session) {
+      const parsedSession = JSON.parse(session)
+
+      if (!isAccessTokenExpired(parsedSession.expires_in)) {
+
+        setSession(parsedSession)
+      } else {
+        logout()
+      }
+    }
+
+    setLoading(false)
+
+  }, [logout])
+
+  const isAccessTokenExpired = (accessTokenExpiresTimestamp: number) => {
+
+    const currentTime = Math.floor(Date.now() / 1000)
+
+
+    return accessTokenExpiresTimestamp < currentTime
   }
 
-  return <AuthContext.Provider value={{ 
+
+
+  return <AuthContext.Provider value={{
       session, login, logout,
       loading, isAuthenticated: !!session,
       user: session?.user || null

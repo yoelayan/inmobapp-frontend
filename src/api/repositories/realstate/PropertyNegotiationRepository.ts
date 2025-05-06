@@ -1,4 +1,4 @@
-import { IType } from '@/types/apps/RealtstateTypes'
+import type { IType } from '@/types/apps/RealtstateTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 

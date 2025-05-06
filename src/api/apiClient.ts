@@ -26,7 +26,6 @@ class ApiClient {
   private buildGetParams(params: Record<string, any>): string {
     const queryString = new URLSearchParams(params).toString()
 
-
     return queryString ? `?${queryString}` : ''
   }
 
@@ -62,7 +61,6 @@ class ApiClient {
         if (!session) {
           return ApiClient.instance
         }
-        console.log(session)
 
         const token = session.access
 
@@ -73,7 +71,6 @@ class ApiClient {
         ApiClient.instance.removeToken()
       }
     }
-
 
     return ApiClient.instance
   }
@@ -117,7 +114,8 @@ class ApiClient {
       } else if (error.code === 'token_not_valid') {
         this.notificationCallback('Token not valid: Please login again')
         this.removeToken()
-        return
+        
+return
       }
 
       const errorMessage = error.response?.data?.detail || error.message || 'An error occurred'
@@ -130,14 +128,12 @@ class ApiClient {
     const queryString = this.buildGetParams(params || {})
     const response: AxiosResponse<T> = await this.axiosInstance.get(`${url}${queryString}`)
 
-
     return response.data
   }
 
   public async post<T>(url: string, data: Record<string, any>): Promise<T> {
     const postData = this.buildPostParams(data)
     const response: AxiosResponse<T> = await this.axiosInstance.post(url, postData)
-
 
     return response.data
   }
@@ -146,7 +142,6 @@ class ApiClient {
     const putData = this.buildPostParams(data)
     const response: AxiosResponse<T> = await this.axiosInstance.put(url, putData)
 
-
     return response.data
   }
 
@@ -154,21 +149,23 @@ class ApiClient {
     const queryString = this.buildGetParams(params || {})
     const response: AxiosResponse<T> = await this.axiosInstance.delete(`${url}${queryString}`)
 
-
     return response.data
   }
 
-  public async uploadFile<T>(url: string, file: File): Promise<T> {
+  public async uploadFile<T>(url: string, files: FileList): Promise<T> {
     const formData = new FormData()
 
-    formData.append('file', file)
+    for (let i = 0; i < files.length; i++) {
+      formData.append('images', files[i])
+    }
+
 
     const response: AxiosResponse<T> = await this.axiosInstance.post(url, formData, {
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Content-Type': 'multipart/form-data',
+        Accept: 'application/json'
       }
     })
-
 
     return response.data
   }
@@ -179,7 +176,6 @@ class ApiClient {
     const response: AxiosResponse<Blob> = await this.axiosInstance.get(`${url}${queryString}`, {
       responseType: 'blob'
     })
-
 
     return response.data
   }
@@ -192,7 +188,6 @@ class ApiClient {
     }
 
     const response: AxiosResponse<T> = await this.axiosInstance.request(config)
-
 
     return response.data
   }

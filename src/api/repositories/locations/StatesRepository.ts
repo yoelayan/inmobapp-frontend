@@ -1,4 +1,4 @@
-import { IGeoItem } from '@/types/apps/LocationsTypes'
+import type { IGeoItem } from '@/types/apps/LocationsTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 

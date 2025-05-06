@@ -1,9 +1,6 @@
 // Next Imports
 import { cookies } from 'next/headers'
 
-// Third-party Imports
-import 'server-only'
-
 // Type Imports
 import type { Settings } from '@core/contexts/settingsContext'
 import type { SystemMode } from '@core/types'
@@ -11,12 +8,19 @@ import type { SystemMode } from '@core/types'
 // Config Imports
 import themeConfig from '@configs/themeConfig'
 
+// Server-side implementations - these should only be used in Server Components
 export const getSettingsFromCookie = async (): Promise<Settings> => {
-  const cookieStore = await cookies()
+  try {
+    const cookieStore = await cookies()
+    const cookieName = themeConfig.settingsCookieName
+    const cookieValue = cookieStore.get(cookieName)?.value || '{}'
 
-  const cookieName = themeConfig.settingsCookieName
+    return JSON.parse(cookieValue)
+  } catch (error) {
+    console.error('Error getting settings from cookie on server:', error)
 
-  return JSON.parse(cookieStore.get(cookieName)?.value || '{}')
+    return {}
+  }
 }
 
 export const getMode = async () => {
@@ -29,12 +33,17 @@ export const getMode = async () => {
 }
 
 export const getSystemMode = async (): Promise<SystemMode> => {
-  const cookieStore = await cookies()
-  const mode = await getMode()
+  try {
+    const cookieStore = await cookies()
+    const mode = await getMode()
+    const colorPrefCookie = (cookieStore.get('colorPref')?.value || 'light') as SystemMode
 
-  const colorPrefCookie = (cookieStore.get('colorPref')?.value || 'light') as SystemMode
+    return (mode === 'system' ? colorPrefCookie : mode) || 'light'
+  } catch (error) {
+    console.error('Error getting system mode on server:', error)
 
-  return (mode === 'system' ? colorPrefCookie : mode) || 'light'
+    return 'light'
+  }
 }
 
 export const getServerMode = async () => {

@@ -37,9 +37,9 @@ const Table: React.FC = () => {
 
 
   const grid_params: GridProps = {
-    title: 'nombre',
-    subtitle: 'status__nombre',
-    feature_value: 'franquicia__usuario_asignado__full_name',
+    title: 'name',
+    subtitle: 'status__name',
+    feature_value: 'assigned_to_name'
   }
 
   const actions: TableAction[] = [
@@ -62,7 +62,7 @@ const Table: React.FC = () => {
 
   const headers: Header[] = [
     {
-      key: 'franquicia__nombre',
+      key: 'franchise_name',
       label: 'Franquicia',
       filterable: true,
       slot: 'default',
@@ -81,13 +81,13 @@ const Table: React.FC = () => {
     { key: 'name', label: 'Nombre', filterable: true, slot: 'default' },
     { key: 'email', label: 'Correo Electrónico', filterable: true, slot: 'default' },
     {
-      key: 'franquicia__usuario_asignado__full_name',
+      key: 'assigned_to_name',
       label: 'Usuario Asignado',
       filterable: false,
       slot: 'default'
     },
-    { key: 'status__nombre', label: 'Estado', filterable: true, slot: 'default' },
-    { key: 'created_at', label: 'Fecha de Creación', filterable: false, slot: 'default' }
+    { key: 'status_name', label: 'Estado', filterable: true, slot: 'default' },
+    { key: 'formated_created_at', label: 'Fecha de Creación', filterable: false, slot: 'default' }
   ]
 
   const { data, refreshData, fetchData } = useClients()

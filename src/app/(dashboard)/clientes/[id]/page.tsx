@@ -4,40 +4,56 @@ import React, { useEffect } from 'react';
 
 import { useParams } from 'next/navigation';
 
+import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/material'
+
 import { ClientForm } from '@/views/apps/clients/form/ClientForm';
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
+import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
+import useFranchises from '@/hooks/api/realstate/useFranchises'
 
 
 const ClientPage: React.FC = () => {
   const params = useParams();
-  const clientId = params?.id ? Number(params.id) : undefined; // Obtiene el ID de la URL si existe
-  const isUpdateMode = !!clientId;
+  const clientId = params?.id ? String(params.id) : undefined; // Obtiene el ID de la URL si existe
 
-  const { data: statuses, fetchData, refreshData, loading: loadingStatuses } = useClientStatus()
+  const { data: statuses, fetchData: fetchStatuses, loading: loadingStatuses } = useClientStatus()
+    const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsersByFranchiseRepository()
+    const { data: franchises, fetchData: fetchFranchises, loading: loadingFranchises } = useFranchises()
+
+    useEffect(() => {
+      fetchUsers()
+      fetchFranchises()
+      fetchStatuses()
+    }, [fetchUsers, fetchFranchises, fetchStatuses])
 
 
-  // --- Opcional: Cargar datos necesarios para el formulario (ej: lista de Status) ---
-  useEffect(() => {
-    console.log("fetch")
-    fetchData();
-  }, [fetchData]);
 
 
-
-  if (loadingStatuses) {
-    return <p>Cargando opciones...</p>;
-  }
+    if (loadingStatuses || loadingUsers || loadingFranchises) {
+      return (
+        <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
+          <CircularProgress />
+          <span style={{ marginLeft: '10px' }}>Cargando datos del Cliente...</span>
+        </Box>
+      )
+    }
 
   return (
-    <div>
-      <h1>Actualizar Cliente</h1>
-      <ClientForm
-        clientId={clientId} // Pasa el ID si estamos actualizando
+    <Card>
+          <CardHeader title='Actualizar Cliente' />
+      <CardContent>
+          <ClientForm
+        clientId={clientId}
         statuses={statuses} // Pasa la lista de statuses al formulario
+        users={users}
+        franchises={franchises}
+
         // onSuccess={() => { /* Redirigir o mostrar mensaje */ }} // Callback opcional
       />
-    </div>
-  );
+      </CardContent>
+    </Card>
+
+  )
 };
 
 export default ClientPage;

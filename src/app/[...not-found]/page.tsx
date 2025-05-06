@@ -3,19 +3,15 @@ import Providers from '@components/Providers'
 import BlankLayout from '@layouts/BlankLayout'
 import NotFound from '@views/NotFound'
 
-// Util Imports
-import { getServerMode, getSystemMode } from '@core/utils/serverHelpers'
-
 const NotFoundPage = () => {
   // Vars
   const direction = 'ltr'
-  const mode = getServerMode()
-  const systemMode = getSystemMode()
+  const defaultSystemMode = 'light'
 
   return (
     <Providers direction={direction}>
-      <BlankLayout systemMode={systemMode}>
-        <NotFound mode={mode} />
+      <BlankLayout systemMode={defaultSystemMode}>
+        <NotFound mode={defaultSystemMode} />
       </BlankLayout>
     </Providers>
   )

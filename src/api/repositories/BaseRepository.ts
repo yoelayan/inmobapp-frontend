@@ -19,7 +19,7 @@ export type InterfaceRepositoryAPI<T> = {
 }
 
 export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
-  private apiClient: ApiClient = ApiClient.getInstance()
+  protected apiClient: ApiClient = ApiClient.getInstance()
   private cacheKey: string = ''
 
   constructor(

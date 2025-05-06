@@ -1,4 +1,4 @@
-import { Control, FieldError, UseFormGetValues, UseFormSetValue } from "react-hook-form"
+import type { Control, FieldError, UseFormGetValues, UseFormSetValue } from "react-hook-form"
 
 export interface FormProps {
     control: Control<any>

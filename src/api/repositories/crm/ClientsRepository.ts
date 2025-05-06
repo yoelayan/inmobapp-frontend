@@ -1,8 +1,8 @@
-import type { Cliente } from '@/types/apps/ClientesTypes'
+import type { IClient } from '@/types/apps/ClientesTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class ClientsRepository extends BaseRepository<Cliente> {
+class ClientsRepository extends BaseRepository<IClient> {
   private static instance: ClientsRepository
 
   private constructor() {
@@ -13,7 +13,6 @@ class ClientsRepository extends BaseRepository<Cliente> {
     if (!ClientsRepository.instance) {
       ClientsRepository.instance = new ClientsRepository()
     }
-
 
     return ClientsRepository.instance
   }

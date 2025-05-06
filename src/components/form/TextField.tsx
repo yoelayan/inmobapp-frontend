@@ -1,7 +1,9 @@
 // React imports
 import { useState } from 'react'
-import CustomTextField from '@core/components/mui/TextField'
+
 import { Controller } from 'react-hook-form'
+
+import CustomTextField from '@core/components/mui/TextField'
 
 import type FieldProps from '@/components/form/BaseField'
 
@@ -15,6 +17,7 @@ const TextField = ({ value, label, name, onChange, control, error, setValue }: T
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value)
         setValue(name, e.target.value)
+
         if (onChange) {
             onChange(e.target.value)
         }
@@ -39,4 +42,5 @@ const TextField = ({ value, label, name, onChange, control, error, setValue }: T
         />
     )
 }
+
 export default TextField

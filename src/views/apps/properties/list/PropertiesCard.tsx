@@ -1,6 +1,9 @@
 'use client'
+
 // React Imports
 import React, { useState } from 'react'
+
+
 // MUI Imports
 import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
@@ -12,6 +15,7 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import type { Theme } from '@mui/material/styles'
 import MuiCard from '@mui/material/Card'
 import { styled } from '@mui/material/styles'
+
 // Third-party Imports
 import classnames from 'classnames'
 
@@ -25,6 +29,7 @@ type DataType = {
     avatarIcon: string
     key: string
 }
+
 const data: DataType[] = [
     {
         title: 'Activa',

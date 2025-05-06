@@ -9,8 +9,11 @@ class AuthService {
 
   async login(email: string, password: string): Promise<Session> {
     const data: Session = await this.apiClient.post<Session>('/token/', { email, password })
+
     return data
   }
 }
 
-export default new AuthService()
+const authService = new AuthService()
+
+export default authService

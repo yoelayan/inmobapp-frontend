@@ -5,19 +5,16 @@ import type { ChildrenType } from '@core/types'
 import Providers from '@components/Providers'
 import BlankLayout from '@layouts/BlankLayout'
 
-// Util Imports
-import { getSystemMode } from '@core/utils/serverHelpers'
-
 type Props = ChildrenType
 
 const Layout = ({ children }: Props) => {
   // Vars
   const direction = 'ltr'
-  const systemMode = getSystemMode()
+  const defaultSystemMode = 'light'
 
   return (
     <Providers direction={direction}>
-      <BlankLayout systemMode={systemMode}>{children}</BlankLayout>
+      <BlankLayout systemMode={defaultSystemMode}>{children}</BlankLayout>
     </Providers>
   )
 }

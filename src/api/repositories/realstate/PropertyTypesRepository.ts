@@ -1,12 +1,12 @@
-import type { PropertyType } from '@/types/apps/RealtstateTypes'
+import type { IType } from '@/types/apps/RealtstateTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class PropertyTypesRepository extends BaseRepository<PropertyType> {
+class PropertyTypesRepository extends BaseRepository<IType> {
   private static instance: PropertyTypesRepository
 
   private constructor() {
-    super(apiRoutes.realstate.propertyTypes, true)
+    super(apiRoutes.realstate.propertyTypes, false)
   }
 
   public static getInstance(): PropertyTypesRepository {
@@ -14,8 +14,7 @@ class PropertyTypesRepository extends BaseRepository<PropertyType> {
       PropertyTypesRepository.instance = new PropertyTypesRepository()
     }
 
-    
-return PropertyTypesRepository.instance
+    return PropertyTypesRepository.instance
   }
 }
 

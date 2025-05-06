@@ -46,5 +46,6 @@ const TableActions = ({ row, actions }: TableActionsProps) => {
         </>
     )
 }
+
 export default TableActions
 

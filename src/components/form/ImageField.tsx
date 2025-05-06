@@ -1,242 +1,374 @@
-import React, { useState, useEffect } from 'react'
-import { Controller } from 'react-hook-form'
-import { useDropzone } from 'react-dropzone'
-import {
-  Button,
-  Typography,
-  FormHelperText,
-  IconButton,
-  Box,
-  Card,
-  CardContent,
-  List,
-  ListItem
-} from '@mui/material'
+// React imports
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
+
+// Styles
 import './css/ImageField.css'
 
-type FieldProps = {
-  label: string
+// MUI imports
+import { Box, Typography, Button, IconButton } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
+
+// Third-party imports
+import { useDropzone } from 'react-dropzone'
+import { Controller } from 'react-hook-form'
+import SortableList, { SortableItem, SortableKnob } from 'react-easy-sort'
+import { arrayMoveImmutable } from 'array-move'
+
+// Local imports
+import type FieldProps from '@/components/form/BaseField'
+
+interface IFile {
+  id?: number | string
   name: string
-  value?: Array<File | string>
-  error?: any
-  control: any
-  setValue: any
+  url?: string
+  image?: string
+  order?: number
+  preview?: string | Blob
 }
-
-type FileItem = {
-  id: string
-  type: 'file'
-  file: File
-}
-
-type UrlItem = {
-  id: string
-  type: 'url'
-  url: string
-}
-
-type ImageItem = FileItem | UrlItem
 
 interface ImageFieldProps extends FieldProps {
+  data?: IFile[]
   multiple?: boolean
+  onChange?: (value: any) => void
+  refreshData?: (filters?: Record<string, any>) => Promise<void>
+  deleteItem?: (id: string | number) => Promise<void>
+  onReorder?: (images: any[]) => Promise<void>
 }
 
-// Utilidad para generar un id cualquiera
-const generateId = () => crypto.randomUUID?.() || String(Math.random())
-
-const ImageBox = ({
+const ImageField = ({
+  value,
+  label,
   name,
-  multiple,
-  field,
+  control,
+  error,
   setValue,
-  initialValue
-}: {
-  name: string
-  multiple: boolean
-  field: any
-  setValue: any
-  initialValue?: Array<File | string>
-}) => {
-  const [imageList, setImageList] = useState<ImageItem[]>([])
+  data = [],
+  multiple = false,
+  onChange,
+  refreshData,
+  deleteItem,
+  onReorder
+}: ImageFieldProps) => {
+  const [files, setFiles] = useState<IFile[]>([])
+  const prevValueRef = useRef<any>(null)
+  const prevDataRef = useRef<IFile[]>([])
+  const dragAndDropRef = useRef<HTMLDivElement>(null)
 
-  // Cada vez que cambie el value externo, se vuelven a generar los ítems del array:
+  const processFile = useCallback((file: any, index: number): IFile => {
+    if (typeof file === 'object' && file !== null) {
+      return {
+        id: file.id,
+        name: file.name || `Imagen ${file.id || index + 1}`,
+        url: file.url || (file.image ? `${file.image}` : ''),
+        image: file.image || '',
+        order: file.order || index,
+        preview: file.preview || null
+      }
+    }
+
+    if (typeof file === 'string') {
+      return {
+        name: `Imagen ${index + 1}`,
+        url: file,
+        image: file,
+        order: index
+      }
+    }
+
+    return file as IFile
+  }, [])
+
+  const processFiles = useCallback((inputFiles: any): IFile[] => {
+    if (!inputFiles) return []
+
+    if (Array.isArray(inputFiles)) {
+      return inputFiles.map((file, index) => processFile(file, index))
+    }
+
+    return [processFile(inputFiles, 0)]
+  }, [processFile])
+
   useEffect(() => {
-    if (Array.isArray(initialValue)) {
-      const transformed = initialValue.map(item => {
-        if (typeof item === 'string') {
-          return {
-            id: generateId(),
-            type: 'url',
-            url: item
-          } as UrlItem
-        } else {
-          return {
-            id: generateId(),
-            type: 'file',
-            file: item
-          } as FileItem
+    if (
+      value === prevValueRef.current &&
+      JSON.stringify(data) === JSON.stringify(prevDataRef.current)
+    ) {
+      return
+    }
+
+    prevValueRef.current = value
+    prevDataRef.current = data
+
+    const sourceData = value || (data.length > 0 ? data : [])
+
+    setFiles(processFiles(sourceData))
+  }, [value, data, processFiles])
+
+  useEffect(() => {
+    return () => {
+      files.forEach(file => {
+        if (file.preview && typeof file.preview === 'string' && file.preview.startsWith('blob:')) {
+          URL.revokeObjectURL(file.preview)
         }
       })
-      setImageList(transformed)
     }
-  }, [initialValue])
+  }, [files])
 
-  // Sincroniza los valores hacia el form cada vez que imageList cambie:
-  useEffect(() => {
-    // Convertir todo a array de File (para que cumpla el schema original),
-    // asumiendo que los strings son solo de lectura y no se reenviarán
-    // (o bien puedes enviarlos tal cual, si tu backend lo maneja).
-    const onlyFiles = imageList
-      .filter(item => item.type === 'file')
-      .map(item => (item as FileItem).file)
+  const getImageUrl = useCallback((file: IFile): string => {
+    if (file.preview && typeof file.preview === 'string') {
+      return file.preview
+    }
 
-    setValue(name, onlyFiles)
-  }, [imageList, name, setValue])
+    if (file.url) {
+      return file.url
+    }
 
-  // Manejo de Dropzone
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop: (acceptedFiles: File[]) => {
-      // En caso de múltiples imágenes, se concatena, sino se reemplaza
-      setImageList(prev => {
-        const newItems = acceptedFiles.map(file => ({
-          id: generateId(),
-          type: 'file',
-          file
-        } as FileItem))
-        return multiple ? [...prev, ...newItems] : newItems
-      })
+    if (file.image) {
+      return file.image
+    }
+
+    return ''
+  }, [])
+
+  const handleDelete = useCallback((id?: number | string, index?: number) => {
+    if (id !== undefined && deleteItem) {
+      deleteItem(id)
+        .then(() => {
+          if (refreshData) {
+            refreshData()
+          }
+        })
+        .catch(error => console.error("Error deleting image:", error))
+    } else if (index !== undefined) {
+      const updatedFiles = [...files]
+
+      updatedFiles.splice(index, 1)
+
+      setFiles(updatedFiles)
+      setValue(name, multiple ? updatedFiles : updatedFiles[0] || null)
+    }
+  }, [files, deleteItem, refreshData, setValue, name, multiple])
+
+  const onDropAccepted = useCallback((acceptedFiles: File[]) => {
+    const newFiles = acceptedFiles.map((file, idx) => ({
+      id: `temp-${Date.now()}-${idx}`,
+      name: file.name,
+      preview: URL.createObjectURL(file)
+    }))
+
+    if (multiple) {
+      const updatedFiles = [...files, ...newFiles]
+
+      setFiles(updatedFiles)
+      setValue(name, updatedFiles)
+    } else {
+      setFiles(newFiles)
+      setValue(name, newFiles[0])
+    }
+
+    const fileList = acceptedFiles as unknown as FileList
+
+    if (onChange) {
+      onChange(fileList)
+
+      if (refreshData) {
+        refreshData()
+      }
+    }
+  }, [files, multiple, name, onChange, refreshData, setValue])
+
+  const { getRootProps, getInputProps, open } = useDropzone({
+    accept: {
+      'image/*': ['.jpeg', '.jpg', '.png', '.gif']
     },
-    multiple
+    noClick: true,
+    noKeyboard: true,
+    multiple,
+    onDrop: onDropAccepted
   })
 
-  const handleRemoveFile = (id: string) => {
-    setImageList(prev => prev.filter(item => item.id !== id))
-  }
+  const handleSortEnd = useCallback((oldIndex: number, newIndex: number) => {
+    const sortedFiles = arrayMoveImmutable(files, oldIndex, newIndex)
 
-  const handleRemoveAll = () => {
-    setImageList([])
-  }
+    const filesWithUpdatedOrder = sortedFiles.map((file, index) => ({
+      ...file,
+      order: index
+    }))
 
-  // Vista previa adaptada
-  const renderFilePreview = (item: ImageItem) => {
-    if (item.type === 'file') {
-      const file = item.file
-      if (file.type.startsWith('image')) {
+    setFiles(filesWithUpdatedOrder)
+    setValue(name, multiple ? filesWithUpdatedOrder : filesWithUpdatedOrder[0] || null)
+
+    if (onReorder) {
+      const imagesOrder = filesWithUpdatedOrder.map(file => ({
+        id: file.id,
+        order: file.order
+      }))
+
+      onReorder(imagesOrder)
+    }
+  }, [files, multiple, name, onReorder, setValue])
+
+  const renderSimpleImageList = useMemo(() => (
+    <div className={`images-list ${multiple ? 'multiple' : ''}`}>
+      {files.map((file, index) => {
+        const imageUrl = getImageUrl(file)
+
         return (
-          <Box className={`image-box ${multiple ? 'multiple' : ''}`}>
-            <img alt={file.name} src={URL.createObjectURL(file)} />
-          </Box>
+          <div key={`image-${file.id || index}`} className="images-list-item">
+            <Box position="relative" sx={{ width: '100%' }}>
+              <div className={`image-box ${multiple ? 'multiple' : ''}`}>
+                <img
+                  src={imageUrl}
+                  alt={file.name}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = 'https://placehold.co/150?text=Imagen+no+encontrada'
+                  }}
+                />
+              </div>
+              <IconButton
+                className="icon-button"
+                size="small"
+                onClick={() => handleDelete(file.id, index)}
+              >
+                <DeleteIcon fontSize="small" color="error" />
+              </IconButton>
+            </Box>
+            <div className={`file-details ${multiple ? 'multiple' : ''}`}>
+              <Typography variant="caption" className="file-name">
+                {file.name}
+              </Typography>
+            </div>
+          </div>
         )
-      } else {
-        return <i className='tabler-file-description' />
-      }
-    } else {
-      // item.type === 'url'
+      })}
+    </div>
+  ), [files, multiple, getImageUrl, handleDelete])
+
+  const renderImagesList = useCallback(() => {
+    if (!files.length) {
       return (
-        <Box className={`image-box ${multiple ? 'multiple' : ''}`}>
-          <img alt='img' src={item.url} />
+        <Typography variant="body2" color="textSecondary" align="center">
+          No hay imágenes seleccionadas
+        </Typography>
+      )
+    }
+
+    if (!multiple || files.length <= 1) {
+      return (
+        <Box sx={{ mt: 2 }}>
+          {renderSimpleImageList}
         </Box>
       )
     }
-  }
-
-  // Render de cada ítem en la lista
-  const imageItems = imageList.map(item => {
-    const size =
-      item.type === 'file'
-        ? (item.file.size / 1024).toFixed(2) + ' KB'
-        : '—' // o cualquier meta para URL
-    const name =
-      item.type === 'file'
-        ? item.file.name
-        : item.url.split('/').pop() || 'imagen'
 
     return (
-      <ListItem key={item.id} className='images-list-item pis-4 plb-3'>
-        <div className={`file-details ${multiple ? 'multiple' : ''}`}>
-          <div className='file-preview'>{renderFilePreview(item)}</div>
-          <div>
-            <Typography className='file-name font-medium' color='text.primary'>
-              {name}
-            </Typography>
-            <Typography className='file-size' variant='body2'>
-              {size}
-            </Typography>
-          </div>
-        </div>
-        <IconButton onClick={() => handleRemoveFile(item.id)} className='icon-button'>
-          <i className='tabler-x text-xl' />
-        </IconButton>
-      </ListItem>
-    )
-  })
+      <Box sx={{ mt: 2 }} ref={dragAndDropRef}>
+        <SortableList
+          onSortEnd={handleSortEnd}
+          className={`images-list ${multiple ? 'multiple' : ''}`}
+          draggedItemClassName="dragged"
+          style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
+          allowDrag={files.length > 1}
+        >
+          {files.map((file, index) => {
+            const imageUrl = getImageUrl(file)
+            const uniqueId = `image-${file.id || `idx-${index}-${file.name.replace(/\s+/g, '-')}`}`
 
-  const handleBrowse = () => {
-    (document.querySelector(`input[name=${name}]`) as HTMLInputElement)?.click()
-  }
+            return (
+              <SortableItem key={uniqueId}>
+                <div className="images-list-item">
+                  <Box position="relative" sx={{ width: '100%' }}>
+                    <div className={`image-box ${multiple ? 'multiple' : ''}`}>
+                      <img
+                        src={imageUrl}
+                        alt={file.name}
+                        style={{ userSelect: 'none', pointerEvents: 'none' }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = 'https://placehold.co/150?text=Imagen+no+encontrada'
+                        }}
+                      />
+                    </div>
+                    <IconButton
+                      className="icon-button delete-button"
+                      size="small"
+                      onClick={() => handleDelete(file.id, index)}
+                    >
+                      <DeleteIcon fontSize="small" color="error" />
+                    </IconButton>
+                    <div className="icon-button drag-button">
+                      <SortableKnob>
+                        <IconButton
+                          size="small"
+                          style={{ cursor: 'grab' }}
+                          aria-label="Arrastrar para reordenar"
+                          title="Arrastrar para reordenar"
+                        >
+                          <DragIndicatorIcon fontSize="small" color="inherit" />
+                        </IconButton>
+                      </SortableKnob>
+                    </div>
+                  </Box>
+                  <div className={`file-details ${multiple ? 'multiple' : ''}`}>
+                    <Typography variant="caption" className="file-name">
+                      {file.name}
+                    </Typography>
+                  </div>
+                </div>
+              </SortableItem>
+            )
+          })}
+        </SortableList>
+      </Box>
+    )
+  }, [files, multiple, getImageUrl, renderSimpleImageList, handleDelete, handleSortEnd])
 
   return (
-    <div {...getRootProps({ className: 'dropzone' })}>
-      <input {...getInputProps()} name={name} ref={field.ref} />
-      {(multiple || imageList.length === 0) && (
-        <div className='flex items-center flex-col gap-2 text-center'>
-          <Typography variant='h4'>
-            {imageList.length > 0 ? 'Imágenes Seleccionadas' : 'Arrastra y suelta una imagen aquí'}
+    <Controller
+      name={name}
+      control={control}
+      render={() => (
+        <Box sx={{ width: '100%', mb: 2 }}>
+          <Typography variant="subtitle1" gutterBottom>
+            {label}
           </Typography>
-          <Typography color='text.disabled'>o</Typography>
-          <Button variant='tonal' size='small' onClick={handleBrowse}>
-            Buscar Imagen
-          </Button>
-        </div>
-      )}
-
-      {imageList.length > 0 && (
-        <div className='mt-4'>
-          <Box display='flex' gap={2}>
-            <List className={`images-list ${multiple ? 'multiple' : ''}`}>{imageItems}</List>
-          </Box>
-          <Box display='flex' justifyContent='start' gap={2}>
-            <Button color='error' variant='tonal' onClick={handleRemoveAll}>
-              {multiple ? 'Eliminar Todos' : 'Eliminar'}
+          <Box
+            {...getRootProps()}
+            sx={{
+              p: 2,
+              border: '2px dashed',
+              borderColor: error ? 'error.main' : 'divider',
+              borderRadius: 1,
+              bgcolor: 'background.paper',
+              mb: 2,
+              textAlign: 'center'
+            }}
+          >
+            <input {...getInputProps()} />
+            <Typography variant="body1" gutterBottom>
+              Arrastra y suelta imágenes aquí
+            </Typography>
+            <Button
+              onClick={open}
+              variant="contained"
+              color="primary"
+            >
+              Seleccionar Imágenes
             </Button>
           </Box>
-        </div>
-      )}
-    </div>
-  )
-}
 
-const ImageField = ({ label, name, multiple = false, value = [], error, control, setValue }: ImageFieldProps) => {
-  return (
-    <Card className='mt-4'>
-      <CardContent>
-        {Array.isArray(error)
-          ? error.map((err: any) => (
-              <FormHelperText key={err} error>
-                {err.message}
-              </FormHelperText>
-            ))
-          : error && <FormHelperText error>{error.message}</FormHelperText>
-        }
+          {renderImagesList()}
 
-        <Typography variant='h6'>{label}</Typography>
-
-        <Controller
-          name={name}
-          control={control}
-          render={({ field }) => (
-            <ImageBox
-              name={name}
-              multiple={multiple}
-              field={field}
-              setValue={setValue}
-              initialValue={value}
-            />
+          {error && (
+            <Typography variant="caption" color="error">
+              {error.message}
+            </Typography>
           )}
-        />
-      </CardContent>
-    </Card>
+        </Box>
+      )}
+    />
   )
 }
 
 export default ImageField
+

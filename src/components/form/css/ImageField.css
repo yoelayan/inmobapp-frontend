@@ -11,33 +11,53 @@
 .image-box img {
     width: 100%;
     height: auto;
+    max-height: 100%;
+    object-fit: cover;
 }
 
 .image-box.multiple {
-    width: 150px;
+    width: 100%;
+    height: 120px;
 }
 
 .images-list-item {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: white;
+    border-radius: 4px;
+    overflow: hidden;
 }
+
 .images-list{
     width: 100%;
+    max-height: 500px;
+    overflow-y: auto;
 }
-.images-list.multiple {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
-    width: 100%;
+
+/* Media queries for draggable items */
+@media (max-width: 1200px) {
+    .images-list .images-list-item {
+        width: calc(25% - 8px) !important;
+    }
+}
+
+@media (max-width: 900px) {
+    .images-list .images-list-item {
+        width: calc(33.333% - 8px) !important;
+    }
+}
+
+@media (max-width: 600px) {
+    .images-list .images-list-item {
+        width: calc(50% - 8px) !important;
+    }
 }
 
 .file-details {
     width: 100%;
-}
-
-.file-details.multiple {
-    width: 150px;
 }
 
 .file-name {
@@ -46,12 +66,50 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    font-size: 0.75rem;
+    padding: 4px 0;
 }
 
 .icon-button {
     position: absolute;
+    background: white;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.delete-button {
     top: 0;
     right: 0;
-    background: white;
-    color: black;
+}
+
+.drag-button {
+    top: 0;
+    left: 0;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+.drag-button button {
+  color: black;
+}
+
+.images-list-item:hover .drag-button {
+    opacity: 1;
+}
+
+/* Estilos para cuando se está arrastrando */
+.images-list-item.dragging {
+    opacity: 0.6;
+    border: 2px dashed #ccc;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transform: scale(1.05);
+    z-index: 10;
+}
+
+/* Estilo para el elemento sortable */
+.dragged {
+    opacity: 0.7;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+    z-index: 999;
+    background-color: #f8f8f8;
+    cursor: grabbing;
 }

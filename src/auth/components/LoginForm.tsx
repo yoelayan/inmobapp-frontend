@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react'
 
 
 // MUI Imports
+import { useRouter, useSearchParams } from 'next/navigation'
+
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
 import Checkbox from '@mui/material/Checkbox'
@@ -13,7 +15,7 @@ import Typography from '@mui/material/Typography'
 
 // API Imports
 import ApiClient from '@/api/apiClient'
-import { useRouter, useSearchParams } from 'next/navigation'
+
 
 // Hooks Imports
 import { useNotification } from '@/hooks/useNotification'
@@ -32,7 +34,7 @@ const LoginForm = () => {
     apiClient.setNotificationCallback(notify)
   }, [apiClient, notify])
 
-  const { session, login, logout } = authContext
+  const { login } = authContext
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isPasswordShown, setIsPasswordShown] = useState(false)

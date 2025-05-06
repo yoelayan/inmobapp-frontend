@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from 'react'
 
 import type {
@@ -6,15 +5,13 @@ import type {
   FieldErrors,
   UseFormReset,
   UseFormSetError,
+  UseFormClearErrors,
   Control,
   UseFormWatch,
   UseFormSetValue
-} from 'react-hook-form';
-
-import {
-  useForm,
-  UseFormReturn
 } from 'react-hook-form'
+
+import { useForm } from 'react-hook-form'
 
 import type { AxiosError } from 'axios' // Assuming Axios is used by your ApiClient/Repository
 
@@ -29,7 +26,7 @@ interface IBaseRepository<TData, TId, TPayload> {
 interface UseBaseFormOptions<TData, TFormData extends Record<string, any>, TId, TPayload> {
   id?: TId // Optional ID for update mode
   repository: IBaseRepository<TData, TId, TPayload>
-  defaultValues: Partial<TFormData> // Default values for creation mode
+  defaultValues: Partial<TFormData> | undefined // Default values for creation mode
   transformDataForForm: (backendData: TData) => Partial<TFormData> // Function to map backend data to form data
   preparePayload?: (formData: TFormData) => TPayload // Optional function to transform form data before sending
   onSuccess?: (data: TData, isUpdate: boolean) => void // Optional success callback
@@ -49,7 +46,10 @@ interface UseBaseFormReturn<TFormData extends Record<string, any>> {
   setValue: UseFormSetValue<TFormData>
   watch: UseFormWatch<TFormData>
   isUpdateMode: boolean
+  setError: UseFormSetError<TFormData>
+  clearErrors: UseFormClearErrors<TFormData>
 }
+
 
 export function useBaseForm<
   TData,
@@ -77,7 +77,9 @@ export function useBaseForm<
     reset,
     setError,
     setValue,
+    clearErrors,
     watch,
+
     formState: { errors, isSubmitting }
   } = useForm<TFormData>({
     defaultValues: defaultValues as any // Set initial defaults
@@ -92,10 +94,10 @@ export function useBaseForm<
       try {
         const backendData = await repository.get(id)
         const formData = transformDataForForm(backendData)
-        reset(formData) // Reset form with transformed data
+
+        reset(formData)
+
       } catch (error: any) {
-        console.error('Error fetching initial data:', error)
-        setServerError('Error al cargar los datos iniciales.')
         notify('Error al cargar los datos iniciales.', 'error')
         if (onError) onError(error)
       } finally {
@@ -105,7 +107,7 @@ export function useBaseForm<
       reset(defaultValues) // Ensure defaults are set for creation mode
       setIsLoading(false)
     }
-  }, [id, repository, transformDataForForm, reset, notify, onError])
+  }, [id, repository, transformDataForForm, reset, notify, onError, defaultValues])
 
   useEffect(() => {
     fetchInitialData()
@@ -119,12 +121,13 @@ export function useBaseForm<
       rhfSetError: UseFormSetError<TFormData>
     ) => {
       let generalError = ''
+
       Object.keys(backendErrors).forEach(field => {
         const message = Array.isArray(backendErrors[field])
           ? (backendErrors[field] as string[]).join(', ')
           : (backendErrors[field] as string)
 
-        // Check if the field exists in the form data or is a general error key
+
         if (field in formData) {
           rhfSetError(field as keyof TFormData, {
             type: 'server',
@@ -138,6 +141,7 @@ export function useBaseForm<
           generalError = generalError ? `${generalError}\n${field}: ${message}` : `${field}: ${message}`
         }
       })
+
       if (generalError) {
         setServerError(generalError)
         notify(generalError, 'error') // Notify general errors as well
@@ -154,32 +158,45 @@ export function useBaseForm<
 
       try {
         let response: TData
+
         if (id) {
           // --- Update ---
           response = await repository.update(id, payload)
+
           notify('Registro actualizado con éxito', 'success')
+
+          reset(formData)
+
+
         } else {
           // --- Create ---
           response = await repository.create(payload)
+
           notify('Registro creado con éxito', 'success')
+
           reset(defaultValues) // Reset to defaults after successful creation
         }
+
         if (onSuccess) onSuccess(response, isUpdateMode)
+
         return response
       } catch (error: any) {
         console.error('Error submitting form:', error)
 
         // Check specifically for AxiosError with 400 status and data
         const axiosError = error as AxiosError<Record<string, string | string[]>>
+
         if (axiosError.isAxiosError && axiosError.response?.status === 400 && axiosError.response?.data) {
           handleBackendErrors(axiosError.response.data, formData, setError)
         } else {
+
           const message = error.response?.data?.detail || error.message || 'Ocurrió un error inesperado.'
+
           setServerError(message)
           notify(message, 'error')
         }
+
         if (onError) onError(error)
-        // Rethrow or handle as needed, RHF's isSubmitting will stay true if promise rejects
         throw error // Ensure RHF knows the submission failed
       }
     },
@@ -208,6 +225,8 @@ export function useBaseForm<
     reset,
     setValue,
     watch,
+    clearErrors,
+    setError,
     isUpdateMode
   }
 }

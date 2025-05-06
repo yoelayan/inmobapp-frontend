@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import {
     Box,
     Collapse,
@@ -13,6 +14,7 @@ import {
 } from '@mui/material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+
 import type { Header, TableAction } from '../TableComponent';
 import TableActions from './TableActions';
 

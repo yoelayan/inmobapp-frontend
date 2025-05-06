@@ -2,10 +2,12 @@
 import Pagination from '@mui/material/Pagination'
 import Typography from '@mui/material/Typography'
 import MenuItem from '@mui/material/MenuItem'
+
+import type { useReactTable } from '@tanstack/react-table'
+
 import CustomTextField from '@core/components/mui/TextField'
 
 // Third Party Imports
-import type { useReactTable } from '@tanstack/react-table'
 
 const TablePaginationComponent = ({ table }: { table: ReturnType<typeof useReactTable> }) => {
   return (
