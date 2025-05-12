@@ -16,25 +16,22 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 
 const Properties: React.FC = () => {
 
-  const { 
-    fetchData: getProperties, 
-    refreshData: refreshProperties, 
-    data: properties 
+  const {
+    fetchData: getProperties,
+    refreshData: refreshProperties,
+    data: properties
   } = useProperties()
 
   useEffect(() => {
     getProperties()
   }, [])
-  
+
 return (
     <Grid container spacing={6}>
-      <Grid size={12}>
-        <PropertiesCard />
-      </Grid>
       <Grid>
-        <PropertiesTable 
+        <PropertiesTable
           properties={properties}
-          refreshProperties={refreshProperties} 
+          refreshProperties={refreshProperties}
         />
       </Grid>
     </Grid>

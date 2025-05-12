@@ -129,17 +129,33 @@ export default function useBaseHookApi<T>(
 
     const refreshData = useCallback(
         async (filters?: Record<string, any>) => {
-            if (state.data) {
+            setState(prev => ({ ...prev, loading: true }))
+
+            try {
                 if (defaultFilters) {
                     filters = { ...defaultFilters, ...filters }
                 }
 
                 const result = await repository.refresh(filters)
 
-                setState({ data: result, loading: false, error: null, item: null, errors: null, })
+                setState({
+                    data: result,
+                    loading: false,
+                    error: null,
+                    item: null,
+                    errors: null
+                })
+            } catch (error: any) {
+                setState({
+                    data: state.data,
+                    loading: false,
+                    error: error.message,
+                    item: null,
+                    errors: error.response?.data || null
+                })
             }
         },
-        [state.data, defaultFilters, repository]
+        [repository, defaultFilters, state.data]
     )
 
     const getData = useCallback(() => {

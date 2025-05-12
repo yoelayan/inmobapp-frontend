@@ -1,5 +1,5 @@
 // React imports
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 import { Controller } from 'react-hook-form'
 
@@ -11,15 +11,23 @@ interface TextFieldProps extends FieldProps {
   onChange?: (value: any) => void
 }
 
-const TextField = ({ value, label, name, onChange, control, error, setValue }: TextFieldProps) => {
+const TextField = ({ value, label, name, onChange, control, error, setValue, disabled }: TextFieldProps) => {
     const [inputValue, setInputValue] = useState(value || '')
 
+    // Update internal state when external value changes
+    useEffect(() => {
+        if (value !== undefined) {
+            setInputValue(value)
+        }
+    }, [value])
+
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputValue(e.target.value)
-        setValue(name, e.target.value)
+        const newValue = e.target.value
+        setInputValue(newValue)
+        setValue(name, newValue)
 
         if (onChange) {
-            onChange(e.target.value)
+            onChange(newValue)
         }
     }
 
@@ -27,18 +35,23 @@ const TextField = ({ value, label, name, onChange, control, error, setValue }: T
         <Controller
             name={name}
             control={control}
-            render={({ field }) => (
-            <CustomTextField
-                fullWidth
-                value={inputValue}
-                onChange={handleChange}
-
-                label={label}
-                {...field}
-                error={!!error}
-                helperText={error?.message}
-            />
-            )}
+            render={({ field }) => {
+                // Override the field props we need to customize
+                return (
+                    <CustomTextField
+                        {...field}
+                        inputRef={field.ref}
+                        fullWidth
+                        // Override these props specifically
+                        value={inputValue}
+                        onChange={handleChange}
+                        label={label}
+                        error={!!error}
+                        helperText={error?.message}
+                        disabled={disabled}
+                    />
+                )
+            }}
         />
     )
 }

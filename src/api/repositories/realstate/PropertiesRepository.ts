@@ -1,8 +1,27 @@
 import type { IRealProperty, IPropertyCharacteristic, ICharacteristic } from '@/types/apps/RealtstateTypes'
+import type { PropertyMetricsResponse, PropertyMetricsFilters } from '@/types/apps/RealtstateMetricsTypes'
 import { apiRoutes } from '@api/routes'
 
 import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 import BaseRepository from '../BaseRepository'
+
+// Define the interface for total properties response
+interface TotalPropertiesResponse {
+  results: {
+    total_properties: number;
+    status_counts: {
+      active: number;
+      in_approval: number;
+      paused: number;
+      pre_captured: number;
+      inactive: number;
+      private: number;
+      reserved: number;
+      sold: number;
+      hook: number;
+    }
+  }
+}
 
 class PropertyRepository extends BaseRepository<IRealProperty> {
   private static instance: PropertyRepository
@@ -71,10 +90,19 @@ class PropertyRepository extends BaseRepository<IRealProperty> {
 
     return await this.apiClient.get<ResponseAPI<IPropertyCharacteristic>>(url)
   }
+
   public async allCharacteristics(): Promise<ResponseAPI<ICharacteristic>> {
     const url = apiRoutes.realstate.characteristics
 
     return await this.apiClient.get<ResponseAPI<ICharacteristic>>(url)
+  }
+
+  public async getMetrics(filters?: PropertyMetricsFilters): Promise<PropertyMetricsResponse> {
+    return await this.apiClient.get<PropertyMetricsResponse>(apiRoutes.realstate.metrics, filters)
+  }
+
+  public async getTotalProperties(): Promise<TotalPropertiesResponse> {
+    return await this.apiClient.get<TotalPropertiesResponse>(apiRoutes.realstate.totalProperties)
   }
 }
 

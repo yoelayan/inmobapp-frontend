@@ -48,17 +48,12 @@ import {
   ToggleButtonGroup,
   ToggleButton,
   useMediaQuery,
-  Box,
   Menu
 } from '@mui/material'
 import ViewListIcon from '@mui/icons-material/ViewList'
 import ViewModuleIcon from '@mui/icons-material/ViewModule'
 
 import classnames from 'classnames'
-
-import CustomTextField from '@core/components/mui/TextField'
-
-// Utils imports
 
 
 // Components imports
@@ -69,6 +64,8 @@ import TableCollapsible from './components/TableCollapsible'
 import TableFilters from './TableFilters'
 import TablePaginationComponent from './TablePaginationComponent'
 import DefaultSlot from './slots/DefaultSlot'
+import BooleanSlot from './slots/BooleanSlot'
+import CharacteristicsSlot from './slots/CharacteristicsSlot'
 import DebouncedInput from './components/DebouncedInput'
 
 import ColumnFilterSelect from './filters/ColumnFilterSelect'
@@ -92,6 +89,12 @@ export interface Header {
   filter_name?: string
   filter?: string
   filter_params?: Record<string, any>
+  conditional_slot?: {
+    condition_key: string
+    condition_value: string
+    slot: string
+  }
+  slot_params?: Record<string, any>
 }
 export interface TableAction {
   component?: React.ReactNode
@@ -169,7 +172,7 @@ const extractProperties = (data: any[], headers: Header[], grid_params?: GridPro
       });
     }
   }
-  
+
   // Collect all keys from data objects
   data.forEach(item => {
     const keys = Object.keys(item);
@@ -203,7 +206,9 @@ const extractProperties = (data: any[], headers: Header[], grid_params?: GridPro
 
 const slotComponents: { [key: string]: React.FC<{ value: any }> } = {
   default: DefaultSlot,
-  number: DefaultSlot
+  number: DefaultSlot,
+  boolean: BooleanSlot,
+  characteristics: CharacteristicsSlot,
 }
 
 const FilterComponents: { [key: string]: any } = {
@@ -241,20 +246,27 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const toggleView = () => setIsGridView(!isGridView)
   const columnHelper = createColumnHelper<any>()
 
+  /**
+   * Generates the columns for the table based on the provided headers.
+   *
+   * @returns {Column[]} An array of column objects for the table.
+   */
   const columns = useMemo(
     () =>
       headers.map(header => {
         const SlotComponent = slotComponents[header.slot || 'default']
+
         const filterName = header.filter_name || header.key
 
         return columnHelper.accessor(filterName, {
           header: header.label,
-          cell: SlotComponent ? ({ row }) => <SlotComponent value={row.original[header.key]} /> : header.key,
+          cell: SlotComponent ? ({ row }) => <SlotComponent value={row.original[header.key]} {...header.slot_params} /> : header.key,
+
           enableColumnFilter: header.filterable,
           meta: {
             filter: header.filter,
             filter_params: header.filter_params,
-            label: header.label
+            label: header.label,
           }
         })
       }),
@@ -262,7 +274,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   )
 
   useEffect(() => {
-    if (!response) return
+    if (!response || !response?.results) return
 
     const results = extractProperties(response.results, headers, grid_params)
 
@@ -327,10 +339,9 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const renderFilter = (column: any) => {
     const FilterComponent = FilterComponents[column.columnDef.meta.filter || 'default']
 
-    
+
 return <FilterComponent column={column} table={table} {...column.columnDef.meta.filter_params} />
   }
-  
 
   return (
     <>
@@ -349,31 +360,23 @@ return <FilterComponent column={column} table={table} {...column.columnDef.meta.
             placeholder='Buscar'
             className='max-sm:is-full'
           />
-          
+
           <div className='flex flex-wrap items-center max-sm:flex-col gap-4 max-sm:is-full is-auto'>
-            <ToggleButtonGroup 
-              value={isGridView} 
-              exclusive 
-              onChange={toggleView} 
+            <ToggleButtonGroup
+              value={isGridView}
+              exclusive
+              onChange={toggleView}
               aria-label='view'
               className='max-sm:is-full is-auto'
             >
-              <ToggleButton 
-                className='max-sm:is-full is-auto' 
-                value={false} 
-                aria-label='list'
-              >
+              <ToggleButton className='max-sm:is-full is-auto' value={false} aria-label='list'>
                 <ViewListIcon />
               </ToggleButton>
-              <ToggleButton 
-                className='max-sm:is-full is-auto' 
-                value={true} 
-                aria-label='grid'
-              >
+              <ToggleButton className='max-sm:is-full is-auto' value={true} aria-label='grid'>
                 <ViewModuleIcon />
               </ToggleButton>
             </ToggleButtonGroup>
-            
+
             <Button
               variant='contained'
               className='max-sm:is-full is-auto'
@@ -395,33 +398,28 @@ return <FilterComponent column={column} table={table} {...column.columnDef.meta.
               <i className='tabler-search text-xl' />
             </Button>
             <Button
-              id="columns-visibility-button"
+              id='columns-visibility-button'
               className='max-sm:is-full is-auto'
               variant='contained'
               aria-controls={open ? 'columns-visibility-button' : undefined}
-              aria-haspopup="true"
+              aria-haspopup='true'
               aria-expanded={open ? 'true' : undefined}
               onClick={handleClick}
             >
               <i className='tabler-columns text-xl' />
             </Button>
             <Menu
-              id="columns-visibility-menu"
+              id='columns-visibility-menu'
               anchorEl={anchorEl}
               open={open}
               onClose={handleClose}
               MenuListProps={{
                 'aria-labelledby': 'columns-visibility-menu',
-                role: 'listbox',
+                role: 'listbox'
               }}
-
             >
               {table.getAllLeafColumns().map(column => (
-                <MenuItem 
-                  key={column.id}
-                  value={column.id}
-                  onClick={() => column.toggleVisibility()}
-                >
+                <MenuItem key={column.id} value={column.id} onClick={() => column.toggleVisibility()}>
                   <input type='checkbox' checked={column.getIsVisible()} />
                   {(column.columnDef.meta as { label: string }).label}
                 </MenuItem>
@@ -448,7 +446,7 @@ return <FilterComponent column={column} table={table} {...column.columnDef.meta.
           </div>
         ) : (
           <div className='overflow-x-auto'>
-            <table className={tableStyles.table} >
+            <table className={tableStyles.table}>
               <thead>
                 {table.getHeaderGroups().map(headerGroup => (
                   <tr key={headerGroup.id}>
@@ -491,18 +489,15 @@ return <FilterComponent column={column} table={table} {...column.columnDef.meta.
                   {table.getRowModel().rows.map(row => (
                     <tr key={row.id}>
                       {row.getVisibleCells().map(cell => (
-                        <td
-                          key={cell.id}
-                          data-label={
-                            cell.column.columnDef.header
-                          }
-                        >
+                        <td key={cell.id} data-label={cell.column.columnDef.header}>
                           {flexRender(cell.column.columnDef.cell, cell.getContext())}
                         </td>
                       ))}
-                      {actions && <td colSpan={table.getVisibleFlatColumns().length}>{
-                        <TableActions row={row.original} actions={actions} />
-                      }</td>}
+                      {actions && (
+                        <td colSpan={table.getVisibleFlatColumns().length}>
+                          {<TableActions row={row.original} actions={actions} />}
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

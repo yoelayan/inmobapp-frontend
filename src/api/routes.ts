@@ -1,6 +1,8 @@
 export const apiRoutes = {
   realstate: {
+    metrics: 'properties/metrics/',
     properties: 'properties/',
+    totalProperties: 'properties/total/',
     allImages: 'properties/:id/get-images/',
     uploadImages: 'properties/:id/upload-images/',
     deleteImage: 'properties/:id/delete-image/',
@@ -25,7 +27,12 @@ export const apiRoutes = {
     clients: 'clients/',
     clientStatus: 'client-status/',
     visits: 'visits/',
-    searches: 'searches/'
+    searches: 'searches/',
+    searchesMatches: 'searches/:id/properties_matched/',
+    searchesAddCharacteristic: 'searches/:id/add-characteristic/',
+    searchesAddObservation: 'searches/:id/add-observation/',
+    searchesDeleteObservation: 'searches/:id/delete-observation/',
+    searchesDeleteCharacteristic: 'searches/:id/delete-characteristic/'
   }
 }
 

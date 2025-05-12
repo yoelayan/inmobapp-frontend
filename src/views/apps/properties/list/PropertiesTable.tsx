@@ -6,6 +6,7 @@ import React, { useState, useEffect } from 'react'
 // Mui Imports
 import { useRouter } from 'next/navigation'
 
+import Box from '@mui/material/Box'
 import SquareFootIcon from '@mui/icons-material/SquareFoot'
 import DoorFrontIcon from '@mui/icons-material/DoorFront'
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
@@ -23,13 +24,19 @@ import type { Header, TableAction } from '@components/table/TableComponent'
 import type { GridProps } from '@components/table/components/TableGrid'
 import GenericTable from '@/views/shared/list/GenericTable'
 
+// Properties Card
+import PropertiesCard from './PropertiesCard'
+
 interface TableProps {
   properties: any
   refreshProperties: (filters?: Record<string, any>) => Promise<void>
+  title?: string
+  subtitle?: string
 }
 
-const Table = ({ properties, refreshProperties }: TableProps) => {
+const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) => {
   const [defaultFiltersCities, setDefaultFiltersCities] = useState<any>({})
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
 
   const { fetchData: getStates, refreshData: refreshStates, data: states } = useStates()
 
@@ -50,6 +57,11 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
     if (refreshCities) {
       refreshCities({ state: StateSelected.value })
     }
+  }
+
+  const handleStatusChange = (status: string) => {
+    setStatusFilter(status)
+    refreshProperties({ status__code: status })
   }
 
   const searchOnTag = (tag: any, row: any) => {
@@ -125,7 +137,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
       filterable: true,
       slot: 'default',
       filter: 'select',
-      filter_name: 'assigned_to',
+      filter_name: 'assigned_to__name',
       filter_params: {
         response: users,
         dataMap: {
@@ -147,7 +159,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
     },
     {
       key: 'state__name',
-      filter_name: 'state',
+      filter_name: 'state__name',
       label: 'Estado',
       filterable: true,
       filter: 'select',
@@ -165,7 +177,7 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
 
     {
       key: 'city__name',
-      filter_name: 'city',
+      filter_name: 'city__name',
       label: 'Ciudad',
       filterable: true,
       filter: 'select',
@@ -185,16 +197,29 @@ const Table = ({ properties, refreshProperties }: TableProps) => {
   ]
 
   return (
-    <GenericTable
-      title='Propiedades'
-      subtitle='Aquí puedes ver todas las propiedades disponibles'
-      hrefAddButton='/propiedades/agregar'
-      headers={headers}
-      response={properties}
-      refreshData={refreshProperties}
-      grid_params={grid_params}
-      actions={actions}
-    />
+    <>
+      <Box sx={{ mb: 6 }}>
+        <PropertiesCard onStatusChange={handleStatusChange} />
+      </Box>
+
+      <GenericTable
+        title={title || 'Propiedades'}
+        subtitle={subtitle || 'Aquí puedes ver todas las propiedades disponibles'}
+        hrefAddButton='/propiedades/agregar'
+        headers={headers}
+        response={properties}
+        refreshData={(filters?: Record<string, any>) => {
+          // Preserve status filter when other filters change
+          const combinedFilters = statusFilter
+            ? { ...filters, status__code: statusFilter }
+            : filters
+
+          return refreshProperties(combinedFilters)
+        }}
+        grid_params={grid_params}
+        actions={actions}
+      />
+    </>
   )
 }
 

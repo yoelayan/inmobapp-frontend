@@ -1,5 +1,5 @@
 'use client'
-import type { AxiosInstance, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import axios from 'axios'
 
 class ApiClient {
@@ -114,7 +114,7 @@ class ApiClient {
       } else if (error.code === 'token_not_valid') {
         this.notificationCallback('Token not valid: Please login again')
         this.removeToken()
-        
+
 return
       }
 
@@ -131,9 +131,39 @@ return
     return response.data
   }
 
-  public async post<T>(url: string, data: Record<string, any>): Promise<T> {
-    const postData = this.buildPostParams(data)
-    const response: AxiosResponse<T> = await this.axiosInstance.post(url, postData)
+  public async post<T>(url: string, data: Record<string, any>, files?: Record<string, File>): Promise<T> {
+    const formData = new FormData()
+
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+
+    let requestData: any
+
+    // If there are files, use FormData and set proper content type
+    if (files) {
+      config.headers['Content-Type'] = 'multipart/form-data'
+      const formData = new FormData()
+
+      // Add data fields to FormData
+      for (const [key, value] of Object.entries(data)) {
+        formData.append(key, JSON.stringify(value))
+      }
+
+      // Add files to FormData
+      for (const [key, file] of Object.entries(files)) {
+        formData.append(key, file)
+      }
+
+      requestData = formData
+    } else {
+      // Use regular JSON for requests without files
+      requestData = data
+    }
+
+    const response: AxiosResponse<T> = await this.axiosInstance.post(url, requestData, config)
 
     return response.data
   }
@@ -159,7 +189,6 @@ return
       formData.append('images', files[i])
     }
 
-
     const response: AxiosResponse<T> = await this.axiosInstance.post(url, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -180,7 +209,7 @@ return
     return response.data
   }
 
-  public async customRequest<T>(config: any): Promise<T> {
+  public async customRequest<T>(config: AxiosRequestConfig): Promise<T> {
     if (config.method === 'get' && config.params) {
       config.url += this.buildGetParams(config.params)
     } else if (config.data) {

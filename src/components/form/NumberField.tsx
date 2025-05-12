@@ -13,22 +13,23 @@ interface NumberFieldProps extends FieldProps {
 }
 
 const NumberField = ({ name, control, label, error, value, setValue, integer, disabled }: NumberFieldProps) => {
-  const [inputValue, setInputValue] = useState(0)
+  const [inputValue, setInputValue] = useState(value !== undefined && value !== null ? value : 0)
 
   useEffect(() => {
-    setInputValue(value || 0)
-    setValue(name, value || 0)
+    if (value !== undefined && value !== null) {
+      setInputValue(value)
+    }
   }, [value])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    value = Number(e.target.value)
+    let newValue = Number(e.target.value)
 
     if (integer) {
-      value = Math.floor(value)
+      newValue = Math.floor(newValue)
     }
 
-    setInputValue(value)
-    setValue(name, value)
+    setInputValue(newValue)
+    setValue(name, newValue)
   }
 
   return (

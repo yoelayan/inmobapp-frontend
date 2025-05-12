@@ -1,6 +1,13 @@
+// React Imports
+import { useState } from 'react'
+
+// Api Imports
 import PropertiesRepository from '@/api/repositories/realstate/PropertiesRepository'
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
+
+// Type Imports
 import type { IPropertyCharacteristic } from '@/types/apps/RealtstateTypes'
+import type { PropertyMetricsFilters } from '@/types/apps/RealtstateMetricsTypes'
 
 export default function useProperties(defaultFilters?: Record<string, any>) {
   /**
@@ -23,6 +30,14 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     errors,
     item,
   } = useBaseHookApi(PropertiesRepository, defaultFilters)
+
+  const [metricsData, setMetricsData] = useState<any>(null)
+  const [metricsLoading, setMetricsLoading] = useState<boolean>(false)
+  const [metricsError, setMetricsError] = useState<any>(null)
+
+  const [totalProperties, setTotalProperties] = useState<any>(null)
+  const [totalPropertiesLoading, setTotalPropertiesLoading] = useState<boolean>(false)
+  const [totalPropertiesError, setTotalPropertiesError] = useState<any>(null)
 
   const getAllImages = async (id: string | number) => {
     return await PropertiesRepository.getAllImages(id.toString())
@@ -67,6 +82,44 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     return await PropertiesRepository.allCharacteristics()
   }
 
+  const getMetrics = async (filters?: PropertyMetricsFilters) => {
+    setMetricsLoading(true)
+    setMetricsError(null)
+
+    try {
+      const response = await PropertiesRepository.getMetrics(filters)
+
+      setMetricsData(response)
+
+      return response
+    } catch (err) {
+      setMetricsError(err)
+
+      throw err
+    } finally {
+      setMetricsLoading(false)
+    }
+  }
+
+  const getTotalProperties = async () => {
+    setTotalPropertiesLoading(true)
+    setTotalPropertiesError(null)
+
+    try {
+      const response = await PropertiesRepository.getTotalProperties()
+
+      setTotalProperties(response)
+
+      return response
+    } catch (err) {
+      setTotalPropertiesError(err)
+
+      throw err
+    } finally {
+      setTotalPropertiesLoading(false)
+    }
+  }
+
   return {
     uploadImages,
     getAllImages,
@@ -83,10 +136,18 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     allCharacteristics,
     createData,
     updateData,
+    getMetrics,
+    getTotalProperties,
     data,
     loading,
     error,
     errors,
     item,
+    metricsData,
+    metricsLoading,
+    metricsError,
+    totalProperties,
+    totalPropertiesLoading,
+    totalPropertiesError
   }
 }

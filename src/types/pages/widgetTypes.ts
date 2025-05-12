@@ -83,8 +83,7 @@ export type CardStatsWithAreaChartProps = {
   stats: string
   title: string
   chartColor?: ThemeColor
-
-  //chartSeries: ApexOptions['series']
+  chartSeries: any
   avatarIcon: string
   avatarSize?: number
   avatarColor?: ThemeColor
