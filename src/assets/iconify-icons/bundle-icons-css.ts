@@ -10,249 +10,93 @@
  * This example uses Iconify Tools to import and clean up icons.
  * For Iconify Tools documentation visit https://docs.iconify.design/tools/tools2/
  */
-import { promises as fs } from 'node:fs'
-import { dirname, join } from 'node:path'
+import fs from 'fs-extra'
+import { promises as fsPromises } from 'fs'
+import path from 'path'
+import { downloadIconSet, runSVGO, parseColors, IconifyJSON } from '@iconify/tools'
+import { getIconsCSS, stringToIcon } from '@iconify/utils'
+import { consola } from 'consola'
 
-// Installation: npm install --save-dev @iconify/tools @iconify/utils @iconify/json @iconify/iconify
-import { cleanupSVG, importDirectory, isEmptyColor, parseColors, runSVGO } from '@iconify/tools'
-import type { IconifyJSON } from '@iconify/types'
-import { getIcons, getIconsCSS, stringToIcon } from '@iconify/utils'
+const outputDirectory = path.resolve(process.cwd(), 'src/assets/iconify-icons')
 
-/**
- * Script configuration
- */
-interface BundleScriptCustomSVGConfig {
-  // eslint-disable-next-line lines-around-comment
-  // Path to SVG files
-  dir: string
+// Icon sets to bundle
+const iconSets = [
+  'mdi',
+  'tabler',
+  'material-symbols',
+  'fa-regular',
+  'fa-solid',
+  'fa-brands',
+  'lucide'
+]
 
-  // True if icons should be treated as monotone: colors replaced with currentColor
-  monotone: boolean
-
-  // Icon set prefix
-  prefix: string
-}
-
-interface BundleScriptCustomJSONConfig {
-  // eslint-disable-next-line lines-around-comment
-  // Path to JSON file
-  filename: string
-
-  // List of icons to import. If missing, all icons will be imported
-  icons?: string[]
-}
-
-interface BundleScriptConfig {
-  // eslint-disable-next-line lines-around-comment
-  // Custom SVG to import and bundle
-  svg?: BundleScriptCustomSVGConfig[]
-
-  // Icons to bundled from @iconify/json packages
-  icons?: string[]
-
-  // List of JSON files to bundled
-  // Entry can be a string, pointing to filename or a BundleScriptCustomJSONConfig object (see type above)
-  // If entry is a string or object without 'icons' property, an entire JSON file will be bundled
-  json?: (string | BundleScriptCustomJSONConfig)[]
-}
-
-const sources: BundleScriptConfig = {
-  json: [
-    // Iconify JSON file (@iconify/json is a package name, /json/ is directory where files are, then filename)
-    require.resolve('@iconify/json/json/tabler.json')
-
-    // Custom file with only few icons
-    /* {
-      filename: require.resolve('@iconify/json/json/line-md.json'),
-      icons: ['home-twotone-alt', 'github', 'document-list', 'document-code', 'image-twotone']
-    } */
-
-    // Custom JSON file
-    // 'json/gg.json'
-  ],
-
-  /* icons: [
-    'bx-basket',
-    'bi-airplane-engines',
-    'ri-anchor-line',
-    'uit-adobe-alt',
-
-    // 'fa6-regular-comment',
-    'twemoji-auto-rickshaw'
-  ], */
-
-  svg: [
-    /* {
-      dir: 'src/assets/iconify-icons/svg',
-      monotone: false,
-      prefix: 'custom'
-    } */
-    /* {
-      dir: 'src/assets/iconify-icons/emojis',
-      monotone: false,
-      prefix: 'emoji'
-    } */
-  ]
-}
-
-// File to save bundle to
-const target = join(__dirname, 'generated-icons.css')
-
-/**
- * Do stuff!
- */
-
-;(async function () {
-  // Create directory for output if missing
-  const dir = dirname(target)
-
+async function generateCSSFile() {
   try {
-    await fs.mkdir(dir, {
-      recursive: true
-    })
-  } catch (err) {
-    //
-  }
+    // Create directory if it doesn't exist
+    await fs.ensureDir(outputDirectory)
 
-  const allIcons: IconifyJSON[] = []
+    // Bundle all icon sets into a single CSS file
+    let cssContent = '/* Generated Iconify Icons CSS */\n\n'
 
-  /**
-   * Convert sources.icons to sources.json
-   */
-  if (sources.icons) {
-    const sourcesJSON = sources.json ? sources.json : (sources.json = [])
+    for (const set of iconSets) {
+      try {
+        // Download icon set
+        const collection = await downloadIconSet(set)
 
-    // Sort icons by prefix
-    const organizedList = organizeIconsList(sources.icons)
+        // Optimize SVGs
+        await runSVGO(collection)
 
-    for (const prefix in organizedList) {
-      const filename = require.resolve(`@iconify/json/json/${prefix}.json`)
+        // Parse colors
+        await parseColors(collection, {
+          defaultColor: 'currentColor',
+          callback: (attr, colorStr, color) => {
+            return colorStr === 'currentColor' ? colorStr : 'currentColor'
+          }
+        })
 
-      sourcesJSON.push({
-        filename,
-        icons: organizedList[prefix]
-      })
-    }
-  }
+        // Generate CSS for all icons in the set
+        const prefix = collection.prefix
+        const icons = Object.keys(collection.icons)
 
-  /**
-   * Bundle JSON files and collect icons
-   */
-  if (sources.json) {
-    for (let i = 0; i < sources.json.length; i++) {
-      const item = sources.json[i]
+        if (icons.length > 0) {
+          consola.info(`Bundling ${icons.length} icons from ${prefix}`)
 
-      // Load icon set
-      const filename = typeof item === 'string' ? item : item.filename
-      const content = JSON.parse(await fs.readFile(filename, 'utf8')) as IconifyJSON
+          for (const name of icons) {
+            const iconName = `${prefix}:${name}`
+            const parsed = stringToIcon(iconName)
 
-      // Filter icons
-      if (typeof item !== 'string' && item.icons?.length) {
-        const filteredContent = getIcons(content, item.icons)
+            if (parsed) {
+              const css = getIconsCSS([iconName], {
+                iconifyJSONData: collection as IconifyJSON
+              })
 
-        if (!filteredContent) throw new Error(`Cannot find required icons in ${filename}`)
-
-        // Collect filtered icons
-        allIcons.push(filteredContent)
-      } else {
-        // Collect all icons from the JSON file
-        allIcons.push(content)
+              cssContent += css + '\n'
+            }
+          }
+        }
+      } catch (err) {
+        consola.error(`Error processing icon set ${set}:`, err)
       }
     }
+
+    // Write to CSS file
+    const cssFilePath = path.join(outputDirectory, 'iconify-icons.css')
+    await fsPromises.writeFile(cssFilePath, cssContent, 'utf8')
+
+    // Create a dummy TS file to satisfy imports
+    const tsContent = `// This file is auto-generated
+// It exists to allow importing the iconify CSS
+import './iconify-icons.css'
+export default {}
+`
+    await fsPromises.writeFile(path.join(outputDirectory, 'bundle-icons-css.ts'), tsContent, 'utf8')
+
+    consola.success('Iconify icons bundled successfully!')
+  } catch (error) {
+    consola.error('Error generating iconify CSS:', error)
+    process.exit(1)
   }
-
-  /**
-   * Bundle custom SVG icons and collect icons
-   */
-  if (sources.svg) {
-    for (let i = 0; i < sources.svg.length; i++) {
-      const source = sources.svg[i]
-
-      // Import icons
-      const iconSet = await importDirectory(source.dir, {
-        prefix: source.prefix
-      })
-
-      // Validate, clean up, fix palette, etc.
-      await iconSet.forEach(async (name, type) => {
-        if (type !== 'icon') return
-
-        // Get SVG instance for parsing
-        const svg = iconSet.toSVG(name)
-
-        if (!svg) {
-          // Invalid icon
-          iconSet.remove(name)
-
-          return
-        }
-
-        // Clean up and optimise icons
-        try {
-          // Clean up icon code
-          await cleanupSVG(svg)
-
-          if (source.monotone) {
-            // Replace color with currentColor, add if missing
-            // If icon is not monotone, remove this code
-            await parseColors(svg, {
-              defaultColor: 'currentColor',
-              callback: (attr, colorStr, color) => {
-                return !color || isEmptyColor(color) ? colorStr : 'currentColor'
-              }
-            })
-          }
-
-          // Optimise
-          await runSVGO(svg)
-        } catch (err) {
-          // Invalid icon
-          console.error(`Error parsing ${name} from ${source.dir}:`, err)
-          iconSet.remove(name)
-
-          return
-        }
-
-        // Update icon from SVG instance
-        iconSet.fromSVG(name, svg)
-      })
-
-      // Collect the SVG icon
-      allIcons.push(iconSet.export())
-    }
-  }
-
-  // Generate CSS from collected icons
-  const cssContent = allIcons
-    .map(iconSet => getIconsCSS(iconSet, Object.keys(iconSet.icons), { iconSelector: '.{prefix}-{name}' }))
-    .join('\n')
-
-  // Save the CSS to a file
-  await fs.writeFile(target, cssContent, 'utf8')
-
-  console.log(`Saved CSS to ${target}!`)
-})().catch(err => {
-  console.error(err)
-})
-
-/**
- * Sort icon names by prefix
- */
-function organizeIconsList(icons: string[]): Record<string, string[]> {
-  const sorted: Record<string, string[]> = Object.create(null)
-
-  icons.forEach(icon => {
-    const item = stringToIcon(icon)
-
-    if (!item) return
-
-    const prefix = item.prefix
-    const prefixList = sorted[prefix] ? sorted[prefix] : (sorted[prefix] = [])
-
-    const name = item.name
-
-    if (!prefixList.includes(name)) prefixList.push(name)
-  })
-
-  return sorted
 }
+
+// Run the function
+generateCSSFile()

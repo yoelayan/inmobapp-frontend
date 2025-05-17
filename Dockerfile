@@ -11,11 +11,11 @@ COPY package.json package-lock.json* pnpm-lock.yaml* .npmrc ./
 RUN \
   if [ -f pnpm-lock.yaml ]; then \
     npm install -g pnpm && \
-    pnpm i --no-frozen-lockfile; \
+    SKIP_BUILD_ICONS=true pnpm i --no-frozen-lockfile; \
   elif [ -f package-lock.json ]; then \
-    npm ci; \
+    SKIP_BUILD_ICONS=true npm ci; \
   else \
-    npm install; \
+    SKIP_BUILD_ICONS=true npm install; \
   fi
 
 # Rebuild the source code only when needed
@@ -26,12 +26,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Make sure the iconify icons are bundled
+# Ensure the iconify directory exists and create placeholder files
 RUN mkdir -p src/assets/iconify-icons
-RUN touch src/assets/iconify-icons/bundle-icons-css.ts
-RUN echo "// Placeholder file\nexport default {};" > src/assets/iconify-icons/bundle-icons-css.ts
+RUN echo "// This file is auto-generated\nimport './iconify-icons.css';\nexport default {};" > src/assets/iconify-icons/bundle-icons-css.ts
+RUN echo "/* Generated Iconify Icons CSS */\n.iconify { display: inline-block; width: 1em; height: 1em; }" > src/assets/iconify-icons/iconify-icons.css
 
-# Build the application
+# Build the application with the environment variable to skip build:icons
+ENV SKIP_BUILD_ICONS=true
 RUN npm run build
 
 # Production image, copy all the files and run next
