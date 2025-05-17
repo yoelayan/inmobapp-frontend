@@ -26,6 +26,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Make sure the iconify icons are bundled
+RUN mkdir -p src/assets/iconify-icons
+RUN touch src/assets/iconify-icons/bundle-icons-css.ts
+RUN echo "// Placeholder file\nexport default {};" > src/assets/iconify-icons/bundle-icons-css.ts
+
 # Build the application
 RUN npm run build
 
@@ -39,17 +44,8 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy TypeScript and config files
-COPY --from=builder /app/tsconfig.json ./
-COPY --from=builder /app/package.json ./
-
-# Copy node_modules for TypeScript support at runtime
-COPY --from=builder /app/node_modules ./node_modules
-
-COPY --from=builder /app/public ./public
-
-# Copy src directory for runtime assets
-COPY --from=builder --chown=nextjs:nodejs /app/src ./src
+# Copy full app directory including src and node_modules
+COPY --from=builder --chown=nextjs:nodejs /app .
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
