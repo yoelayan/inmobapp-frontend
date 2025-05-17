@@ -10,9 +10,10 @@
  * This example uses Iconify Tools to import and clean up icons.
  * For Iconify Tools documentation visit https://docs.iconify.design/tools/tools2/
  */
+import path from 'path'
 import fs from 'fs-extra'
 import { promises as fsPromises } from 'fs'
-import path from 'path'
+
 import { downloadIconSet, runSVGO, parseColors, IconifyJSON } from '@iconify/tools'
 import { getIconsCSS, stringToIcon } from '@iconify/utils'
 import { consola } from 'consola'
@@ -49,7 +50,7 @@ async function generateCSSFile() {
         // Parse colors
         await parseColors(collection, {
           defaultColor: 'currentColor',
-          callback: (attr, colorStr, color) => {
+          callback: (attr, colorStr, _color) => {
             return colorStr === 'currentColor' ? colorStr : 'currentColor'
           }
         })
@@ -80,15 +81,17 @@ async function generateCSSFile() {
     }
 
     // Write to CSS file
-    const cssFilePath = path.join(outputDirectory, 'iconify-icons.css')
+    const cssFilePath = path.join(outputDirectory, 'generated-icons.css')
+
     await fsPromises.writeFile(cssFilePath, cssContent, 'utf8')
 
     // Create a dummy TS file to satisfy imports
     const tsContent = `// This file is auto-generated
 // It exists to allow importing the iconify CSS
-import './iconify-icons.css'
+import './generated-icons.css'
 export default {}
 `
+
     await fsPromises.writeFile(path.join(outputDirectory, 'bundle-icons-css.ts'), tsContent, 'utf8')
 
     consola.success('Iconify icons bundled successfully!')

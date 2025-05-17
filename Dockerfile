@@ -28,8 +28,8 @@ COPY . .
 
 # Ensure the iconify directory exists and create placeholder files
 RUN mkdir -p src/assets/iconify-icons
-RUN echo "// This file is auto-generated\nimport './iconify-icons.css';\nexport default {};" > src/assets/iconify-icons/bundle-icons-css.ts
-RUN echo "/* Generated Iconify Icons CSS */\n.iconify { display: inline-block; width: 1em; height: 1em; }" > src/assets/iconify-icons/iconify-icons.css
+RUN echo "// This file is auto-generated\nimport './generated-icons.css';\nexport default {};" > src/assets/iconify-icons/bundle-icons-css.ts
+RUN echo "/* Generated Iconify Icons CSS */\n.iconify { display: inline-block; width: 1em; height: 1em; }" > src/assets/iconify-icons/generated-icons.css
 
 # Build the application with the environment variable to skip build:icons
 ENV SKIP_BUILD_ICONS=true
