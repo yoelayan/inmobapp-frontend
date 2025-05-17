@@ -22,17 +22,8 @@ RUN \
 FROM base AS builder
 WORKDIR /app
 
-# Copy necessary files for icon generation
+# Copy node modules and all source files
 COPY --from=deps /app/node_modules ./node_modules
-COPY src/assets/iconify-icons ./src/assets/iconify-icons
-COPY tsconfig.json .
-COPY src/remove-translation-scripts ./src/remove-translation-scripts
-COPY package.json .
-
-# Run the build:icons script (but skip full postinstall to avoid redundancy)
-RUN npm run build:icons
-
-# Copy all other project files
 COPY . .
 
 # Build the application

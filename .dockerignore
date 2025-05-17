@@ -1,0 +1,12 @@
+Dockerfile
+.dockerignore
+.git
+.github
+node_modules
+.next
+.vscode
+README.md
+.env*
+!.env.production
+.gitignore
+*.log
