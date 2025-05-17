@@ -18,6 +18,9 @@ const nextConfig = {
     suppressHydrationWarning: true,
   },
 
+  // Enable static optimization and standalone output
+  output: 'standalone',
+
   redirects: async () => {
     return [
       {
