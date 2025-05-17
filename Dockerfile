@@ -39,6 +39,13 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy TypeScript and config files
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/package.json ./
+
+# Copy node_modules for TypeScript support at runtime
+COPY --from=builder /app/node_modules ./node_modules
+
 COPY --from=builder /app/public ./public
 
 # Copy src directory for runtime assets
