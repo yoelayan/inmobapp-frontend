@@ -26,6 +26,7 @@ import AddIcon from '@mui/icons-material/Add'
 // Form Imports
 import { useForm } from 'react-hook-form'
 
+
 import TextField from '@/components/form/TextField'
 import NumberField from '@/components/form/NumberField'
 import SwitchField from '@/components/form/SwitchField'
@@ -206,7 +207,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
             name='charValue'
             label={label}
             control={control}
-            setValue={(name, newValue) => {
+            setValue={(name: string, newValue: boolean) => {
               setFormValue(name, newValue)
               setValue(newValue)
               console.log('SwitchField value changed:', newValue)
@@ -220,7 +221,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
             name='charValue'
             label={label}
             control={control}
-            setValue={(name, newValue) => {
+            setValue={(name: string, newValue: number) => {
               setFormValue(name, newValue)
               setValue(newValue)
               console.log('NumberField (integer) value changed:', newValue)
@@ -236,7 +237,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
             name='charValue'
             label={label}
             control={control}
-            setValue={(name, newValue) => {
+            setValue={(name: string, newValue: number) => {
               setFormValue(name, newValue)
               setValue(newValue)
               console.log('NumberField (decimal) value changed:', newValue)
@@ -252,7 +253,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
             name='charValue'
             label={label}
             control={control}
-            setValue={(name, newValue) => {
+            setValue={(name: string, newValue: string) => {
               setFormValue(name, newValue)
               setValue(newValue)
               console.log('TextField value changed:', newValue)
