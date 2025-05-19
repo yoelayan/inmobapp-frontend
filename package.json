@@ -8,7 +8,7 @@
     "build": "next build",
     "build:no-lint": "next build --no-lint",
     "build:icons": "tsx src/assets/iconify-icons/bundle-icons-css.ts",
-    "postinstall": "mkdir -p src/assets/iconify-icons && npm run build:icons || true",
+    "postinstall": "npm run build:icons",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
