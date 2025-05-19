@@ -7,18 +7,12 @@ import React, { Suspense } from 'react'
 import { SearchForm } from '@/views/apps/searches/form/SearchForm'
 
 // Types
-type SearchPageProps = {
-  params: {
-    id: string
-  }
-  searchParams?: { [key: string]: string | string[] | undefined }
-}
 
-function SearchPageContent({ params }: SearchPageProps) {
+function SearchPageContent({ params }: any) {
   return <SearchForm searchId={params.id} />
 }
 
-const SearchPage = ({ params }: SearchPageProps) => {
+const SearchPage = ({ params }: any) => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
       <SearchPageContent params={params} />
