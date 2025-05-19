@@ -11,7 +11,6 @@ type SearchPayload = ISearch
 
 // Default values for creating a new search
 const defaultSearchValues: Partial<SearchFormData> = {
-  name: '',
   description: '',
   budget: 0,
   client_id: undefined
