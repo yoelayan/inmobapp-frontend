@@ -1,16 +1,17 @@
 [build]
 builder = "railpack"
-buildCommand = "npm run build"
-startCommand = "npm run start"
-nodeVersion = "20"
 
-[deploy]
-numReplicas = 1
-healthcheckPath = "/"
-restartPolicyType = "on-failure"
+[phases.setup]
+cmds = ["npm install -g corepack", "corepack enable"]
+
+[phases.install]
+cmds = ["corepack prepare npm@10.8.2 --activate", "npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm run start"
 
 [env]
 NODE_ENV = "development"
-
-[dev]
-command = "npm run dev"
