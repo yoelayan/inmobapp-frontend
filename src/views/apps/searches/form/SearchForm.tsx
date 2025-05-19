@@ -31,6 +31,9 @@ import useClients from '@/hooks/api/crm/useClients'
 // Type Imports
 import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 import type { ISearch, IClient } from '@/types/apps/ClientesTypes'
+import type { IStatus } from '@/types/apps/CatalogTypes'
+import type { IFranchise } from '@/types/apps/FranquiciaTypes'
+import type { IUser } from '@/types/apps/UserTypes'
 
 // Components Imports
 import { ClientForm } from '@/views/apps/clients/form/ClientForm'
@@ -127,9 +130,9 @@ export const SearchForm: React.FC<SearchFormProps> = ({
               </Box>
 
               <ClientForm
-                statuses={statuses}
-                franchises={franchises}
-                users={users}
+                statuses={(statuses ?? null) as ResponseAPI<IStatus> | null}
+                franchises={(franchises ?? null) as ResponseAPI<IFranchise> | null}
+                users={(users ?? null) as ResponseAPI<IUser> | null}
                 onSuccess={(response: IClient) => {
                   handleSuccess(response)
                 }}
