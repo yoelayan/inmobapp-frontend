@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic'
-
 'use client'
 
 import React, { useEffect } from 'react'
@@ -17,20 +15,13 @@ const ClientPage: React.FC = () => {
   const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsersByFranchiseRepository()
   const { data: franchises, fetchData: fetchFranchises, loading: loadingFranchises } = useFranchises()
 
+
   useEffect(() => {
     fetchUsers()
     fetchFranchises()
     fetchStatuses()
   }, [fetchUsers, fetchFranchises, fetchStatuses])
 
-  if (loadingStatuses || loadingUsers || loadingFranchises) {
-    return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
-        <CircularProgress />
-        <span style={{ marginLeft: '10px' }}>Cargando datos del Cliente...</span>
-      </Box>
-    )
-  }
 
   return (
     <Card>
