@@ -71,7 +71,7 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
         URL.revokeObjectURL(audioURL)
       }
     }
-  }, [open])
+  }, [open, audioURL])
 
   // Request microphone access
   const requestMicrophonePermission = async () => {
@@ -154,6 +154,7 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
     // validar observación
     if (!hasObservation) {
       notify('Debe proporcionar una observación de texto', 'error')
+
       return
     }
 

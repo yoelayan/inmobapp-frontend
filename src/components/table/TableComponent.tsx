@@ -267,7 +267,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
           }
         })
       }),
-    [headers]
+    [headers, columnHelper]
   )
 
   useEffect(() => {
@@ -276,7 +276,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
     const results = extractProperties(response.results, headers, grid_params)
 
     setFilteredData(results)
-  }, [headers, response])
+  }, [headers, response, grid_params])
 
   const filteredDataMemo = useMemo(() => {
     if (!globalFilter) {

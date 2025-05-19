@@ -14,9 +14,10 @@ interface TableActionsProps {
 }
 
 const TableActions = ({ row, actions }: TableActionsProps) => {
-  if (!actions) return null
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
+
+  if (!actions) return null
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget)

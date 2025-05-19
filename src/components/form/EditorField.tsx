@@ -12,7 +12,7 @@ import type { Editor } from '@tiptap/core'
 import '@/libs/styles/tiptapEditor.css'
 
 // MUI Imports
-import { Box, CardContent, Typography, Divider } from '@mui/material'
+import { Box, Typography, Divider } from '@mui/material'
 
 import FormHelperText from '@mui/material/FormHelperText'
 
@@ -59,7 +59,7 @@ const EditorField = ({ value, label, name, control, error, setValue }: EditorFie
     <Controller
       name={name}
       control={control}
-      render={({ field }) => (
+      render={() => (
         <Box>
           <Typography variant='h6'>{label}</Typography>
           <EditorToolbar editor={editor} />

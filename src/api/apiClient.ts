@@ -132,7 +132,6 @@ class ApiClient {
   }
 
   public async post<T>(url: string, data: Record<string, any>, files?: Record<string, File>): Promise<T> {
-    const formData = new FormData()
 
     const config = {
       headers: {

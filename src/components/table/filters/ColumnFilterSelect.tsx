@@ -30,12 +30,10 @@ interface ColumnFilterSelectProps {
 
 const ColumnFilterSelect = ({
   column,
-  table,
   options,
   response,
   refreshData,
   dataMap,
-  searchble,
   filter_name,
   onChange
 }: ColumnFilterSelectProps) => {
@@ -49,7 +47,6 @@ const ColumnFilterSelect = ({
     console.warn(column.id, 'If response is provided, refreshData must be provided.')
   }
 
-  const columnFilterValue = column.getFilterValue()
   const [items, setItems] = useState<OptionType[]>([])
   const [selectedItem, setSelectedItem] = useState<OptionType | null>(null)
   const [inputValue, setInputValue] = useState<string>('')
@@ -71,6 +68,7 @@ const ColumnFilterSelect = ({
 
   useEffect(() => {
     buildItems()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [response])
 
   const handleSearchChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,7 +88,6 @@ const ColumnFilterSelect = ({
   const handleSelectChange = (
     event: React.SyntheticEvent<Element, Event>,
     value: OptionType | null,
-    reason: string
   ) => {
     // Handle the change event
     if (value) {

@@ -1,11 +1,9 @@
 'use client'
 
-// React Imports
-import { useRef, useState } from 'react'
 import type { MouseEvent } from 'react'
 
 // Next Imports
-import React from 'react'
+import React,  { useRef, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -20,7 +18,6 @@ import ClickAwayListener from '@mui/material/ClickAwayListener'
 import MenuList from '@mui/material/MenuList'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
-import MenuItem from '@mui/material/MenuItem'
 
 // Custom Imports
 import LogoutButton from '@auth/components/LogoutButton'
@@ -69,7 +66,6 @@ const UserDropdown = () => {
     setOpen(false)
   }
 
-  const handleUserLogout = async () => {}
 
   return (
     <>

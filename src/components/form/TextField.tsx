@@ -23,6 +23,7 @@ const TextField = ({ value, label, name, onChange, control, error, setValue, dis
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
+
     setInputValue(newValue)
     setValue(name, newValue)
 
@@ -42,6 +43,7 @@ const TextField = ({ value, label, name, onChange, control, error, setValue, dis
             {...field}
             inputRef={field.ref}
             fullWidth
+
             // Override these props specifically
             value={inputValue}
             onChange={handleChange}

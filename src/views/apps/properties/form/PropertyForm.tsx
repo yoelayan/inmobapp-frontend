@@ -388,7 +388,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         return <Typography color='error'>Error loading characteristics</Typography>
       }
     }
-  }, [propertyId, control])
+  }, [propertyId, control, handleCharacteristicsChange])
 
   // Create a separate component for images to avoid interference with characteristics
   const PropertyImages = React.useMemo(() => {

@@ -56,6 +56,7 @@ const CharacteristicsSlot: React.FC<CharacteristicsSlotProps> = ({ value, allowD
 
     if (!targetSearchId) {
       console.error('No search ID available for deletion')
+
       return
     }
 

@@ -80,7 +80,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     if (!clients) {
       clientsHook.fetchData()
     }
-  }, [clients, clientsHook.fetchData])
+  }, [clients, clientsHook.fetchData, clientsHook])
 
   const handleButtonModal = () => {
     setOpen(!open)

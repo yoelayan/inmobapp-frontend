@@ -31,7 +31,8 @@ export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
 
     if (useCache) {
       this.cacheKey = `cache_${base_url}`
-      const cachedData = this.getCachedData()
+
+      // const cachedData = this.getCachedData()
     }
   }
   private getCachedData(): ResponseAPI<T> | null {

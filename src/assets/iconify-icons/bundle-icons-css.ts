@@ -11,10 +11,16 @@
  * For Iconify Tools documentation visit https://docs.iconify.design/tools/tools2/
  */
 import path from 'path'
-import fs from 'fs-extra'
+
 import { promises as fsPromises } from 'fs'
 
-import { downloadIconSet, runSVGO, parseColors, IconifyJSON } from '@iconify/tools'
+import fs from 'fs-extra'
+
+
+import type { IconifyJSON } from '@iconify/tools';
+
+import { downloadIconSet, runSVGO, parseColors } from '@iconify/tools'
+
 import { getIconsCSS, stringToIcon } from '@iconify/utils'
 import { consola } from 'consola'
 

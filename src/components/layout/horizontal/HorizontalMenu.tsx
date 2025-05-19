@@ -63,7 +63,9 @@ class HorizontalMenu extends Component {
 
   render() {
     // Hooks
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const verticalNavOptions = useVerticalNav()
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const theme = useTheme()
 
     // Vars

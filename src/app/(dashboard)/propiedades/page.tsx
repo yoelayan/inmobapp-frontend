@@ -7,7 +7,6 @@ import React, { useEffect } from 'react'
 import Grid from '@mui/material/Grid2'
 
 import PropertiesTable from '@views/apps/properties/list/PropertiesTable'
-import PropertiesCard from '@views/apps/properties/list/PropertiesCard'
 
 // Hooks
 import useProperties from '@/hooks/api/realstate/useProperties'
@@ -19,7 +18,7 @@ const Properties: React.FC = () => {
 
   useEffect(() => {
     getProperties()
-  }, [])
+  }, [getProperties])
 
   return (
     <Grid container spacing={6}>

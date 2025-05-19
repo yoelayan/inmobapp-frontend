@@ -89,7 +89,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
       setValue('')
       setCharacteristicType('text')
     }
-  }, [open, reset])
+  }, [open, reset, fetchAllCharacteristics])
 
   // Update characteristic type when selection changes
   useEffect(() => {
@@ -103,6 +103,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
         resetValue(selected.type_value || 'text')
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedCharacteristic, availableCharacteristics])
 
   // Reset value based on type
