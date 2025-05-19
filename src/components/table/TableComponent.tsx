@@ -1,3 +1,5 @@
+'use client'
+
 /**
  * TableComponent is a React functional component that renders a table with various features
  * such as filtering, sorting, pagination, and custom cell rendering based on provided headers.
