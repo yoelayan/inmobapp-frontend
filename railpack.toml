@@ -1,0 +1,16 @@
+[build]
+builder = "railpack"
+buildCommand = "npm run build"
+startCommand = "npm run start"
+nodeVersion = "20"
+
+[deploy]
+numReplicas = 1
+healthcheckPath = "/"
+restartPolicyType = "on-failure"
+
+[env]
+NODE_ENV = "development"
+
+[dev]
+command = "npm run dev"
