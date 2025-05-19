@@ -8,7 +8,8 @@ import type {
   UseFormClearErrors,
   Control,
   UseFormWatch,
-  UseFormSetValue
+  UseFormSetValue,
+  Path
 } from 'react-hook-form'
 
 import { useForm } from 'react-hook-form'
@@ -92,7 +93,7 @@ export function useBaseForm<
 
       try {
         const backendData = await repository.get(id)
-        const formData = transformDataForForm(backendData)
+        const formData = transformDataForForm(backendData) as TFormData
 
         reset(formData)
       } catch (error: any) {
@@ -102,7 +103,9 @@ export function useBaseForm<
         setIsLoading(false)
       }
     } else {
-      reset(defaultValues) // Ensure defaults are set for creation mode
+      const formData = defaultValues as TFormData
+
+      reset(formData) // Ensure defaults are set for creation mode
       setIsLoading(false)
     }
   }, [id, repository, transformDataForForm, reset, notify, onError, defaultValues])
@@ -126,7 +129,7 @@ export function useBaseForm<
           : (backendErrors[field] as string)
 
         if (field in formData) {
-          rhfSetError(field as keyof TFormData, {
+          rhfSetError(field as Path<TFormData>, {
             type: 'server',
             message: message
           })
@@ -169,7 +172,7 @@ export function useBaseForm<
 
           notify('Registro creado con éxito', 'success')
 
-          reset(defaultValues) // Reset to defaults after successful creation
+          reset(defaultValues as TFormData) // Reset to defaults after successful creation
         }
 
         if (onSuccess) onSuccess(response, isUpdateMode)
