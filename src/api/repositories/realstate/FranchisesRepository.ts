@@ -1,8 +1,8 @@
-import type { Franquicia } from '@/types/apps/FranquiciaTypes'
+import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class FranchisesRepository extends BaseRepository<Franquicia> {
+class FranchisesRepository extends BaseRepository<IFranchise> {
   private static instance: FranchisesRepository
 
   private constructor() {

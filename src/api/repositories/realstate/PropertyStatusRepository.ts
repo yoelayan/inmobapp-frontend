@@ -1,8 +1,8 @@
-import type { Status } from '@/types/apps/CatalogTypes'
+import type { IStatus } from '@/types/apps/CatalogTypes'
 import { apiRoutes } from '@api/routes'
 import BaseRepository from '../BaseRepository'
 
-class PropertyStatusRepository extends BaseRepository<Status> {
+class PropertyStatusRepository extends BaseRepository<IStatus> {
   private static instance: PropertyStatusRepository
 
   private constructor() {
