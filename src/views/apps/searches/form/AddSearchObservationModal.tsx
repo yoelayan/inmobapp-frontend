@@ -161,7 +161,7 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
     setIsSubmitting(true)
 
     try {
-      let audioFile: File | null = null
+      let audioFile: File | undefined = undefined
 
       if (audioBlob) {
         audioFile = new File([audioBlob], 'audio-observation.wav', { type: 'audio/wav' })
