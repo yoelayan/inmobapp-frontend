@@ -3,12 +3,12 @@ import React, { useEffect } from 'react'
 
 // Third-party Imports
 import { useEditor, EditorContent } from '@tiptap/react'
+import type { Editor } from '@tiptap/react'
 import { StarterKit } from '@tiptap/starter-kit'
 import { Underline } from '@tiptap/extension-underline'
 import { Placeholder } from '@tiptap/extension-placeholder'
 import { TextAlign } from '@tiptap/extension-text-align'
 import classnames from 'classnames'
-import type { Editor } from '@tiptap/core'
 import '@/libs/styles/tiptapEditor.css'
 
 // MUI Imports

@@ -11,7 +11,6 @@ const nextConfig = {
     // number of pages that should be kept simultaneously without being disposed
     pagesBufferLength: 2
   },
-  unstable_disableStaticRendering: true,
 
   // Enable static optimization and standalone output
   output: 'standalone',
