@@ -12,12 +12,6 @@ const nextConfig = {
     pagesBufferLength: 2,
   },
 
-  // Suppress hydration errors caused by browser extensions
-  // that modify the DOM before React hydrates it
-  experimental: {
-    suppressHydrationWarning: true,
-  },
-
   // Enable static optimization and standalone output
   output: 'standalone',
 

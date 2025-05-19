@@ -47,7 +47,7 @@ export default function Page() {
 
   useEffect(() => {
     getMetrics()
-  }, [getMetrics])
+  }, [])
 
   const handleDateChange = (field: 'date_start' | 'date_end') => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, [field]: event.target.value })
