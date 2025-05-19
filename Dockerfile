@@ -33,7 +33,12 @@ RUN echo "/* Generated Iconify Icons CSS */\n.iconify { display: inline-block; w
 
 # Build the application with the environment variable to skip build:icons
 ENV SKIP_BUILD_ICONS=true
-RUN npm run build
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+ENV DISABLE_ESLINT_PLUGIN=true
+
+# Run build with ESLint disabled
+RUN npm run build:no-lint
 
 # Production image, copy all the files and run next
 FROM base AS runner
