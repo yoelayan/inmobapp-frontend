@@ -9,6 +9,5 @@ export const useAuth = () => {
     throw new Error('useAuth solo puede ser usado dentro de un AuthProvider')
   }
 
-  
-return context
+  return context
 }

@@ -11,7 +11,6 @@ import Alert from '@mui/material/Alert'
 // Tipos para las notificaciones
 import type { AlertColor } from '@mui/material/Alert'
 
-
 interface NotificationContextType {
   notify: (message: string, severity?: AlertColor) => void
 }
@@ -24,16 +23,13 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
     <SnackbarProvider
       maxSnack={5} // Número máximo de notificaciones visibles al mismo tiempo
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Posición de las notificaciones
-      Components={
-        {
-          default: ({ message, closeToast, variant }) => (
-            <Alert severity={variant as AlertColor} onClose={closeToast}>
-              {message}
-            </Alert>
-          )
-        }
-
-      }
+      Components={{
+        default: ({ message, closeToast, variant }) => (
+          <Alert severity={variant as AlertColor} onClose={closeToast}>
+            {message}
+          </Alert>
+        )
+      }}
     >
       <NotificationContextWrapper>{children}</NotificationContextWrapper>
     </SnackbarProvider>
@@ -49,7 +45,6 @@ const NotificationContextWrapper = ({ children }: { children: ReactNode }) => {
       enqueueSnackbar(message, {
         variant: severity,
         action: key => <i className='tabler-x' onClick={() => closeSnackbar(key)} />
-
       }) // Mostrar la notificación
     },
     [enqueueSnackbar]

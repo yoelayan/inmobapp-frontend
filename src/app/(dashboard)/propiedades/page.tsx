@@ -15,24 +15,16 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 // MUI Imports
 
 const Properties: React.FC = () => {
-
-  const {
-    fetchData: getProperties,
-    refreshData: refreshProperties,
-    data: properties
-  } = useProperties()
+  const { fetchData: getProperties, refreshData: refreshProperties, data: properties } = useProperties()
 
   useEffect(() => {
     getProperties()
   }, [])
 
-return (
+  return (
     <Grid container spacing={6}>
       <Grid>
-        <PropertiesTable
-          properties={properties}
-          refreshProperties={refreshProperties}
-        />
+        <PropertiesTable properties={properties} refreshProperties={refreshProperties} />
       </Grid>
     </Grid>
   )

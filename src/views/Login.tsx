@@ -21,9 +21,7 @@ const LoginV2 = () => {
         <div className='flex flex-col gap-6 is-full sm:is-auto md:is-full sm:max-is-[400px] md:max-is-[unset] mbs-11 sm:mbs-14 md:mbs-0'>
           <div className='flex flex-col gap-1'>
             <Typography variant='h4'>{`Bienvenido a ${themeConfig.templateName}! 👋🏻`}</Typography>
-            <Typography>
-              Por favor, inicia sesión para continuar.
-            </Typography>
+            <Typography>Por favor, inicia sesión para continuar.</Typography>
           </div>
           <LoginForm />
         </div>

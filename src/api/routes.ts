@@ -35,4 +35,3 @@ export const apiRoutes = {
     searchesDeleteCharacteristic: 'searches/:id/delete-characteristic/'
   }
 }
-

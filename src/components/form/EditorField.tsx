@@ -26,8 +26,6 @@ import type FieldProps from '@/components/form/BaseField'
 interface EditorFieldProps extends FieldProps {}
 
 const EditorField = ({ value, label, name, control, error, setValue }: EditorFieldProps) => {
-
-
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -48,7 +46,7 @@ const EditorField = ({ value, label, name, control, error, setValue }: EditorFie
       attributes: {
         class: 'editor-content'
       }
-    },
+    }
   })
 
   useEffect(() => {
@@ -57,23 +55,22 @@ const EditorField = ({ value, label, name, control, error, setValue }: EditorFie
     }
   }, [value, editor])
 
+  return (
+    <Controller
+      name={name}
+      control={control}
+      render={({ field }) => (
+        <Box>
+          <Typography variant='h6'>{label}</Typography>
+          <EditorToolbar editor={editor} />
+          <Divider />
+          <EditorContent editor={editor} name={name} />
 
-return (
-  <Controller
-    name={name}
-    control={control}
-    render={({ field }) => (
-      <Box>
-        <Typography variant='h6'>{label}</Typography>
-        <EditorToolbar editor={editor} />
-        <Divider />
-        <EditorContent editor={editor} name={name} />
-
-        {error && <FormHelperText error>{error.message}</FormHelperText>}
-      </Box>
-    )}
-  />
-)
+          {error && <FormHelperText error>{error.message}</FormHelperText>}
+        </Box>
+      )}
+    />
+  )
 }
 
 const EditorToolbar = ({ editor }: { editor: Editor | null }) => {

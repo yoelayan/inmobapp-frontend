@@ -1,8 +1,6 @@
-
 'use client'
 
 import React from 'react'
-
 
 import { Button, Box, CircularProgress, Grid2 as Grid } from '@mui/material'
 
@@ -10,17 +8,14 @@ import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 
 import { useClientForm } from './hooks/useClientForm'
 
-import TextField from '@/components/form/TextField'; // Ajusta la ruta [20]
-import SelectField from '@/components/form/SelectField'; // Ajusta la ruta [18
+import TextField from '@/components/form/TextField' // Ajusta la ruta [20]
+import SelectField from '@/components/form/SelectField' // Ajusta la ruta [18
 
 import { useNotification } from '@/hooks/useNotification'
-import type { IStatus } from '@/types/apps/CatalogTypes';
+import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IClient } from '@/types/apps/ClientesTypes'
 import type { IUser } from '@/types/apps/UserTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
-
-
-
 
 // --- Props del Componente ---
 interface ClientFormProps {
@@ -60,7 +55,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, statuses, user
       </Box>
     )
   }
-
 
   // Muestra un error general si ocurrió durante la carga inicial o el envío
   // y no está asociado a un campo específico.

@@ -29,7 +29,7 @@ interface SelectFieldAsyncProps extends FieldProps {
   filter_name?: string
   onChange?: (item: any) => void
   defaultFilter?: Record<string, any>
-  isDisabled?: boolean,
+  isDisabled?: boolean
   children?: React.ReactNode
 }
 
@@ -100,7 +100,6 @@ const SelectFieldAsync = ({
 
   const combinedItems = [...(children ? [{ value: 'custom-children', label: '', custom: true }] : []), ...items]
 
-
   return (
     <Controller
       name={name}
@@ -129,13 +128,8 @@ const SelectFieldAsync = ({
             />
           )}
           renderOption={(props, option: OptionType) => {
-
             if (option.custom) {
-              return (
-                <div key="custom-children">
-                  {children}
-                </div>
-              )
+              return <div key='custom-children'>{children}</div>
             }
 
             return (

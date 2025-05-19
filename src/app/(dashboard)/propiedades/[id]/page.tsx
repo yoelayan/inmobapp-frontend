@@ -1,10 +1,10 @@
 'use client'
 
 // React Imports
-import React, {useEffect} from 'react'
+import React, { useEffect } from 'react'
 
 // Component Imports
-import { useParams } from 'next/navigation';
+import { useParams } from 'next/navigation'
 
 import { Box, CircularProgress } from '@mui/material'
 
@@ -20,39 +20,37 @@ import useCities from '@/hooks/api/locations/useCities'
 import useClients from '@/hooks/api/crm/useClients'
 
 const PropertyAdd = () => {
-  const params = useParams();
+  const params = useParams()
   const propertyId = params?.id ? String(params.id) : undefined // Obtiene el ID de la URL si existe
 
   const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsersByFranchiseRepository()
-    const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
-    const { loading: statusesLoading, data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
-    const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
-    const { loading: propertyTypesLoading, data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
-    const { loading: statesLoading, data: states, fetchData: fetchStates } = useStates()
-    const { loading: citiesLoading, data: cities, fetchData: fetchCities } = useCities()
-    const { loading: clientsLoading, data: clients, fetchData: fetchClients, refreshData: refreshClients } = useClients()
+  const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
+  const { loading: statusesLoading, data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
+  const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
+  const { loading: propertyTypesLoading, data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
+  const { loading: statesLoading, data: states, fetchData: fetchStates } = useStates()
+  const { loading: citiesLoading, data: cities, fetchData: fetchCities } = useCities()
+  const { loading: clientsLoading, data: clients, fetchData: fetchClients, refreshData: refreshClients } = useClients()
 
-
-
-    useEffect(() => {
-      fetchUsers()
-      fetchFranchises()
-      fetchStatuses()
-      fetchNegotiations()
-      fetchPropertyTypes()
-      fetchStates()
-      fetchCities()
-      fetchClients()
-    }, [
-      fetchUsers,
-      fetchFranchises,
-      fetchStatuses,
-      fetchNegotiations,
-      fetchPropertyTypes,
-      fetchStates,
-      fetchCities,
-      fetchClients
-    ])
+  useEffect(() => {
+    fetchUsers()
+    fetchFranchises()
+    fetchStatuses()
+    fetchNegotiations()
+    fetchPropertyTypes()
+    fetchStates()
+    fetchCities()
+    fetchClients()
+  }, [
+    fetchUsers,
+    fetchFranchises,
+    fetchStatuses,
+    fetchNegotiations,
+    fetchPropertyTypes,
+    fetchStates,
+    fetchCities,
+    fetchClients
+  ])
 
   if (
     usersLoading ||

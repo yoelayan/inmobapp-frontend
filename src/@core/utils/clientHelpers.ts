@@ -57,7 +57,7 @@ export const getSystemModeClient = (): SystemMode => {
     colorPref = prefersDarkMode ? 'dark' : 'light'
   }
 
-  return (mode === 'system' ? colorPref : mode) as SystemMode || 'light'
+  return ((mode === 'system' ? colorPref : mode) as SystemMode) || 'light'
 }
 
 export const getServerModeClient = (): string => {

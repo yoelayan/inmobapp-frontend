@@ -18,11 +18,6 @@ import useStates from '@/hooks/api/locations/useStates'
 import useCities from '@/hooks/api/locations/useCities'
 import useClients from '@/hooks/api/crm/useClients'
 
-
-
-
-
-
 const PropertyAdd: React.FC = () => {
   const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsersByFranchiseRepository()
   const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
@@ -32,8 +27,6 @@ const PropertyAdd: React.FC = () => {
   const { loading: statesLoading, data: states, fetchData: fetchStates } = useStates()
   const { loading: citiesLoading, data: cities, fetchData: fetchCities } = useCities()
   const { loading: clientsLoading, data: clients, fetchData: fetchClients, refreshData: refreshClients } = useClients()
-
-
 
   useEffect(() => {
     fetchUsers()
@@ -55,15 +48,23 @@ const PropertyAdd: React.FC = () => {
     fetchClients
   ])
 
-  if (usersLoading || franchisesLoading || statusesLoading || negotiationsLoading || propertyTypesLoading || statesLoading || citiesLoading || clientsLoading)
-   {
-      return (
-        <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
-          <CircularProgress />
-          <span style={{ marginLeft: '10px' }}>Cargando datos de la propiedad...</span>
-        </Box>
-      )
-    }
+  if (
+    usersLoading ||
+    franchisesLoading ||
+    statusesLoading ||
+    negotiationsLoading ||
+    propertyTypesLoading ||
+    statesLoading ||
+    citiesLoading ||
+    clientsLoading
+  ) {
+    return (
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
+        <CircularProgress />
+        <span style={{ marginLeft: '10px' }}>Cargando datos de la propiedad...</span>
+      </Box>
+    )
+  }
 
   return (
     <PropertyForm

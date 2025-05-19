@@ -15,7 +15,6 @@ import classnames from 'classnames'
 import type { ThemeColor } from '@core/types'
 import type { CardStatsHorizontalWithBorderProps } from '@/types/pages/widgetTypes'
 
-
 type Props = CardProps & {
   color: ThemeColor
 }
@@ -36,31 +35,18 @@ const Card = styled(MuiCard)<Props>(({ color }) => ({
   '&.active': {
     backgroundColor: `var(--mui-palette-${color}-main)`,
     marginBlockEnd: '-1px'
-  },
+  }
 }))
 
 const HorizontalWithBorder = (props: CardStatsHorizontalWithBorderProps) => {
   // Props
-  const {
-    title,
-    stats,
-    trendNumber,
-    avatarIcon,
-    color,
-    comparison,
-    isActive,
-    onClick
-  } = props
-
-  
+  const { title, stats, trendNumber, avatarIcon, color, comparison, isActive, onClick } = props
 
   return (
     <Card
       onClick={onClick}
       color={color || 'primary'}
-      className={classnames(
-        { 'cursor-pointer': onClick, 'active': isActive },
-      )}
+      className={classnames({ 'cursor-pointer': onClick, active: isActive })}
     >
       <CardContent className='flex flex-col gap-1'>
         <div className='flex flex-col gap-1'>
@@ -69,7 +55,7 @@ const HorizontalWithBorder = (props: CardStatsHorizontalWithBorderProps) => {
               <Typography>{title}</Typography>
               <Typography variant='h4'>{stats}</Typography>
             </div>
-            
+
             <i className={classnames(avatarIcon, 'text-[28px]')} />
           </div>
           {trendNumber && (

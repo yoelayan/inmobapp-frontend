@@ -79,21 +79,21 @@ const ImageField = ({
     return file as IFile
   }, [])
 
-  const processFiles = useCallback((inputFiles: any): IFile[] => {
-    if (!inputFiles) return []
+  const processFiles = useCallback(
+    (inputFiles: any): IFile[] => {
+      if (!inputFiles) return []
 
-    if (Array.isArray(inputFiles)) {
-      return inputFiles.map((file, index) => processFile(file, index))
-    }
+      if (Array.isArray(inputFiles)) {
+        return inputFiles.map((file, index) => processFile(file, index))
+      }
 
-    return [processFile(inputFiles, 0)]
-  }, [processFile])
+      return [processFile(inputFiles, 0)]
+    },
+    [processFile]
+  )
 
   useEffect(() => {
-    if (
-      value === prevValueRef.current &&
-      JSON.stringify(data) === JSON.stringify(prevDataRef.current)
-    ) {
+    if (value === prevValueRef.current && JSON.stringify(data) === JSON.stringify(prevDataRef.current)) {
       return
     }
 
@@ -131,52 +131,58 @@ const ImageField = ({
     return ''
   }, [])
 
-  const handleDelete = useCallback((id?: number | string, index?: number) => {
-    if (id !== undefined && deleteItem) {
-      deleteItem(id)
-        .then(() => {
-          if (refreshData) {
-            refreshData()
-          }
-        })
-        .catch(error => console.error("Error deleting image:", error))
-    } else if (index !== undefined) {
-      const updatedFiles = [...files]
+  const handleDelete = useCallback(
+    (id?: number | string, index?: number) => {
+      if (id !== undefined && deleteItem) {
+        deleteItem(id)
+          .then(() => {
+            if (refreshData) {
+              refreshData()
+            }
+          })
+          .catch(error => console.error('Error deleting image:', error))
+      } else if (index !== undefined) {
+        const updatedFiles = [...files]
 
-      updatedFiles.splice(index, 1)
+        updatedFiles.splice(index, 1)
 
-      setFiles(updatedFiles)
-      setValue(name, multiple ? updatedFiles : updatedFiles[0] || null)
-    }
-  }, [files, deleteItem, refreshData, setValue, name, multiple])
-
-  const onDropAccepted = useCallback((acceptedFiles: File[]) => {
-    const newFiles = acceptedFiles.map((file, idx) => ({
-      id: `temp-${Date.now()}-${idx}`,
-      name: file.name,
-      preview: URL.createObjectURL(file)
-    }))
-
-    if (multiple) {
-      const updatedFiles = [...files, ...newFiles]
-
-      setFiles(updatedFiles)
-      setValue(name, updatedFiles)
-    } else {
-      setFiles(newFiles)
-      setValue(name, newFiles[0])
-    }
-
-    const fileList = acceptedFiles as unknown as FileList
-
-    if (onChange) {
-      onChange(fileList)
-
-      if (refreshData) {
-        refreshData()
+        setFiles(updatedFiles)
+        setValue(name, multiple ? updatedFiles : updatedFiles[0] || null)
       }
-    }
-  }, [files, multiple, name, onChange, refreshData, setValue])
+    },
+    [files, deleteItem, refreshData, setValue, name, multiple]
+  )
+
+  const onDropAccepted = useCallback(
+    (acceptedFiles: File[]) => {
+      const newFiles = acceptedFiles.map((file, idx) => ({
+        id: `temp-${Date.now()}-${idx}`,
+        name: file.name,
+        preview: URL.createObjectURL(file)
+      }))
+
+      if (multiple) {
+        const updatedFiles = [...files, ...newFiles]
+
+        setFiles(updatedFiles)
+        setValue(name, updatedFiles)
+      } else {
+        setFiles(newFiles)
+        setValue(name, newFiles[0])
+      }
+
+      const fileList = acceptedFiles as unknown as FileList
+
+      if (onChange) {
+        onChange(fileList)
+
+        if (refreshData) {
+          refreshData()
+        }
+      }
+    },
+    [files, multiple, name, onChange, refreshData, setValue]
+  )
 
   const { getRootProps, getInputProps, open } = useDropzone({
     accept: {
@@ -188,78 +194,76 @@ const ImageField = ({
     onDrop: onDropAccepted
   })
 
-  const handleSortEnd = useCallback((oldIndex: number, newIndex: number) => {
-    const sortedFiles = arrayMoveImmutable(files, oldIndex, newIndex)
+  const handleSortEnd = useCallback(
+    (oldIndex: number, newIndex: number) => {
+      const sortedFiles = arrayMoveImmutable(files, oldIndex, newIndex)
 
-    const filesWithUpdatedOrder = sortedFiles.map((file, index) => ({
-      ...file,
-      order: index
-    }))
-
-    setFiles(filesWithUpdatedOrder)
-    setValue(name, multiple ? filesWithUpdatedOrder : filesWithUpdatedOrder[0] || null)
-
-    if (onReorder) {
-      const imagesOrder = filesWithUpdatedOrder.map(file => ({
-        id: file.id,
-        order: file.order
+      const filesWithUpdatedOrder = sortedFiles.map((file, index) => ({
+        ...file,
+        order: index
       }))
 
-      onReorder(imagesOrder)
-    }
-  }, [files, multiple, name, onReorder, setValue])
+      setFiles(filesWithUpdatedOrder)
+      setValue(name, multiple ? filesWithUpdatedOrder : filesWithUpdatedOrder[0] || null)
 
-  const renderSimpleImageList = useMemo(() => (
-    <div className={`images-list ${multiple ? 'multiple' : ''}`}>
-      {files.map((file, index) => {
-        const imageUrl = getImageUrl(file)
+      if (onReorder) {
+        const imagesOrder = filesWithUpdatedOrder.map(file => ({
+          id: file.id,
+          order: file.order
+        }))
 
-        return (
-          <div key={`image-${file.id || index}`} className="images-list-item">
-            <Box position="relative" sx={{ width: '100%' }}>
-              <div className={`image-box ${multiple ? 'multiple' : ''}`}>
-                <img
-                  src={imageUrl}
-                  alt={file.name}
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = 'https://placehold.co/150?text=Imagen+no+encontrada'
-                  }}
-                />
+        onReorder(imagesOrder)
+      }
+    },
+    [files, multiple, name, onReorder, setValue]
+  )
+
+  const renderSimpleImageList = useMemo(
+    () => (
+      <div className={`images-list ${multiple ? 'multiple' : ''}`}>
+        {files.map((file, index) => {
+          const imageUrl = getImageUrl(file)
+
+          return (
+            <div key={`image-${file.id || index}`} className='images-list-item'>
+              <Box position='relative' sx={{ width: '100%' }}>
+                <div className={`image-box ${multiple ? 'multiple' : ''}`}>
+                  <img
+                    src={imageUrl}
+                    alt={file.name}
+                    onError={e => {
+                      ;(e.target as HTMLImageElement).src = 'https://placehold.co/150?text=Imagen+no+encontrada'
+                    }}
+                  />
+                </div>
+                <IconButton className='icon-button' size='small' onClick={() => handleDelete(file.id, index)}>
+                  <DeleteIcon fontSize='small' color='error' />
+                </IconButton>
+              </Box>
+              <div className={`file-details ${multiple ? 'multiple' : ''}`}>
+                <Typography variant='caption' className='file-name'>
+                  {file.name}
+                </Typography>
               </div>
-              <IconButton
-                className="icon-button"
-                size="small"
-                onClick={() => handleDelete(file.id, index)}
-              >
-                <DeleteIcon fontSize="small" color="error" />
-              </IconButton>
-            </Box>
-            <div className={`file-details ${multiple ? 'multiple' : ''}`}>
-              <Typography variant="caption" className="file-name">
-                {file.name}
-              </Typography>
             </div>
-          </div>
-        )
-      })}
-    </div>
-  ), [files, multiple, getImageUrl, handleDelete])
+          )
+        })}
+      </div>
+    ),
+    [files, multiple, getImageUrl, handleDelete]
+  )
 
   const renderImagesList = useCallback(() => {
     if (!files.length) {
       return (
-        <Typography variant="body2" color="textSecondary" align="center">
+        <Typography variant='body2' color='textSecondary' align='center'>
           No hay imágenes seleccionadas
         </Typography>
       )
     }
 
     if (!multiple || files.length <= 1) {
-      return (
-        <Box sx={{ mt: 2 }}>
-          {renderSimpleImageList}
-        </Box>
-      )
+      return <Box sx={{ mt: 2 }}>{renderSimpleImageList}</Box>
     }
 
     return (
@@ -267,7 +271,7 @@ const ImageField = ({
         <SortableList
           onSortEnd={handleSortEnd}
           className={`images-list ${multiple ? 'multiple' : ''}`}
-          draggedItemClassName="dragged"
+          draggedItemClassName='dragged'
           style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}
           allowDrag={files.length > 1}
         >
@@ -277,40 +281,40 @@ const ImageField = ({
 
             return (
               <SortableItem key={uniqueId}>
-                <div className="images-list-item">
-                  <Box position="relative" sx={{ width: '100%' }}>
+                <div className='images-list-item'>
+                  <Box position='relative' sx={{ width: '100%' }}>
                     <div className={`image-box ${multiple ? 'multiple' : ''}`}>
                       <img
                         src={imageUrl}
                         alt={file.name}
                         style={{ userSelect: 'none', pointerEvents: 'none' }}
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://placehold.co/150?text=Imagen+no+encontrada'
+                        onError={e => {
+                          ;(e.target as HTMLImageElement).src = 'https://placehold.co/150?text=Imagen+no+encontrada'
                         }}
                       />
                     </div>
                     <IconButton
-                      className="icon-button delete-button"
-                      size="small"
+                      className='icon-button delete-button'
+                      size='small'
                       onClick={() => handleDelete(file.id, index)}
                     >
-                      <DeleteIcon fontSize="small" color="error" />
+                      <DeleteIcon fontSize='small' color='error' />
                     </IconButton>
-                    <div className="icon-button drag-button">
+                    <div className='icon-button drag-button'>
                       <SortableKnob>
                         <IconButton
-                          size="small"
+                          size='small'
                           style={{ cursor: 'grab' }}
-                          aria-label="Arrastrar para reordenar"
-                          title="Arrastrar para reordenar"
+                          aria-label='Arrastrar para reordenar'
+                          title='Arrastrar para reordenar'
                         >
-                          <DragIndicatorIcon fontSize="small" color="inherit" />
+                          <DragIndicatorIcon fontSize='small' color='inherit' />
                         </IconButton>
                       </SortableKnob>
                     </div>
                   </Box>
                   <div className={`file-details ${multiple ? 'multiple' : ''}`}>
-                    <Typography variant="caption" className="file-name">
+                    <Typography variant='caption' className='file-name'>
                       {file.name}
                     </Typography>
                   </div>
@@ -329,7 +333,7 @@ const ImageField = ({
       control={control}
       render={() => (
         <Box sx={{ width: '100%', mb: 2 }}>
-          <Typography variant="subtitle1" gutterBottom>
+          <Typography variant='subtitle1' gutterBottom>
             {label}
           </Typography>
           <Box
@@ -345,14 +349,10 @@ const ImageField = ({
             }}
           >
             <input {...getInputProps()} />
-            <Typography variant="body1" gutterBottom>
+            <Typography variant='body1' gutterBottom>
               Arrastra y suelta imágenes aquí
             </Typography>
-            <Button
-              onClick={open}
-              variant="contained"
-              color="primary"
-            >
+            <Button onClick={open} variant='contained' color='primary'>
               Seleccionar Imágenes
             </Button>
           </Box>
@@ -360,7 +360,7 @@ const ImageField = ({
           {renderImagesList()}
 
           {error && (
-            <Typography variant="caption" color="error">
+            <Typography variant='caption' color='error'>
               {error.message}
             </Typography>
           )}
@@ -371,4 +371,3 @@ const ImageField = ({
 }
 
 export default ImageField
-

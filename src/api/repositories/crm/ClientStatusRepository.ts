@@ -14,7 +14,6 @@ class ClientStatusRepository extends BaseRepository<Status> {
       ClientStatusRepository.instance = new ClientStatusRepository()
     }
 
-
     return ClientStatusRepository.instance
   }
 }

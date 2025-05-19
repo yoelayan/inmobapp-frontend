@@ -21,15 +21,7 @@ import { consola } from 'consola'
 const outputDirectory = path.resolve(process.cwd(), 'src/assets/iconify-icons')
 
 // Icon sets to bundle
-const iconSets = [
-  'mdi',
-  'tabler',
-  'material-symbols',
-  'fa-regular',
-  'fa-solid',
-  'fa-brands',
-  'lucide'
-]
+const iconSets = ['mdi', 'tabler', 'material-symbols', 'fa-regular', 'fa-solid', 'fa-brands', 'lucide']
 
 async function generateCSSFile() {
   try {

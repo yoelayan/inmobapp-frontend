@@ -55,16 +55,10 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   franchises,
   refreshClients
 }) => {
-  const {
-    control,
-    handleSubmit,
-    errors,
-    isSubmitting,
-    isLoading,
-    serverError,
-    setValue,
-    watch
-  } = useSearchForm(searchId, onSuccess)
+  const { control, handleSubmit, errors, isSubmitting, isLoading, serverError, setValue, watch } = useSearchForm(
+    searchId,
+    onSuccess
+  )
 
   const { notify } = useNotification()
   const [open, setOpen] = useState(false)
@@ -107,18 +101,19 @@ export const SearchForm: React.FC<SearchFormProps> = ({
         aria-labelledby='modal-modal-title'
         aria-describedby='modal-modal-description'
       >
-        <Card sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: '800px',
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 4,
-          borderRadius: 2
-        }}
+        <Card
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '90%',
+            maxWidth: '800px',
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2
+          }}
         >
           <CardContent>
             <Box>
@@ -165,7 +160,6 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <Grid container spacing={3}>
-
         <Grid size={{ xs: 12 }}>
           <TextField
             control={control}
@@ -215,20 +209,16 @@ export const SearchForm: React.FC<SearchFormProps> = ({
             width: '100%'
           }}
         >
-          <Button
-            variant='contained'
-            color='primary'
-            type='submit'
-            disabled={isSubmitting}
-            sx={{ mt: 2 }}
-          >
+          <Button variant='contained' color='primary' type='submit' disabled={isSubmitting} sx={{ mt: 2 }}>
             {isSubmitting ? (
               <>
                 <CircularProgress size={20} color='inherit' sx={{ mr: 1 }} />
                 Guardando...
               </>
+            ) : searchId ? (
+              'Actualizar Búsqueda'
             ) : (
-              searchId ? 'Actualizar Búsqueda' : 'Crear Búsqueda'
+              'Crear Búsqueda'
             )}
           </Button>
         </Grid>

@@ -19,7 +19,6 @@
  */
 import React, { useEffect, useState, useMemo } from 'react'
 
-
 // Tanstack Table imports
 import {
   createColumnHelper,
@@ -55,7 +54,6 @@ import ViewModuleIcon from '@mui/icons-material/ViewModule'
 
 import classnames from 'classnames'
 
-
 // Components imports
 import TableActions from './components/TableActions'
 import TableGrid from './components/TableGrid'
@@ -78,8 +76,6 @@ import tableStyles from '@core/styles/table.module.css'
 
 import type { ResponseAPI } from '@/api/repositories/BaseRepository'
 import type { GridProps } from './components/TableGrid'
-
-
 
 export interface Header {
   key: string
@@ -128,7 +124,6 @@ declare module '@tanstack/table-core' {
 }
 
 const CustomFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
-
   if (Array.isArray(value)) {
     const [min, max] = value
     const rowValue = row.getValue(columnId)
@@ -149,66 +144,66 @@ const CustomFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
 }
 
 const extractProperties = (data: any[], headers: Header[], grid_params?: GridProps) => {
-  const allKeys = new Set<string>();
-  const definedKeys = new Set<string>();
+  const allKeys = new Set<string>()
+  const definedKeys = new Set<string>()
 
   // Collect keys from headers
   headers.forEach(header => {
-    allKeys.add(header.key);
-    definedKeys.add(header.key);
-  });
+    allKeys.add(header.key)
+    definedKeys.add(header.key)
+  })
 
   // Collect keys from grid_params
   if (grid_params) {
     Object.values(grid_params).forEach(value => {
       if (typeof value === 'string') {
-          allKeys.add(value);
+        allKeys.add(value)
       }
-    });
+    })
 
     if (grid_params.tags) {
       grid_params.tags.forEach(tag => {
-        allKeys.add(tag.name);
-      });
+        allKeys.add(tag.name)
+      })
     }
   }
 
   // Collect all keys from data objects
   data.forEach(item => {
-    const keys = Object.keys(item);
+    const keys = Object.keys(item)
 
     keys.forEach(key => {
-      allKeys.add(key);
-    });
-  });
+      allKeys.add(key)
+    })
+  })
 
   // add id to keys
   allKeys.add('id')
 
   return (data || []).map(item => {
-    const filteredItem: { [key: string]: any } = {};
+    const filteredItem: { [key: string]: any } = {}
 
     Array.from(allKeys).forEach(key => {
       const value = key.split('__').reduce((acc, part) => {
-        if(acc && typeof acc === 'object'){
+        if (acc && typeof acc === 'object') {
           return acc[part]
-        }else{
+        } else {
           return undefined
         }
-      }, item);
+      }, item)
 
-      filteredItem[key] = value !== undefined ? value : '';
-    });
+      filteredItem[key] = value !== undefined ? value : ''
+    })
 
-    return filteredItem;
-  });
-};
+    return filteredItem
+  })
+}
 
 const slotComponents: { [key: string]: React.FC<{ value: any }> } = {
   default: DefaultSlot,
   number: DefaultSlot,
   boolean: BooleanSlot,
-  characteristics: CharacteristicsSlot,
+  characteristics: CharacteristicsSlot
 }
 
 const FilterComponents: { [key: string]: any } = {
@@ -260,13 +255,15 @@ const TableComponent: React.FC<TableComponentProps> = ({
 
         return columnHelper.accessor(filterName, {
           header: header.label,
-          cell: SlotComponent ? ({ row }) => <SlotComponent value={row.original[header.key]} {...header.slot_params} /> : header.key,
+          cell: SlotComponent
+            ? ({ row }) => <SlotComponent value={row.original[header.key]} {...header.slot_params} />
+            : header.key,
 
           enableColumnFilter: header.filterable,
           meta: {
             filter: header.filter,
             filter_params: header.filter_params,
-            label: header.label,
+            label: header.label
           }
         })
       }),
@@ -339,8 +336,7 @@ const TableComponent: React.FC<TableComponentProps> = ({
   const renderFilter = (column: any) => {
     const FilterComponent = FilterComponents[column.columnDef.meta.filter || 'default']
 
-
-return <FilterComponent column={column} table={table} {...column.columnDef.meta.filter_params} />
+    return <FilterComponent column={column} table={table} {...column.columnDef.meta.filter_params} />
   }
 
   return (

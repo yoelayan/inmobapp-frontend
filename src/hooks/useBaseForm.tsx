@@ -50,7 +50,6 @@ interface UseBaseFormReturn<TFormData extends Record<string, any>> {
   clearErrors: UseFormClearErrors<TFormData>
 }
 
-
 export function useBaseForm<
   TData,
   TFormData extends Record<string, any>,
@@ -96,7 +95,6 @@ export function useBaseForm<
         const formData = transformDataForForm(backendData)
 
         reset(formData)
-
       } catch (error: any) {
         notify('Error al cargar los datos iniciales.', 'error')
         if (onError) onError(error)
@@ -126,7 +124,6 @@ export function useBaseForm<
         const message = Array.isArray(backendErrors[field])
           ? (backendErrors[field] as string[]).join(', ')
           : (backendErrors[field] as string)
-
 
         if (field in formData) {
           rhfSetError(field as keyof TFormData, {
@@ -166,8 +163,6 @@ export function useBaseForm<
           notify('Registro actualizado con éxito', 'success')
 
           reset(formData)
-
-
         } else {
           // --- Create ---
           response = await repository.create(payload)
@@ -189,7 +184,6 @@ export function useBaseForm<
         if (axiosError.isAxiosError && axiosError.response?.status === 400 && axiosError.response?.data) {
           handleBackendErrors(axiosError.response.data, formData, setError)
         } else {
-
           const message = error.response?.data?.detail || error.message || 'Ocurrió un error inesperado.'
 
           setServerError(message)

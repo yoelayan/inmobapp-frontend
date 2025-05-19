@@ -1,8 +1,6 @@
 // React Imports
 import React, { useState, useEffect } from 'react'
 
-
-
 // MUI Imports
 import { useRouter, useSearchParams } from 'next/navigation'
 
@@ -15,7 +13,6 @@ import Typography from '@mui/material/Typography'
 
 // API Imports
 import ApiClient from '@/api/apiClient'
-
 
 // Hooks Imports
 import { useNotification } from '@/hooks/useNotification'

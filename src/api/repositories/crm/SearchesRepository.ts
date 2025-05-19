@@ -59,11 +59,15 @@ class SearchesRepository extends BaseRepository<ISearch> {
     const url = apiRoutes.crm.searchesAddObservation.replace(':id', id)
 
     if (audio) {
-      return await this.apiClient.post(url, {
-        description: observation,
-      }, {
-        audio: audio
-      })
+      return await this.apiClient.post(
+        url,
+        {
+          description: observation
+        },
+        {
+          audio: audio
+        }
+      )
     }
 
     return await this.apiClient.post(url, {

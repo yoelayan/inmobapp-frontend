@@ -11,30 +11,19 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
 import GenericTable from '@/views/shared/list/GenericTable'
-import type {
-  Header, TableAction
-} from '@components/table/TableComponent'
+import type { Header, TableAction } from '@components/table/TableComponent'
 
 import type { GridProps } from '@components/table/components/TableGrid'
-
-
 
 // Hooks Imports
 import useClients from '@/hooks/api/crm/useClients'
 
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 
-
 const Table: React.FC = () => {
-
   const router = useRouter()
 
-  const {
-    data: franchises,
-    fetchData: fetchFranchises,
-    refreshData: refreshFranchises
-  } = useFranchises()
-
+  const { data: franchises, fetchData: fetchFranchises, refreshData: refreshFranchises } = useFranchises()
 
   const grid_params: GridProps = {
     title: 'name',

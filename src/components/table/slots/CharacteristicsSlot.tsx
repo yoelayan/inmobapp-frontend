@@ -40,11 +40,7 @@ interface CharacteristicsSlotProps {
   onDelete?: () => void
 }
 
-const CharacteristicsSlot: React.FC<CharacteristicsSlotProps> = ({
-  value,
-  allowDelete = true,
-  onDelete
-}) => {
+const CharacteristicsSlot: React.FC<CharacteristicsSlotProps> = ({ value, allowDelete = true, onDelete }) => {
   const [open, setOpen] = useState(false)
   const { deleteCharacteristic } = useSearches()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
@@ -96,17 +92,14 @@ const CharacteristicsSlot: React.FC<CharacteristicsSlotProps> = ({
 
   return (
     <Box sx={{ width: '100%' }}>
-      <Box
-        sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}
-        onClick={() => setOpen(!open)}
-      >
-        <Typography variant="body2" sx={{ mr: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }} onClick={() => setOpen(!open)}>
+        <Typography variant='body2' sx={{ mr: 1 }}>
           {value.length} características
         </Typography>
         <IconButton
-          aria-label="expand row"
-          size="small"
-          onClick={(e) => {
+          aria-label='expand row'
+          size='small'
+          onClick={e => {
             e.stopPropagation()
             setOpen(!open)
           }}
@@ -114,35 +107,35 @@ const CharacteristicsSlot: React.FC<CharacteristicsSlotProps> = ({
           {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
         </IconButton>
       </Box>
-      <Collapse in={open} timeout="auto" unmountOnExit sx={{ mt: 1 }}>
-        <Paper elevation={0} variant="outlined" sx={{ p: 1 }}>
+      <Collapse in={open} timeout='auto' unmountOnExit sx={{ mt: 1 }}>
+        <Paper elevation={0} variant='outlined' sx={{ p: 1 }}>
           <TableContainer>
-            <Table size="small">
+            <Table size='small'>
               <TableHead>
                 <TableRow>
                   <TableCell>Característica</TableCell>
                   <TableCell>Valor</TableCell>
-                  {allowDelete && <TableCell align="right">Acciones</TableCell>}
+                  {allowDelete && <TableCell align='right'>Acciones</TableCell>}
                 </TableRow>
               </TableHead>
               <TableBody>
-                {value.map((characteristic) => (
+                {value.map(characteristic => (
                   <TableRow key={characteristic.id}>
-                    <TableCell component="th" scope="row">
+                    <TableCell component='th' scope='row'>
                       {characteristic.characteristic_name}
                     </TableCell>
                     <TableCell>{renderValue(characteristic)}</TableCell>
                     {allowDelete && (
-                      <TableCell align="right">
+                      <TableCell align='right'>
                         <IconButton
-                          aria-label="delete"
-                          size="small"
-                          onClick={(e) => {
+                          aria-label='delete'
+                          size='small'
+                          onClick={e => {
                             e.stopPropagation()
                             handleDeleteCharacteristic(characteristic)
                           }}
                         >
-                          <DeleteIcon fontSize="small" />
+                          <DeleteIcon fontSize='small' />
                         </IconButton>
                       </TableCell>
                     )}

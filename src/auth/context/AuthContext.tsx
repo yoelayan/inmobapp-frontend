@@ -1,5 +1,5 @@
 'use client'
-import type { ReactNode } from 'react';
+import type { ReactNode } from 'react'
 import React, { useEffect, createContext, useState, useCallback } from 'react'
 
 import { useRouter } from 'next/navigation'
@@ -23,8 +23,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(true)
   const router = useRouter()
 
-
-
   const login = async (email: string, password: string) => {
     const sessionData = await AuthService.login(email, password)
 
@@ -45,7 +43,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const parsedSession = JSON.parse(session)
 
       if (!isAccessTokenExpired(parsedSession.expires_in)) {
-
         setSession(parsedSession)
       } else {
         logout()
@@ -53,26 +50,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setLoading(false)
-
   }, [logout])
 
   const isAccessTokenExpired = (accessTokenExpiresTimestamp: number) => {
-
     const currentTime = Math.floor(Date.now() / 1000)
-
 
     return accessTokenExpiresTimestamp < currentTime
   }
 
-
-
-  return <AuthContext.Provider value={{
-      session, login, logout,
-      loading, isAuthenticated: !!session,
-      user: session?.user || null
-    }}>
-    {children}
-  </AuthContext.Provider>
+  return (
+    <AuthContext.Provider
+      value={{
+        session,
+        login,
+        logout,
+        loading,
+        isAuthenticated: !!session,
+        user: session?.user || null
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  )
 }
 
 export { AuthContext }

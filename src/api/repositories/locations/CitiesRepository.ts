@@ -14,7 +14,6 @@ class CitiesRepository extends BaseRepository<IGeoItem> {
       CitiesRepository.instance = new CitiesRepository()
     }
 
-
     return CitiesRepository.instance
   }
 }

@@ -14,8 +14,7 @@ class UsersByFranchiseRepository extends BaseRepository<IUser> {
       UsersByFranchiseRepository.instance = new UsersByFranchiseRepository()
     }
 
-
-return UsersByFranchiseRepository.instance
+    return UsersByFranchiseRepository.instance
   }
 }
 

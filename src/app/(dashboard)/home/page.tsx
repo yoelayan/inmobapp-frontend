@@ -63,7 +63,8 @@ export default function Page() {
 
   // Process monthly data for charts
   const processMonthlyData = () => {
-    if (!data?.results?.monthly_data) return { months: [], propertyCount: [], sellCount: [], rentCount: [], sellBenefit: [], rentBenefit: [] }
+    if (!data?.results?.monthly_data)
+      return { months: [], propertyCount: [], sellCount: [], rentCount: [], sellBenefit: [], rentBenefit: [] }
 
     const months: string[] = []
     const propertyCount: number[] = []
@@ -120,7 +121,10 @@ export default function Page() {
       padding: { top: 10, bottom: 20 }
     },
     xaxis: {
-      categories: monthlyData.months.length > 0 ? monthlyData.months : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+      categories:
+        monthlyData.months.length > 0
+          ? monthlyData.months
+          : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
       axisBorder: { show: false },
       axisTicks: { show: false },
       labels: { style: { colors: '#999999' } }
@@ -177,14 +181,17 @@ export default function Page() {
       }
     },
     xaxis: {
-      categories: monthlyData.months.length > 0 ? monthlyData.months : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
+      categories:
+        monthlyData.months.length > 0
+          ? monthlyData.months
+          : ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'],
       axisBorder: { show: false },
       axisTicks: { show: false },
       labels: { style: { colors: '#999999' } }
     },
     yaxis: {
       labels: {
-        formatter: (value) => formatCurrency(value),
+        formatter: value => formatCurrency(value),
         style: { colors: '#999999' }
       }
     },
@@ -212,18 +219,18 @@ export default function Page() {
 
   if (loading && !data) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='60vh'>
         <CircularProgress />
       </Box>
     )
   }
 
   // Ensure theme and data are ready before rendering charts
-  const isReadyToRender = theme && theme.palette && data && data.results;
+  const isReadyToRender = theme && theme.palette && data && data.results
 
   if (!isReadyToRender) {
     return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+      <Box display='flex' justifyContent='center' alignItems='center' minHeight='60vh'>
         <CircularProgress />
       </Box>
     )
@@ -248,24 +255,24 @@ export default function Page() {
       {/* Filters Section */}
       <Grid size={{ xs: 12 }}>
         <Card>
-          <CardHeader title="Métricas de Propiedades" />
+          <CardHeader title='Métricas de Propiedades' />
           <CardContent>
-            <Box display="flex" gap={4} flexWrap="wrap" mb={4}>
+            <Box display='flex' gap={4} flexWrap='wrap' mb={4}>
               <TextField
-                label="Fecha Inicio"
-                type="date"
+                label='Fecha Inicio'
+                type='date'
                 value={filters.date_start}
                 onChange={handleDateChange('date_start')}
                 InputLabelProps={{ shrink: true }}
               />
               <TextField
-                label="Fecha Fin"
-                type="date"
+                label='Fecha Fin'
+                type='date'
                 value={filters.date_end}
                 onChange={handleDateChange('date_end')}
                 InputLabelProps={{ shrink: true }}
               />
-              <Button variant="contained" color="primary" onClick={handleFilterSubmit}>
+              <Button variant='contained' color='primary' onClick={handleFilterSubmit}>
                 Aplicar Filtros
               </Button>
             </Box>
@@ -277,36 +284,40 @@ export default function Page() {
       <Grid size={{ xs: 12, md: 6, lg: 3 }}>
         <CardStatHorizontal
           stats={data?.results?.summary?.total_properties.toString() || '0'}
-          title="Propiedades Totales"
-          avatarIcon="tabler-building-estate"
-          avatarColor="primary"
+          title='Propiedades Totales'
+          avatarIcon='tabler-building-estate'
+          avatarColor='primary'
         />
       </Grid>
       <Grid size={{ xs: 12, md: 6, lg: 3 }}>
         <CardStatHorizontal
           stats={data?.results?.summary?.total_sell_properties.toString() || '0'}
-          title="En Venta"
-          avatarIcon="tabler-coin"
-          avatarColor="success"
+          title='En Venta'
+          avatarIcon='tabler-coin'
+          avatarColor='success'
         />
       </Grid>
       <Grid size={{ xs: 12, md: 6, lg: 3 }}>
         <CardStatHorizontal
           stats={data?.results?.summary?.total_rent_properties.toString() || '0'}
-          title="En Renta"
-          avatarIcon="tabler-home-dollar"
-          avatarColor="warning"
+          title='En Renta'
+          avatarIcon='tabler-home-dollar'
+          avatarColor='warning'
         />
       </Grid>
       <Grid size={{ xs: 12, md: 6, lg: 3 }}>
         <CardStatsWithAreaChart
           stats={(data?.results?.summary?.total_properties || 0).toString()}
-          title="Crecimiento de Propiedades"
-          avatarIcon="tabler-trending-up"
-          avatarColor="info"
-          chartSeries={[{
-            data: generateDailyPropertiesData()
-          }] as any}
+          title='Crecimiento de Propiedades'
+          avatarIcon='tabler-trending-up'
+          avatarColor='info'
+          chartSeries={
+            [
+              {
+                data: generateDailyPropertiesData()
+              }
+            ] as any
+          }
         />
       </Grid>
 
@@ -314,8 +325,8 @@ export default function Page() {
       <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Box display="flex" alignItems="center">
+            <Box display='flex' alignItems='center' justifyContent='space-between'>
+              <Box display='flex' alignItems='center'>
                 <Box
                   sx={{
                     mr: 3,
@@ -328,16 +339,16 @@ export default function Page() {
                     backgroundColor: 'success.light'
                   }}
                 >
-                  <i className="tabler-currency-dollar" style={{ fontSize: '1.5rem', color: 'white' }}></i>
+                  <i className='tabler-currency-dollar' style={{ fontSize: '1.5rem', color: 'white' }}></i>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Beneficio Total de Ventas
                   </Typography>
-                  <Typography variant="h5">
+                  <Typography variant='h5'>
                     {formatCurrency(data?.results?.summary?.total_sell_benefit || 0)}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Precio promedio: {formatCurrency(data?.results?.summary?.avg_sell_price || 0)}
                   </Typography>
                 </Box>
@@ -350,8 +361,8 @@ export default function Page() {
       <Grid size={{ xs: 12, md: 6 }}>
         <Card>
           <CardContent>
-            <Box display="flex" alignItems="center" justifyContent="space-between">
-              <Box display="flex" alignItems="center">
+            <Box display='flex' alignItems='center' justifyContent='space-between'>
+              <Box display='flex' alignItems='center'>
                 <Box
                   sx={{
                     mr: 3,
@@ -364,16 +375,16 @@ export default function Page() {
                     backgroundColor: 'warning.light'
                   }}
                 >
-                  <i className="tabler-cash" style={{ fontSize: '1.5rem', color: 'white' }}></i>
+                  <i className='tabler-cash' style={{ fontSize: '1.5rem', color: 'white' }}></i>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Beneficio Total de Rentas
                   </Typography>
-                  <Typography variant="h5">
+                  <Typography variant='h5'>
                     {formatCurrency(data?.results?.summary?.total_rent_benefit || 0)}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant='caption' color='text.secondary'>
                     Precio promedio: {formatCurrency(data?.results?.summary?.avg_rent_price || 0)}
                   </Typography>
                 </Box>
@@ -386,48 +397,58 @@ export default function Page() {
       {/* Property Type Distribution */}
       <Grid size={{ xs: 12, lg: 6 }}>
         <Card>
-          <CardHeader title="Distribución de Propiedades" />
+          <CardHeader title='Distribución de Propiedades' />
           <CardContent>
             <Box mb={6}>
-              <Typography variant="h6" color="text.secondary" mb={2}>
+              <Typography variant='h6' color='text.secondary' mb={2}>
                 Propiedades en Venta vs Renta
               </Typography>
-              <Box display="flex" alignItems="center" gap={4} flexWrap="wrap">
-                <Box display="flex" flexDirection="column" alignItems="center">
-                  <Typography variant="h5" color="primary.main">
+              <Box display='flex' alignItems='center' gap={4} flexWrap='wrap'>
+                <Box display='flex' flexDirection='column' alignItems='center'>
+                  <Typography variant='h5' color='primary.main'>
                     {data?.results?.summary?.total_sell_properties || 0}
                   </Typography>
-                  <Typography variant="body2">En Venta</Typography>
+                  <Typography variant='body2'>En Venta</Typography>
                 </Box>
-                <Box display="flex" flexDirection="column" alignItems="center">
-                  <Typography variant="h5" color="success.main">
+                <Box display='flex' flexDirection='column' alignItems='center'>
+                  <Typography variant='h5' color='success.main'>
                     {data?.results?.summary?.total_rent_properties || 0}
                   </Typography>
-                  <Typography variant="body2">En Renta</Typography>
+                  <Typography variant='body2'>En Renta</Typography>
                 </Box>
               </Box>
             </Box>
 
             <Box>
               <HorizontalWithBorder
-                title="Propiedades en Venta"
+                title='Propiedades en Venta'
                 stats={data?.results?.summary?.total_sell_properties || 0}
-                trendNumber={data?.results?.summary?.total_sell_properties && data?.results?.summary?.total_properties
-                  ? Math.round((data.results.summary.total_sell_properties / (data.results.summary.total_properties || 1)) * 100)
-                  : 0}
-                avatarIcon="tabler-coin"
-                color="primary"
+                trendNumber={
+                  data?.results?.summary?.total_sell_properties && data?.results?.summary?.total_properties
+                    ? Math.round(
+                        (data.results.summary.total_sell_properties / (data.results.summary.total_properties || 1)) *
+                          100
+                      )
+                    : 0
+                }
+                avatarIcon='tabler-coin'
+                color='primary'
               />
             </Box>
             <Box mt={4}>
               <HorizontalWithBorder
-                title="Propiedades en Renta"
+                title='Propiedades en Renta'
                 stats={data?.results?.summary?.total_rent_properties || 0}
-                trendNumber={data?.results?.summary?.total_rent_properties && data?.results?.summary?.total_properties
-                  ? Math.round((data.results.summary.total_rent_properties / (data.results.summary.total_properties || 1)) * 100)
-                  : 0}
-                avatarIcon="tabler-home-dollar"
-                color="success"
+                trendNumber={
+                  data?.results?.summary?.total_rent_properties && data?.results?.summary?.total_properties
+                    ? Math.round(
+                        (data.results.summary.total_rent_properties / (data.results.summary.total_properties || 1)) *
+                          100
+                      )
+                    : 0
+                }
+                avatarIcon='tabler-home-dollar'
+                color='success'
               />
             </Box>
           </CardContent>
@@ -437,11 +458,11 @@ export default function Page() {
       {/* Sale vs Rent Comparison Chart */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Card>
-          <CardHeader title="Propiedades en Venta vs Renta por Mes" />
+          <CardHeader title='Propiedades en Venta vs Renta por Mes' />
           <CardContent>
             {isReadyToRender && (
               <AppReactApexCharts
-                type="bar"
+                type='bar'
                 height={350}
                 options={sellRentComparisonOptions}
                 series={sellRentComparisonSeries}
@@ -454,11 +475,11 @@ export default function Page() {
       {/* Benefits Comparison Chart */}
       <Grid size={{ xs: 12, md: 6 }}>
         <Card>
-          <CardHeader title="Comparación de Beneficios Mensuales" />
+          <CardHeader title='Comparación de Beneficios Mensuales' />
           <CardContent>
             {isReadyToRender && (
               <AppReactApexCharts
-                type="area"
+                type='area'
                 height={350}
                 options={benefitsComparisonOptions}
                 series={benefitsComparisonSeries}

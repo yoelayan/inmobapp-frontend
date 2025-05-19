@@ -1,10 +1,8 @@
-
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
 import type { IGeoItem } from '@/types/apps/LocationsTypes'
 import type { IClient } from './ClientesTypes'
 import type { IStatus } from './CatalogTypes'
-
 
 export interface IRealProperty {
   id: number
@@ -39,7 +37,6 @@ export interface IRealProperty {
   owner: IClient
   owner_id: number
 }
-
 
 export interface IImage {
   id: number

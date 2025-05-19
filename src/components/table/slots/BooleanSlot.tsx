@@ -9,14 +9,12 @@ interface BooleanSlotProps {
 
 const BooleanSlot: React.FC<BooleanSlotProps> = ({ value }) => {
   // Convert string 'True'/'False' to boolean if needed
-  const boolValue = typeof value === 'string'
-    ? value.toLowerCase() === 'true'
-    : Boolean(value)
+  const boolValue = typeof value === 'string' ? value.toLowerCase() === 'true' : Boolean(value)
 
   return boolValue ? (
-    <CheckCircleIcon color="success" fontSize="small" />
+    <CheckCircleIcon color='success' fontSize='small' />
   ) : (
-    <CancelIcon color="error" fontSize="small" />
+    <CancelIcon color='error' fontSize='small' />
   )
 }
 

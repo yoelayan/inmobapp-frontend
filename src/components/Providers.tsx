@@ -17,11 +17,7 @@ import { AuthProvider } from '@auth/context/AuthContext'
 import { NotificationProvider } from '@context/NotificationContext'
 
 // Util Imports
-import {
-  getModeClient,
-  getSystemModeClient,
-  getSettingsFromCookieClient
-} from '@core/utils/clientHelpers'
+import { getModeClient, getSystemModeClient, getSettingsFromCookieClient } from '@core/utils/clientHelpers'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
@@ -48,9 +44,9 @@ const ProvidersImpl = (props: Props) => {
   } = props
 
   // Use client values directly - this component will only run on the client
-  let clientSettings;
-  let clientMode;
-  let clientSystemMode;
+  let clientSettings
+  let clientMode
+  let clientSystemMode
 
   try {
     clientMode = getModeClient() as Mode
@@ -68,12 +64,8 @@ const ProvidersImpl = (props: Props) => {
       <AuthProvider>
         <NotificationProvider>
           <VerticalNavProvider>
-            <SettingsProvider
-              settingsCookie={clientSettings}
-              mode={clientMode}>
-              <ThemeProvider
-                direction={direction}
-                systemMode={clientSystemMode}>
+            <SettingsProvider settingsCookie={clientSettings} mode={clientMode}>
+              <ThemeProvider direction={direction} systemMode={clientSystemMode}>
                 {children}
               </ThemeProvider>
             </SettingsProvider>
@@ -87,7 +79,7 @@ const ProvidersImpl = (props: Props) => {
 // The main export - a dynamic component with SSR disabled
 // This is the key to solving hydration issues
 const Providers = dynamic(() => Promise.resolve(ProvidersImpl), {
-  ssr: false,
+  ssr: false
 })
 
 export default Providers as unknown as (props: Props) => JSX.Element

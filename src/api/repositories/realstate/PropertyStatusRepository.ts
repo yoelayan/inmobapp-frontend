@@ -14,8 +14,7 @@ class PropertyStatusRepository extends BaseRepository<Status> {
       PropertyStatusRepository.instance = new PropertyStatusRepository()
     }
 
-    
-return PropertyStatusRepository.instance
+    return PropertyStatusRepository.instance
   }
 }
 

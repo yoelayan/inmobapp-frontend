@@ -1,5 +1,5 @@
 'use client'
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import axios from 'axios'
 
 class ApiClient {
@@ -115,7 +115,7 @@ class ApiClient {
         this.notificationCallback('Token not valid: Please login again')
         this.removeToken()
 
-return
+        return
       }
 
       const errorMessage = error.response?.data?.detail || error.message || 'An error occurred'

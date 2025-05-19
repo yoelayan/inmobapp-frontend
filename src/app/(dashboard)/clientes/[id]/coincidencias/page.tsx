@@ -61,21 +61,19 @@ const ClientMatches: React.FC = () => {
     fetchMatchedProperties()
   }, [getMatchedProperties, clientId, client_search])
 
-  return (
-    loading ? (
-      <CircularProgress />
-    ) : (
-      <Grid container spacing={6}>
-        <Grid>
-          <PropertiesTable
-            title='Propiedades encontradas'
-            subtitle={`Estas visualizando las propiedades encontradas para el cliente: ${client_search?.client?.name}`}
-            properties={matchedProperties}
-            refreshProperties={refreshProperties}
-          />
-        </Grid>
+  return loading ? (
+    <CircularProgress />
+  ) : (
+    <Grid container spacing={6}>
+      <Grid>
+        <PropertiesTable
+          title='Propiedades encontradas'
+          subtitle={`Estas visualizando las propiedades encontradas para el cliente: ${client_search?.client?.name}`}
+          properties={matchedProperties}
+          refreshProperties={refreshProperties}
+        />
       </Grid>
-    )
+    </Grid>
   )
 }
 

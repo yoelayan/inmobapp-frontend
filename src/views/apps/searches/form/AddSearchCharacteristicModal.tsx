@@ -107,24 +107,24 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
 
   // Reset value based on type
   const resetValue = (type: string) => {
-    let initialValue;
+    let initialValue
 
     switch (type) {
       case 'boolean':
-        initialValue = false;
-        break;
+        initialValue = false
+        break
       case 'integer':
       case 'decimal':
-        initialValue = 0;
-        break;
+        initialValue = 0
+        break
       case 'text':
       default:
-        initialValue = '';
-        break;
+        initialValue = ''
+        break
     }
 
-    setValue(initialValue);
-    setFormValue('charValue', initialValue);
+    setValue(initialValue)
+    setFormValue('charValue', initialValue)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -159,11 +159,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
     setIsSubmitting(true)
 
     try {
-      const response = await addCharacteristic(
-        searchId,
-        selectedCharacteristic,
-        submissionValue
-      )
+      const response = await addCharacteristic(searchId, selectedCharacteristic, submissionValue)
 
       console.log('API response:', response)
 
@@ -192,9 +188,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
 
   // Get characteristic name from selected ID
   const getCharacteristicName = (): string => {
-    const characteristic = availableCharacteristics.find(
-      (char) => char.id === selectedCharacteristic
-    )
+    const characteristic = availableCharacteristics.find(char => char.id === selectedCharacteristic)
 
     return characteristic ? characteristic.name : ''
   }
@@ -208,7 +202,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
       case 'boolean':
         return (
           <SwitchField
-            name="charValue"
+            name='charValue'
             label={label}
             control={control}
             setValue={(name, newValue) => {
@@ -222,7 +216,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
       case 'integer':
         return (
           <NumberField
-            name="charValue"
+            name='charValue'
             label={label}
             control={control}
             setValue={(name, newValue) => {
@@ -238,7 +232,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
       case 'decimal':
         return (
           <NumberField
-            name="charValue"
+            name='charValue'
             label={label}
             control={control}
             setValue={(name, newValue) => {
@@ -254,7 +248,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
       default:
         return (
           <TextField
-            name="charValue"
+            name='charValue'
             label={label}
             control={control}
             setValue={(name, newValue) => {
@@ -270,26 +264,24 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   }
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="add-characteristic-modal-title"
-    >
-      <Box sx={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: { xs: '90%', sm: '500px' },
-        maxHeight: '90vh',
-        overflow: 'auto',
-        bgcolor: 'background.paper',
-        boxShadow: 24,
-        borderRadius: 1
-      }}>
+    <Modal open={open} onClose={handleClose} aria-labelledby='add-characteristic-modal-title'>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: { xs: '90%', sm: '500px' },
+          maxHeight: '90vh',
+          overflow: 'auto',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          borderRadius: 1
+        }}
+      >
         <Card>
           <CardHeader
-            title="Añadir Característica"
+            title='Añadir Característica'
             action={
               <IconButton onClick={handleClose} disabled={isSubmitting}>
                 <CloseIcon />
@@ -301,31 +293,31 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
             <form onSubmit={handleSubmit}>
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <FormControl fullWidth>
-                  <InputLabel id="add-characteristic-label">Seleccionar Característica</InputLabel>
+                  <InputLabel id='add-characteristic-label'>Seleccionar Característica</InputLabel>
                   <Select
-                    labelId="add-characteristic-label"
+                    labelId='add-characteristic-label'
                     value={selectedCharacteristic}
-                    onChange={(e) => setSelectedCharacteristic(e.target.value)}
-                    label="Seleccionar Característica"
+                    onChange={e => setSelectedCharacteristic(e.target.value)}
+                    label='Seleccionar Característica'
                     disabled={loadingCharacteristics || isSubmitting || availableCharacteristics.length === 0}
                   >
                     {availableCharacteristics.map(char => (
-                      <MenuItem key={char.id} value={char.id}>{char.name}</MenuItem>
+                      <MenuItem key={char.id} value={char.id}>
+                        {char.name}
+                      </MenuItem>
                     ))}
                   </Select>
                 </FormControl>
 
                 <Box sx={{ mt: 2 }}>
                   {selectedCharacteristic && renderInputField()}
-                  {!selectedCharacteristic && (
-                    <FormHelperText>Seleccione una característica primero</FormHelperText>
-                  )}
+                  {!selectedCharacteristic && <FormHelperText>Seleccione una característica primero</FormHelperText>}
                 </Box>
 
                 <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
+                  type='submit'
+                  variant='contained'
+                  color='primary'
                   disabled={isSubmitting || !selectedCharacteristic}
                   startIcon={isSubmitting ? <CircularProgress size={20} /> : <AddIcon />}
                   fullWidth

@@ -1,15 +1,15 @@
-import type { Control, FieldError, UseFormGetValues, UseFormSetValue } from "react-hook-form"
+import type { Control, FieldError, UseFormGetValues, UseFormSetValue } from 'react-hook-form'
 
 export interface FormProps {
-    control: Control<any>
-    errors: { [key: string]: FieldError }
-    setValue: UseFormSetValue<any>
-    getValues: UseFormGetValues<any>
+  control: Control<any>
+  errors: { [key: string]: FieldError }
+  setValue: UseFormSetValue<any>
+  getValues: UseFormGetValues<any>
 }
 
 export interface FormField {
-    name: string
-    Component: any
-    label: string
-    props?: any
+  name: string
+  Component: any
+  label: string
+  props?: any
 }

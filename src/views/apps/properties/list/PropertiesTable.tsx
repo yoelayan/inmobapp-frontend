@@ -47,7 +47,6 @@ const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) =
   const router = useRouter()
 
   const handleStateChange = async (StateSelected: Record<string, any>) => {
-
     if (!StateSelected || StateSelected.value === '') {
       return
     }
@@ -70,7 +69,6 @@ const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) =
     const value = row.characteristics.find((item: any) => item.code === tag.name)
 
     return value ? value.value : null
-
   }
 
   useEffect(() => {
@@ -116,7 +114,11 @@ const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) =
   const actions: TableAction[] = [
     {
       label: 'Editar',
-      icon: <><EditIcon /></>,
+      icon: (
+        <>
+          <EditIcon />
+        </>
+      ),
       onClick: (row: Record<string, any>) => {
         router.push(`/propiedades/${row.id}/`)
       }
@@ -210,9 +212,7 @@ const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) =
         response={properties}
         refreshData={(filters?: Record<string, any>) => {
           // Preserve status filter when other filters change
-          const combinedFilters = statusFilter
-            ? { ...filters, status__code: statusFilter }
-            : filters
+          const combinedFilters = statusFilter ? { ...filters, status__code: statusFilter } : filters
 
           return refreshProperties(combinedFilters)
         }}

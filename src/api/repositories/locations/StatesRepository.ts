@@ -14,7 +14,6 @@ class StatesRepository extends BaseRepository<IGeoItem> {
       StatesRepository.instance = new StatesRepository()
     }
 
-
     return StatesRepository.instance
   }
 }

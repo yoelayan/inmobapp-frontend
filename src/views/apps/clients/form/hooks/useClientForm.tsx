@@ -32,10 +32,10 @@ const transformClientDataForForm = (client: IClient): Partial<ClientFormData> =>
     const clientKey = key as keyof IClient
 
     if (client.hasOwnProperty(clientKey)) {
-        // Direct assignment for other matching keys
-        formData[formKey] = client[clientKey] as any
-      }
+      // Direct assignment for other matching keys
+      formData[formKey] = client[clientKey] as any
     }
+  }
 
   // You might need to handle specific type conversions here if necessary
   return formData

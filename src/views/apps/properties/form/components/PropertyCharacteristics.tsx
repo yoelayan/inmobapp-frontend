@@ -38,11 +38,7 @@ interface PropertyCharacteristicsProps {
   onChange?: (characteristics: IPropertyCharacteristic[]) => void
 }
 
-const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({
-  propertyId,
-  control,
-  onChange
-}) => {
+const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ propertyId, control, onChange }) => {
   const { notify } = useNotification()
   const { getPropertyCharacteristics, allCharacteristics, deleteCharacteristic, addCharacteristic } = useProperties()
 
@@ -104,22 +100,16 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({
 
       if (response.results) {
         // Filter out characteristics that are already added
-        const currentIds = [...requiredCharacteristics, ...optionalCharacteristics]
-          .map(char => char.characteristic.id)
+        const currentIds = [...requiredCharacteristics, ...optionalCharacteristics].map(char => char.characteristic.id)
 
-        const filtered = response.results.filter(char =>
-          !char.is_required && !currentIds.includes(char.id)
-        )
+        const filtered = response.results.filter(char => !char.is_required && !currentIds.includes(char.id))
 
         setAvailableCharacteristics(filtered)
       } else if (Array.isArray(response)) {
         // Backward compatibility for direct array responses
-        const currentIds = [...requiredCharacteristics, ...optionalCharacteristics]
-          .map(char => char.characteristic.id)
+        const currentIds = [...requiredCharacteristics, ...optionalCharacteristics].map(char => char.characteristic.id)
 
-        const filtered = response.filter(char =>
-          !char.is_required && !currentIds.includes(char.id)
-        )
+        const filtered = response.filter(char => !char.is_required && !currentIds.includes(char.id))
 
         setAvailableCharacteristics(filtered)
       }
@@ -201,16 +191,21 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({
 
     // Notify parent component
     if (onChange) {
-      onChange(isRequired
-        ? [...updatedCharacteristics, ...optionalCharacteristics]
-        : [...requiredCharacteristics, ...updatedCharacteristics]
+      onChange(
+        isRequired
+          ? [...updatedCharacteristics, ...optionalCharacteristics]
+          : [...requiredCharacteristics, ...updatedCharacteristics]
       )
     }
   }
 
   // Create input field based on characteristic type
   const renderInputField = (characteristic: IPropertyCharacteristic) => {
-    const { id, value, characteristic: { type_value, name } } = characteristic
+    const {
+      id,
+      value,
+      characteristic: { type_value, name }
+    } = characteristic
 
     switch (type_value) {
       case 'boolean':
@@ -287,7 +282,7 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({
   return (
     <Box>
       {/* Required Characteristics Section */}
-      <Typography variant="h6" gutterBottom>
+      <Typography variant='h6' gutterBottom>
         Características Requeridas
       </Typography>
       <Divider sx={{ mb: 2 }} />
@@ -298,13 +293,13 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({
           </Box>
         ))
       ) : (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
           No hay características requeridas
         </Typography>
       )}
 
       {/* Optional Characteristics Section */}
-      <Typography variant="h6" sx={{ mt: 4 }} gutterBottom>
+      <Typography variant='h6' sx={{ mt: 4 }} gutterBottom>
         Características Opcionales
       </Typography>
       <Divider sx={{ mb: 2 }} />
@@ -312,47 +307,43 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({
       {optionalCharacteristics.length > 0 ? (
         optionalCharacteristics.map(characteristic => (
           <Box key={characteristic.id} sx={{ mb: 2, width: '100%', display: 'flex', alignItems: 'flex-start' }}>
-            <Box sx={{ flexGrow: 1 }}>
-              {renderInputField(characteristic)}
-            </Box>
-            <IconButton
-              color="error"
-              onClick={() => handleRemoveCharacteristic(characteristic.id)}
-              sx={{ mt: 1 }}
-            >
+            <Box sx={{ flexGrow: 1 }}>{renderInputField(characteristic)}</Box>
+            <IconButton color='error' onClick={() => handleRemoveCharacteristic(characteristic.id)} sx={{ mt: 1 }}>
               <DeleteIcon />
             </IconButton>
           </Box>
         ))
       ) : (
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+        <Typography variant='body2' color='text.secondary' sx={{ mb: 3 }}>
           No hay características opcionales
         </Typography>
       )}
 
       {/* Add New Characteristic Section */}
       <Box sx={{ mt: 4, mb: 2 }}>
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography variant='subtitle1' gutterBottom>
           Agregar Nueva Característica
         </Typography>
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', width: '100%' }}>
           <FormControl fullWidth>
-            <InputLabel id="add-characteristic-label">Seleccionar Característica</InputLabel>
+            <InputLabel id='add-characteristic-label'>Seleccionar Característica</InputLabel>
             <Select
-              labelId="add-characteristic-label"
+              labelId='add-characteristic-label'
               value={selectedCharacteristic}
-              onChange={(e) => setSelectedCharacteristic(e.target.value)}
-              label="Seleccionar Característica"
+              onChange={e => setSelectedCharacteristic(e.target.value)}
+              label='Seleccionar Característica'
               disabled={loadingAll || availableCharacteristics.length === 0}
             >
               {availableCharacteristics.map(char => (
-                <MenuItem key={char.id} value={char.id}>{char.name}</MenuItem>
+                <MenuItem key={char.id} value={char.id}>
+                  {char.name}
+                </MenuItem>
               ))}
             </Select>
           </FormControl>
           <Button
-            variant="contained"
-            color="primary"
+            variant='contained'
+            color='primary'
             startIcon={<AddIcon />}
             onClick={handleAddCharacteristic}
             disabled={!selectedCharacteristic || loadingAll}

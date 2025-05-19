@@ -66,9 +66,7 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
           await deleteObservation(searchId, observationId)
 
           // Actualizar el estado local inmediatamente después de eliminar
-          setLocalObservations(prevObservations =>
-            prevObservations.filter(obs => obs.id !== observationId)
-          )
+          setLocalObservations(prevObservations => prevObservations.filter(obs => obs.id !== observationId))
 
           // Notificar al componente padre para que actualice los datos
           onSuccess()
@@ -89,17 +87,11 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
 
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={onClose}
-        aria-labelledby="observations-log-title"
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle id="observations-log-title">
+      <Dialog open={open} onClose={onClose} aria-labelledby='observations-log-title' fullWidth maxWidth='md'>
+        <DialogTitle id='observations-log-title'>
           Bitácora de Observaciones
           <IconButton
-            aria-label="close"
+            aria-label='close'
             onClick={onClose}
             sx={{
               position: 'absolute',
@@ -112,7 +104,7 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
         </DialogTitle>
         <DialogContent dividers>
           {localObservations.length === 0 ? (
-            <Typography variant="body1" align="center" sx={{ py: 4 }}>
+            <Typography variant='body1' align='center' sx={{ py: 4 }}>
               No hay observaciones registradas.
             </Typography>
           ) : (
@@ -120,9 +112,13 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
               {localObservations.map((observation, index) => (
                 <React.Fragment key={observation.id}>
                   <ListItem
-                    alignItems="flex-start"
+                    alignItems='flex-start'
                     secondaryAction={
-                      <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteObservation(observation.id)}>
+                      <IconButton
+                        edge='end'
+                        aria-label='delete'
+                        onClick={() => handleDeleteObservation(observation.id)}
+                      >
                         <DeleteIcon />
                       </IconButton>
                     }
@@ -135,21 +131,21 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
                     <ListItemText
                       primary={
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="subtitle1" component="span">
+                          <Typography variant='subtitle1' component='span'>
                             {observation.author.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" component="span">
+                          <Typography variant='body2' color='text.secondary' component='span'>
                             {formatDate(observation.created_at)}
                           </Typography>
                         </Box>
                       }
                       secondary={
-                        <Box component="div">
+                        <Box component='div'>
                           <Typography
                             sx={{ display: 'block', mt: 1 }}
-                            component="span"
-                            variant="body2"
-                            color="text.primary"
+                            component='span'
+                            variant='body2'
+                            color='text.primary'
                           >
                             {observation.description}
                           </Typography>
@@ -162,14 +158,14 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
                       }
                     />
                   </ListItem>
-                  {index < localObservations.length - 1 && <Divider variant="inset" component="li" />}
+                  {index < localObservations.length - 1 && <Divider variant='inset' component='li' />}
                 </React.Fragment>
               ))}
             </List>
           )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} color="primary">
+          <Button onClick={onClose} color='primary'>
             Cerrar
           </Button>
         </DialogActions>

@@ -8,17 +8,17 @@ import BaseRepository from '../BaseRepository'
 // Define the interface for total properties response
 interface TotalPropertiesResponse {
   results: {
-    total_properties: number;
+    total_properties: number
     status_counts: {
-      active: number;
-      in_approval: number;
-      paused: number;
-      pre_captured: number;
-      inactive: number;
-      private: number;
-      reserved: number;
-      sold: number;
-      hook: number;
+      active: number
+      in_approval: number
+      paused: number
+      pre_captured: number
+      inactive: number
+      private: number
+      reserved: number
+      sold: number
+      hook: number
     }
   }
 }

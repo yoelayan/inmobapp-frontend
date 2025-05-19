@@ -159,8 +159,7 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
             )
           }
 
-
-return null
+          return null
         })}
       </Menu>
     </ScrollWrapper>

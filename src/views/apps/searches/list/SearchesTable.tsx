@@ -145,7 +145,6 @@ const SearchesTable: React.FC = () => {
 
   const { data, refreshData, fetchData } = useSearches()
 
-
   const headers: Header[] = [
     { key: 'client__name', label: 'Nombre', filterable: true, slot: 'default' },
     { key: 'description', label: 'Descripción', filterable: true, slot: 'default' },

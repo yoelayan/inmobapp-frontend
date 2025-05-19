@@ -14,8 +14,7 @@ class PropertyNegotiationRepository extends BaseRepository<IType> {
       PropertyNegotiationRepository.instance = new PropertyNegotiationRepository()
     }
 
-    
-return PropertyNegotiationRepository.instance
+    return PropertyNegotiationRepository.instance
   }
 }
 

@@ -24,7 +24,6 @@ const TablePaginationComponent = ({ table }: { table: ReturnType<typeof useReact
         )} de ${table.getFilteredRowModel().rows.length} entradas`}
       </Typography>
       <div className='flex items-center gap-2'>
-
         <Pagination
           shape='rounded'
           color='primary'
@@ -47,7 +46,6 @@ const TablePaginationComponent = ({ table }: { table: ReturnType<typeof useReact
           <MenuItem value='50'>50</MenuItem>
         </CustomTextField>
       </div>
-
     </div>
   )
 }

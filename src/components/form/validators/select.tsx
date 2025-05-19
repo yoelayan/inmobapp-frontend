@@ -5,8 +5,7 @@ export const select = (message: string = '') => {
     message = 'Debe seleccionar un elemento'
   }
 
-  
-return object(
+  return object(
     {
       value: any(),
       label: any()

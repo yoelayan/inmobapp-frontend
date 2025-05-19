@@ -14,8 +14,7 @@ class FranchisesRepository extends BaseRepository<Franquicia> {
       FranchisesRepository.instance = new FranchisesRepository()
     }
 
-    
-return FranchisesRepository.instance
+    return FranchisesRepository.instance
   }
 }
 

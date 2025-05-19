@@ -18,18 +18,8 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
       updateCharacteristic - detail
      */
 
-  const {fetchData,
-    refreshData,
-    getData,
-    fetchItemById,
-    createData,
-    updateData,
-    data,
-    loading,
-    error,
-    errors,
-    item,
-  } = useBaseHookApi(PropertiesRepository, defaultFilters)
+  const { fetchData, refreshData, getData, fetchItemById, createData, updateData, data, loading, error, errors, item } =
+    useBaseHookApi(PropertiesRepository, defaultFilters)
 
   const [metricsData, setMetricsData] = useState<any>(null)
   const [metricsLoading, setMetricsLoading] = useState<boolean>(false)
@@ -56,9 +46,9 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     const imagesData = images.map(img => ({
       id: img.id,
       order: img.order
-    }));
+    }))
 
-    return await PropertiesRepository.updateImagesOrder(propertyId.toString(), imagesData);
+    return await PropertiesRepository.updateImagesOrder(propertyId.toString(), imagesData)
   }
 
   const addCharacteristic = async (id: string | number, characteristicId: string | number) => {

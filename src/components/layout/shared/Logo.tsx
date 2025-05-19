@@ -71,8 +71,6 @@ const Logo = ({ color }: { color?: CSSProperties['color'] }) => {
 
   return (
     <div className='flex items-center'>
-      
-      
       <LogoText
         color={color}
         ref={logoTextRef}

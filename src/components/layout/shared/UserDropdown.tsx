@@ -52,8 +52,6 @@ const UserDropdown = () => {
 
   const { settings } = useSettings()
 
-
-
   const handleDropdownOpen = () => {
     console.log(user)
     !open ? setOpen(true) : setOpen(false)
@@ -114,13 +112,11 @@ const UserDropdown = () => {
                       <Typography className='font-medium' color='text.primary'>
                         {user?.name}
                       </Typography>
-                      <Typography variant='caption'>
-                        {user?.email}
-                      </Typography>
+                      <Typography variant='caption'>{user?.email}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />
-                  
+
                   <div className='flex items-center plb-2 pli-3'>
                     <LogoutButton />
                   </div>

@@ -1,4 +1,4 @@
-import type { Propiedad} from '@/types/apps/PropiedadesTypes';
+import type { Propiedad } from '@/types/apps/PropiedadesTypes'
 import { TipoPropiedad } from '@/types/apps/PropiedadesTypes'
 import { Ciudad, Estado } from '@/types/apps/LocationsTypes'
 import { Franquicia } from '@/types/apps/FranquiciaTypes'

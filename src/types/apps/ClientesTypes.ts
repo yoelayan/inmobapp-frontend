@@ -1,6 +1,5 @@
-import type { ICharacteristic } from "./RealtstateTypes"
-import type { IUser } from "./UserTypes"
-
+import type { ICharacteristic } from './RealtstateTypes'
+import type { IUser } from './UserTypes'
 
 export interface IClient {
   id: number
@@ -11,7 +10,6 @@ export interface IClient {
   franchise?: number
   assigned_to?: number
 }
-
 
 export interface ISearch {
   id: number

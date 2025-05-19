@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 // Types Imports
 import type { Column, Table } from '@tanstack/react-table'
 
-
 // Mui Imports
 import { MenuItem } from '@mui/material'
 import Autocomplete from '@mui/material/Autocomplete'
@@ -56,7 +55,6 @@ const ColumnFilterSelect = ({
   const [inputValue, setInputValue] = useState<string>('')
 
   const buildItems = () => {
-
     if (options) {
       setItems(options as OptionType[])
     } else if (response) {

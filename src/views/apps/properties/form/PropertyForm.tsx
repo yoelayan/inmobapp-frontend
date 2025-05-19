@@ -130,13 +130,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   const [images, setImages] = useState<IImage[]>([])
 
   // Obtenemos las funciones de API para las imágenes
-  const {
-    uploadImages,
-    deleteImage,
-    updateImagesOrder,
-    getAllImages,
-    updateCharacteristic
-  } = useProperties()
+  const { uploadImages, deleteImage, updateImagesOrder, getAllImages, updateCharacteristic } = useProperties()
 
   // disabled de inputs, useState
   const [disabledPrice, setDisabledPrice] = useState(false)
@@ -213,7 +207,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
 
   useEffect(() => {
     if (imagesValue) {
-      setImages(Array.isArray(imagesValue) ? imagesValue as IImage[] : [])
+      setImages(Array.isArray(imagesValue) ? (imagesValue as IImage[]) : [])
     }
   }, [imagesValue])
 
@@ -222,11 +216,11 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     // Only load characteristics when at step 3 (index 2) and we have a propertyId
     if (activeStep === 2 && propertyId) {
       // If this property already exists, let's load its characteristics
-      console.log('Loading characteristics for property:', propertyId);
+      console.log('Loading characteristics for property:', propertyId)
 
       // This will be handled by the PropertyCharacteristics component
     }
-  }, [activeStep, propertyId]);
+  }, [activeStep, propertyId])
 
   const ModalClient = () => {
     const handleSuccess = (response: IClient) => {
@@ -245,7 +239,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         aria-labelledby='modal-modal-title'
         aria-describedby='modal-modal-description'
       >
-          <Card sx={{
+        <Card
+          sx={{
             position: 'absolute',
             top: '50%',
             left: '50%',
@@ -258,28 +253,28 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             borderRadius: 2
           }}
         >
-            <CardContent>
-              <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                  <Typography id='modal-modal-title' variant='h5' component='h2'>
-                    Crear Cliente
-                  </Typography>
-                  <IconButton onClick={handleButtonModal}>
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-
-                <ClientForm
-                  statuses={statuses}
-                  franchises={franchises}
-                  users={users}
-                  onSuccess={(response: IClient) => {
-                    handleSuccess(response)
-                  }}
-                />
+          <CardContent>
+            <Box>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+                <Typography id='modal-modal-title' variant='h5' component='h2'>
+                  Crear Cliente
+                </Typography>
+                <IconButton onClick={handleButtonModal}>
+                  <CloseIcon />
+                </IconButton>
               </Box>
-            </CardContent>
-          </Card>
+
+              <ClientForm
+                statuses={statuses}
+                franchises={franchises}
+                users={users}
+                onSuccess={(response: IClient) => {
+                  handleSuccess(response)
+                }}
+              />
+            </Box>
+          </CardContent>
+        </Card>
       </Modal>
     )
   }
@@ -320,11 +315,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         handleSubmit().then(() => {
           // Save characteristics only if there's a propertyId
           if (propertyId) {
-            const characteristics = watch('characteristics');
+            const characteristics = watch('characteristics')
 
             if (characteristics && characteristics.length > 0) {
               // Make sure the characteristics array matches the expected type
-
 
               // Save characteristics using updateCharacteristic
               updateCharacteristic(propertyId, characteristics)
@@ -337,7 +331,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 })
             }
           }
-        });
+        })
 
         // Don't advance past the last step
         return
@@ -371,36 +365,30 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   // Handler for characteristic changes
   const handleCharacteristicsChange = (characteristics: any[]) => {
     // Only update if necessary to prevent render loops
-    const currentChars = watch('characteristics');
+    const currentChars = watch('characteristics')
 
     // Deep comparison instead of reference comparison
     if (JSON.stringify(currentChars) === JSON.stringify(characteristics)) {
-      return;
+      return
     }
 
-    setValue('characteristics', characteristics);
+    setValue('characteristics', characteristics)
   }
-
-
 
   // Try/catch to avoid any potential issues with characteristics
   const CharacteristicsWrapper = React.useMemo(() => {
     return () => {
       try {
         return (
-          <PropertyCharacteristics
-            propertyId={propertyId}
-            control={control}
-            onChange={handleCharacteristicsChange}
-          />
-        );
+          <PropertyCharacteristics propertyId={propertyId} control={control} onChange={handleCharacteristicsChange} />
+        )
       } catch (error) {
-        console.error('Error rendering PropertyCharacteristics:', error);
+        console.error('Error rendering PropertyCharacteristics:', error)
 
-        return <Typography color="error">Error loading characteristics</Typography>;
+        return <Typography color='error'>Error loading characteristics</Typography>
       }
-    };
-  }, [propertyId, control]);
+    }
+  }, [propertyId, control])
 
   // Create a separate component for images to avoid interference with characteristics
   const PropertyImages = React.useMemo(() => {
@@ -420,8 +408,18 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           onReorder={handleUpdateImagesOrder}
         />
       </Box>
-    );
-  }, [control, errors.images, images, setValue, uploadImages, deleteImage, handleChangeImages, handleGetAllImages, handleUpdateImagesOrder]);
+    )
+  }, [
+    control,
+    errors.images,
+    images,
+    setValue,
+    uploadImages,
+    deleteImage,
+    handleChangeImages,
+    handleGetAllImages,
+    handleUpdateImagesOrder
+  ])
 
   const renderStepContent = (activeStep: number) => {
     switch (activeStep) {

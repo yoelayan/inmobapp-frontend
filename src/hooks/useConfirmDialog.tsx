@@ -53,20 +53,18 @@ export default function useConfirmDialog() {
       <Dialog
         open={open}
         onClose={handleCancel}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
+        aria-labelledby='alert-dialog-title'
+        aria-describedby='alert-dialog-description'
       >
-        <DialogTitle id="alert-dialog-title">{dialogProps.title}</DialogTitle>
+        <DialogTitle id='alert-dialog-title'>{dialogProps.title}</DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            {dialogProps.message}
-          </DialogContentText>
+          <DialogContentText id='alert-dialog-description'>{dialogProps.message}</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCancel} color="primary">
+          <Button onClick={handleCancel} color='primary'>
             {dialogProps.cancelText}
           </Button>
-          <Button onClick={handleConfirm} color="primary" autoFocus>
+          <Button onClick={handleConfirm} color='primary' autoFocus>
             {dialogProps.confirmText}
           </Button>
         </DialogActions>

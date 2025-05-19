@@ -1,7 +1,6 @@
 import type { RealProperty } from '@/types/apps/RealtstateTypes'
 
 interface IManager {
-
   // Los metodos definidos en esta interface es para manejar el modelo de negocio sin
   // importar la fuente de datos (API, Base de datos, etc). Incluye validadores,
   // transformadores, representaciones, cambios de estado, etc.

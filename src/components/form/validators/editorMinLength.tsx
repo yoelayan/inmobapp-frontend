@@ -11,8 +11,7 @@ export const editorMinLength = (minLength: number, message: string = '') => {
       const editor = new DOMParser().parseFromString(value as string, 'text/html')
       const text = editor.body.textContent || ''
 
-      
-return text.length >= minLength
+      return text.length >= minLength
     }, message)
   )
 }

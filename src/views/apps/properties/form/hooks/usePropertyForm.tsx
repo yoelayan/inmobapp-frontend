@@ -83,7 +83,6 @@ export const usePropertyForm = (propertyId?: string) => {
     }
 
     return isValid
-
   }
 
   const validateSecondStep = () => {
@@ -126,22 +125,16 @@ export const usePropertyForm = (propertyId?: string) => {
       isValid = false
     }
 
-
     return isValid
-
   }
 
   const handleChangeImages = (value: any) => {
-
-    console.log("subiendo")
+    console.log('subiendo')
 
     if (!propertyId) {
-      notificationHook.notify(
-        'Debe guardar la propiedad antes de subir imagenes',
-        'warning'
-      )
+      notificationHook.notify('Debe guardar la propiedad antes de subir imagenes', 'warning')
 
-return
+      return
     }
 
     uploadImages(propertyId, value)

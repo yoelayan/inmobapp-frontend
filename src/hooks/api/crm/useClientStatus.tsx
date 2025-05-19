@@ -2,5 +2,5 @@ import ClientStatusRepository from '@/api/repositories/crm/ClientStatusRepositor
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
 
 export default function useClientStatus() {
-    return useBaseHookApi(ClientStatusRepository)
+  return useBaseHookApi(ClientStatusRepository)
 }

@@ -104,7 +104,7 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
     mediaRecorderRef.current = mediaRecorder
 
     // Handle data available event
-    mediaRecorder.ondataavailable = (event) => {
+    mediaRecorder.ondataavailable = event => {
       if (event.data.size > 0) {
         audioChunksRef.current.push(event.data)
       }
@@ -157,8 +157,6 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
       return
     }
 
-
-
     setIsSubmitting(true)
 
     try {
@@ -167,7 +165,6 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
       if (audioBlob) {
         audioFile = new File([audioBlob], 'audio-observation.wav', { type: 'audio/wav' })
       }
-
 
       const response = await addObservation(searchId, observation, audioFile)
 
@@ -211,26 +208,24 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
   }
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      aria-labelledby="add-observation-modal-title"
-    >
-      <Box sx={{
-        position: 'absolute',
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        width: { xs: '90%', sm: '500px' },
-        maxHeight: '90vh',
-        overflow: 'auto',
-        bgcolor: 'background.paper',
-        boxShadow: 24,
-        borderRadius: 1
-      }}>
+    <Modal open={open} onClose={handleClose} aria-labelledby='add-observation-modal-title'>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: { xs: '90%', sm: '500px' },
+          maxHeight: '90vh',
+          overflow: 'auto',
+          bgcolor: 'background.paper',
+          boxShadow: 24,
+          borderRadius: 1
+        }}
+      >
         <Card>
           <CardHeader
-            title="Añadir Observación"
+            title='Añadir Observación'
             action={
               <IconButton onClick={handleClose} disabled={isSubmitting}>
                 <CloseIcon />
@@ -243,53 +238,45 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
                 <TextField
                   fullWidth
-                  label="Observación"
+                  label='Observación'
                   multiline
                   rows={4}
                   value={observation}
-                  onChange={(e) => setObservation(e.target.value)}
+                  onChange={e => setObservation(e.target.value)}
                   disabled={isSubmitting}
-                  placeholder="Escriba su observación aquí..."
+                  placeholder='Escriba su observación aquí...'
                 />
 
                 {errorMessage && (
-                  <Alert severity="error" sx={{ mb: 2 }}>
+                  <Alert severity='error' sx={{ mb: 2 }}>
                     {errorMessage}
                   </Alert>
                 )}
 
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography variant="subtitle1">Grabación de audio</Typography>
+                  <Typography variant='subtitle1'>Grabación de audio</Typography>
 
                   {audioURL ? (
-                    <Stack direction="row" spacing={2} alignItems="center">
+                    <Stack direction='row' spacing={2} alignItems='center'>
                       <audio src={audioURL} controls style={{ flexGrow: 1 }} />
-                      <IconButton
-                        color="error"
-                        onClick={deleteRecording}
-                        disabled={isSubmitting}
-                      >
+                      <IconButton color='error' onClick={deleteRecording} disabled={isSubmitting}>
                         <DeleteIcon />
                       </IconButton>
                     </Stack>
                   ) : (
-                    <Stack direction="row" spacing={2}>
+                    <Stack direction='row' spacing={2}>
                       <Button
-                        variant="outlined"
-                        color={isRecording ? "error" : "primary"}
+                        variant='outlined'
+                        color={isRecording ? 'error' : 'primary'}
                         startIcon={isRecording ? <StopIcon /> : <MicIcon />}
                         onClick={isRecording ? stopRecording : startRecording}
                         disabled={isSubmitting}
                       >
-                        {isRecording ? "Detener grabación" : "Iniciar grabación"}
+                        {isRecording ? 'Detener grabación' : 'Iniciar grabación'}
                       </Button>
 
                       {isRecording && (
-                        <Typography
-                          variant="body2"
-                          color="error"
-                          sx={{ display: 'flex', alignItems: 'center' }}
-                        >
+                        <Typography variant='body2' color='error' sx={{ display: 'flex', alignItems: 'center' }}>
                           Grabando...
                         </Typography>
                       )}
@@ -297,14 +284,14 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
                   )}
                 </Box>
 
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant='caption' color='text.secondary'>
                   * Debe proporcionar una observación de texto o una grabación de audio
                 </Typography>
 
                 <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
+                  type='submit'
+                  variant='contained'
+                  color='primary'
                   disabled={isSubmitting || (!observation.trim() && !audioBlob)}
                   startIcon={isSubmitting ? <CircularProgress size={20} /> : <AddCommentIcon />}
                   fullWidth

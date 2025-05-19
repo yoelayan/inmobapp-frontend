@@ -3,7 +3,7 @@
 // Next Imports
 import { useEffect } from 'react'
 
-import { useRouter , usePathname } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
