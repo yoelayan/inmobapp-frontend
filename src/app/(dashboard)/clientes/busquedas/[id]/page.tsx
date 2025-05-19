@@ -6,23 +6,22 @@ import React, { Suspense } from 'react'
 // Component Imports
 import { SearchForm } from '@/views/apps/searches/form/SearchForm'
 
-interface SearchPageProps {
+// Types
+type SearchPageProps = {
   params: {
     id: string
   }
+  searchParams?: { [key: string]: string | string[] | undefined }
 }
 
 function SearchPageContent({ params }: SearchPageProps) {
-  // Cast params to any to handle the Promise nature of params
-  const unwrappedParams = React.use(params as any) as { id: string };
-
-  return <SearchForm searchId={unwrappedParams.id} />
+  return <SearchForm searchId={params.id} />
 }
 
-const SearchPage: React.FC<SearchPageProps> = (props) => {
+const SearchPage = ({ params }: SearchPageProps) => {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SearchPageContent params={props.params} />
+      <SearchPageContent params={params} />
     </Suspense>
   )
 }
