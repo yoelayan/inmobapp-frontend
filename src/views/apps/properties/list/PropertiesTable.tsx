@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import useStates from '@/hooks/api/locations/useStates'
 import useUsersByFranchise from '@/hooks/api/realstate/useUsersByFranchise'
 import useCities from '@/hooks/api/locations/useCities'
+import useConfirmDialog from '@/hooks/useConfirmDialog'
 
 // Table Component
 import type { Header, TableAction } from '@components/table/TableComponent'
@@ -30,13 +31,15 @@ import PropertiesCard from './PropertiesCard'
 interface TableProps {
   properties: any
   refreshProperties: (filters?: Record<string, any>) => Promise<void>
+  deleteProperty: (id: string) => Promise<void>
   title?: string
   subtitle?: string
 }
 
-const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) => {
+const Table = ({ properties, refreshProperties, title, subtitle, deleteProperty }: TableProps) => {
   const [defaultFiltersCities, setDefaultFiltersCities] = useState<any>({})
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
   const { fetchData: getStates, refreshData: refreshStates, data: states } = useStates()
 
@@ -127,7 +130,14 @@ const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) =
       label: 'Eliminar',
       icon: <DeleteIcon />,
       onClick: (row: Record<string, any>) => {
-        console.log('Eliminar', row)
+        showConfirmDialog({
+          title: 'Confirmar eliminación',
+          message: `¿Estás seguro que deseas eliminar la propiedad "${row.name}"?`,
+          onConfirm: async () => {
+            await deleteProperty(row.id)
+            refreshProperties()
+          }
+        })
       }
     }
   ]
@@ -219,6 +229,7 @@ const Table = ({ properties, refreshProperties, title, subtitle }: TableProps) =
         grid_params={grid_params}
         actions={actions}
       />
+      <ConfirmDialog />
     </>
   )
 }

@@ -18,7 +18,7 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
       updateCharacteristic - detail
      */
 
-  const { fetchData, refreshData, getData, fetchItemById, createData, updateData, data, loading, error, errors, item } =
+  const { fetchData, refreshData, getData, fetchItemById, createData, updateData, deleteData, data, loading, error, errors, item } =
     useBaseHookApi(PropertiesRepository, defaultFilters)
 
   const [metricsData, setMetricsData] = useState<any>(null)
@@ -126,6 +126,7 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     allCharacteristics,
     createData,
     updateData,
+    deleteData,
     getMetrics,
     getTotalProperties,
     data,

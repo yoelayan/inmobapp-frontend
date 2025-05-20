@@ -16,6 +16,7 @@ export type InterfaceRepositoryAPI<T> = {
   get(id: string): Promise<T>
   create(data: Record<string, any>): Promise<T>
   update(id: string, data: Record<string, any>): Promise<T>
+  delete(id: string): Promise<T>
 }
 
 export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
@@ -89,5 +90,8 @@ export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
   }
   public async update(id: string, data: Record<string, any>): Promise<T> {
     return await this.apiClient.put<T>(`${this.base_url}${id}/`, data)
+  }
+  public async delete(id: string): Promise<T> {
+    return await this.apiClient.delete<T>(`${this.base_url}${id}/`)
   }
 }

@@ -151,6 +151,21 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
     [repository, defaultFilters, state.data]
   )
 
+  const deleteData = useCallback(
+    async (id: string | number) => {
+      setState(prev => ({ ...prev, loading: true }))
+
+      try {
+        await repository.delete(id.toString())
+
+        setState({ data: null, loading: false, error: null, item: null, errors: null })
+      } catch (error: any) {
+        setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
+      }
+    },
+    [repository]
+  )
+
   const getData = useCallback(() => {
     return state.data
   }, [state.data])
@@ -162,6 +177,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
     fetchItemById,
     createData,
     updateData,
+    deleteData,
     ...state
   }
 }

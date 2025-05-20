@@ -14,7 +14,7 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 // MUI Imports
 
 const Properties: React.FC = () => {
-  const { fetchData: getProperties, refreshData: refreshProperties, data: properties } = useProperties()
+  const { fetchData: getProperties, refreshData: refreshProperties, data: properties, deleteData: deleteProperty } = useProperties()
 
   useEffect(() => {
     getProperties()
@@ -23,7 +23,7 @@ const Properties: React.FC = () => {
   return (
     <Grid container spacing={6}>
       <Grid>
-        <PropertiesTable properties={properties} refreshProperties={refreshProperties} />
+        <PropertiesTable properties={properties} refreshProperties={refreshProperties} deleteProperty={deleteProperty} />
       </Grid>
     </Grid>
   )
