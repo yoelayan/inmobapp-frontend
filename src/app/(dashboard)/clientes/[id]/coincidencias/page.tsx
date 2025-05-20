@@ -12,6 +12,7 @@ import { CircularProgress } from '@mui/material'
 
 import PropertiesTable from '@views/apps/properties/list/PropertiesTable'
 import useSearches from '@/hooks/api/crm/useSearches'
+import useProperties from '@/hooks/api/realstate/useProperties'
 
 // Types
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
@@ -24,6 +25,7 @@ const ClientMatches: React.FC = () => {
   const [loading, setLoading] = useState(true)
 
   const { getMatchedProperties, fetchItemById, item: client_search } = useSearches()
+  const { deleteData: deleteProperty } = useProperties()
 
   const refreshProperties = async () => {
     setLoading(true)
@@ -71,6 +73,7 @@ const ClientMatches: React.FC = () => {
           subtitle={`Estas visualizando las propiedades encontradas para el cliente: ${client_search?.client?.name}`}
           properties={matchedProperties}
           refreshProperties={refreshProperties}
+          deleteProperty={deleteProperty}
         />
       </Grid>
     </Grid>
