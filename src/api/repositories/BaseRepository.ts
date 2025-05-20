@@ -54,13 +54,7 @@ export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
 
   public async getAll(filters?: Record<string, any>): Promise<ResponseAPI<T>> {
     if (this.useCache) {
-      const cachedData = this.getCachedData()
-
-      if (cachedData) {
-        console.log('Usando cache')
-
-        return cachedData
-      }
+      // const cachedData = this.getCachedData()
 
       const freshData = await this.apiClient.get<ResponseAPI<T>>(this.base_url, {})
 
