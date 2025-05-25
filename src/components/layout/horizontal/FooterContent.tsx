@@ -21,33 +21,18 @@ const FooterContent = () => {
       className={classnames(horizontalLayoutClasses.footerContent, 'flex items-center justify-between flex-wrap gap-4')}
     >
       <p>
-        <span className='text-textSecondary'>{`© ${new Date().getFullYear()}, Made with `}</span>
+        <span className='text-textSecondary'>{`© ${new Date().getFullYear()}, Hecho con amor `}</span>
         <span>{`❤️`}</span>
-        <span className='text-textSecondary'>{` by `}</span>
-        <Link href='https://pixinvent.com/' target='_blank' className='text-primary uppercase'>
-          Pixinvent
+        <span className='text-textSecondary'>{` por `}</span>
+        <Link href='https://www.linkedin.com/in/yoel-ayan/' target='_blank' className='text-primary'>
+          Yoel Ayan
+        </Link>{' '}
+        &
+        <Link href='https://innova7e.com/' target='_blank' className='text-primary uppercase'>
+          Innova7e
         </Link>
       </p>
-      {!isBreakpointReached && (
-        <div className='flex items-center gap-4'>
-          <Link href='https://themeforest.net/licenses/standard' target='_blank' className='text-primary'>
-            License
-          </Link>
-          <Link href='https://themeforest.net/user/pixinvent/portfolio' target='_blank' className='text-primary'>
-            More Themes
-          </Link>
-          <Link
-            href='https://demos.pixinvent.com/vuexy-nextjs-admin-template/documentation'
-            target='_blank'
-            className='text-primary'
-          >
-            Documentation
-          </Link>
-          <Link href='https://pixinvent.ticksy.com' target='_blank' className='text-primary'>
-            Support
-          </Link>
-        </div>
-      )}
+      {!isBreakpointReached && <div className='flex items-center gap-4'></div>}
     </div>
   )
 }
