@@ -288,6 +288,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     switch (activeStep) {
       case 0:
         if (!validateFirstStep()) {
+          notify('Por favor, complete todos los campos requeridos', 'error')
+
           return
         }
 
@@ -298,6 +300,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         break
       case 1:
         if (!validateSecondStep()) {
+          notify('Por favor, complete todos los campos requeridos', 'error')
+
           return
         }
 
@@ -439,19 +443,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <SelectField
-                name='assigned_to_id'
-                label='Usuario Asignado'
-                control={control}
-                error={errors.assigned_to_id}
-                setValue={setValue}
-                value={watch('assigned_to_id')}
-                response={users}
-                dataMap={{ value: 'id', label: 'email' }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+
+            <Grid size={{ xs: 12, sm: 3 }}>
               <SelectField
                 name='status_id'
                 label='Estatus'
@@ -464,7 +457,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
               />
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <SelectField
                 name='type_property_id'
                 label='Tipo de Propiedad'
@@ -530,6 +523,18 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <SelectField
+                name='assigned_to_id'
+                label='Usuario Asignado'
+                control={control}
+                error={errors.assigned_to_id}
+                setValue={setValue}
+                value={watch('assigned_to_id')}
+                response={users}
+                dataMap={{ value: 'id', label: 'email' }}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <SelectField
                 name='type_negotiation_id'
                 label='Tipo de Negociación'
                 control={control}
@@ -540,7 +545,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 dataMap={{ value: 'id', label: 'name' }}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <NumberField
                 name='price'
                 label='Precio'
@@ -551,7 +556,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 disabled={disabledPrice}
               />
             </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <NumberField
                 name='rent_price'
                 label='Precio de Alquiler'
@@ -712,8 +717,11 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                         )
                       }
                     >
-                      {isSubmitting ? <CircularProgress size={24} /> : null}
-                      {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
+                        {isSubmitting ? <CircularProgress size={24} /> : null}
+                        {/** Si es crear y es el primer paso == "Crear"
+                         * El resto de pasos == "Guardar"
+                         */}
+                        {!propertyId && activeStep === 0 ? 'Crear' : 'Guardar'}
                     </Button>
                   </Grid>
                 </Grid>

@@ -170,7 +170,7 @@ const SearchesTable: React.FC = () => {
       <GenericTable
         title='Búsquedas de Clientes'
         subtitle='Listado de Búsquedas'
-        hrefAddButton='/clientes/search/create'
+        hrefAddButton='/clientes/busquedas/agregar'
         headers={headers}
         response={data}
         refreshData={refreshData}

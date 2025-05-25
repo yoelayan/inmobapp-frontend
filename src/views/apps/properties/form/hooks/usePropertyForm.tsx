@@ -49,7 +49,6 @@ export const usePropertyForm = (propertyId?: string) => {
   const validateFirstStep = () => {
     const { watch, setError, clearErrors } = baseForm
     const name = watch('name')
-    const assigned_to_id = watch('assigned_to_id')
     const status_id = watch('status_id')
     const type_property_id = watch('type_property_id')
     const state_id = watch('state_id')
@@ -59,7 +58,6 @@ export const usePropertyForm = (propertyId?: string) => {
 
     const fields = {
       name,
-      assigned_to_id,
       status_id,
       type_property_id,
       state_id,
@@ -88,12 +86,15 @@ export const usePropertyForm = (propertyId?: string) => {
   const validateSecondStep = () => {
     const { watch, setError, clearErrors } = baseForm
     const franchise_id = watch('franchise_id')
+
+    const assigned_to_id = watch('assigned_to_id')
     const type_negotiation_id = watch('type_negotiation_id')
     const owner_id = watch('owner_id')
     const price = watch('price')
     const rent_price = watch('rent_price')
 
     const fields = {
+      assigned_to_id,
       franchise_id,
       type_negotiation_id,
       owner_id
