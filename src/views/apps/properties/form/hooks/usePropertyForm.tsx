@@ -1,3 +1,5 @@
+import { useRouter } from 'next/navigation'
+
 import { useBaseForm } from '@/hooks/useBaseForm'
 import { useNotification } from '@/hooks/useNotification'
 import PropertiesRepository from '@/api/repositories/realstate/PropertiesRepository'
@@ -21,7 +23,7 @@ const defaultPropertyValues: Partial<IRealProperty> = {
   city_id: undefined,
   owner_id: undefined,
   address: '',
-  images: undefined,
+  images: [],
   characteristics: []
 }
 
@@ -34,6 +36,14 @@ const transformPropertyDataForForm = (property: IRealProperty): Partial<IRealPro
 
 export const usePropertyForm = (propertyId?: string) => {
   const notificationHook = useNotification()
+  const router = useRouter()
+
+  const onSuccess = (response: IRealProperty, isUpdate: boolean) => {
+    if (!isUpdate) {
+      notificationHook.notify('Se ha creado la propiedad', 'info')
+      router.push(`/propiedades/${response.id}`)
+    }
+  }
 
   // Usa el hook base para manejar la lógica del formulario
   const baseForm = useBaseForm<IRealProperty, Partial<IRealProperty>, string>({
@@ -41,7 +51,8 @@ export const usePropertyForm = (propertyId?: string) => {
     repository: PropertiesRepository, // Repositorio para manejar las propiedades
     defaultValues: defaultPropertyValues,
     transformDataForForm: transformPropertyDataForForm,
-    notificationHook
+    notificationHook,
+    onSuccess: onSuccess
   })
 
   const { uploadImages } = useProperties()
@@ -129,7 +140,7 @@ export const usePropertyForm = (propertyId?: string) => {
     return isValid
   }
 
-  const handleChangeImages = (value: any) => {
+  const handleChangeImages = async (value: any) => {
     console.log('subiendo')
 
     if (!propertyId) {
@@ -138,7 +149,7 @@ export const usePropertyForm = (propertyId?: string) => {
       return
     }
 
-    uploadImages(propertyId, value)
+    return await uploadImages(propertyId, value)
   }
 
   return { baseForm, validateFirstStep, validateSecondStep, handleChangeImages }

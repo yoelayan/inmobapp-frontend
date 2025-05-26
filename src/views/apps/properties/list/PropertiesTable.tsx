@@ -89,13 +89,13 @@ const Table = ({ properties, refreshProperties, title, subtitle, deleteProperty 
     tags: [
       {
         label: 'Mt2',
-        name: 'age',
+        name: 'total_area',
         icon: <SquareFootIcon fontSize='large' />,
         searchOn: searchOnTag
       },
       {
         label: 'Habt.',
-        name: 'rooms',
+        name: 'bedrooms',
         icon: <DoorFrontIcon fontSize='large' />,
         searchOn: searchOnTag
       },
@@ -107,7 +107,7 @@ const Table = ({ properties, refreshProperties, title, subtitle, deleteProperty 
       },
       {
         label: 'Est.',
-        name: 'parking_spaces',
+        name: 'garages',
         icon: <DirectionsCarIcon fontSize='large' />,
         searchOn: searchOnTag
       }

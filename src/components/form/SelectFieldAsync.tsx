@@ -72,6 +72,8 @@ const SelectFieldAsync = ({
       const foundItem = items.find(item => item.value === value)
 
       setSelectedItem(foundItem || null)
+    } else {
+      setSelectedItem(null)
     }
   }, [value, items])
 

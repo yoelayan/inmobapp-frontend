@@ -64,6 +64,7 @@ interface PropertyFormProps {
   propertyTypes: ResponseAPI<IStatus> | null // Tipos de propiedad
   states: ResponseAPI<IGeoItem> | null // Lista de estados
   cities: ResponseAPI<IGeoItem> | null // Lista de ciudades
+  refreshCities: (filters?: Record<string, any>) => Promise<void>
   clients: ResponseAPI<IClient> | null // Lista de clientes
   refreshClients: (filters?: Record<string, any>) => Promise<void>
 }
@@ -122,7 +123,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   states,
   cities,
   clients,
-  refreshClients
+  refreshClients,
+  refreshCities,
 }) => {
   const { baseForm, validateFirstStep, validateSecondStep, handleChangeImages } = usePropertyForm(propertyId)
   const { control, handleSubmit, errors, isSubmitting, setValue, watch } = baseForm
@@ -137,7 +139,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   const [disabledRentPrice, setDisabledRentPrice] = useState(false)
 
   const theme = useTheme()
-  const [activeStep, setActiveStep] = useState(0)
+  const [activeStep, setActiveStep] = useState(propertyId ? 2 : 0)
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'))
 
   const [open, setOpen] = useState(false)
@@ -150,6 +152,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     if (!propertyId) {
       return
     }
+
+    console.log('handleGetAllImages', propertyId)
 
     try {
       const response = await getAllImages(propertyId)
@@ -284,7 +288,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     switch (activeStep) {
       case 0:
         if (!validateFirstStep()) {
@@ -294,7 +298,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         }
 
         if (propertyId) {
-          handleSubmit()
+          await handleSubmit()
         }
 
         break
@@ -305,13 +309,9 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           return
         }
 
-        // When we reach step 2, we need to save the form to create a property ID
-        // if it doesn't exist yet
-        if (!propertyId) {
-          notify('Se ha creado un borrador de la propiedad', 'info')
-        }
 
-        handleSubmit()
+        await handleSubmit()
+
 
         break
       case 2:
@@ -367,20 +367,27 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   }
 
   // Handler for characteristic changes
-  const handleCharacteristicsChange = (characteristics: any[]) => {
-    // Only update if necessary to prevent render loops
-    const currentChars = watch('characteristics')
 
-    // Deep comparison instead of reference comparison
-    if (JSON.stringify(currentChars) === JSON.stringify(characteristics)) {
-      return
-    }
-
-    setValue('characteristics', characteristics)
-  }
 
   // Try/catch to avoid any potential issues with characteristics
   const CharacteristicsWrapper = React.useMemo(() => {
+    const handleCharacteristicsChange = (characteristics: any[]) => {
+
+      console.log('handleCharacteristicsChange', characteristics)
+
+      // Only update if necessary to prevent render loops
+      const currentChars = watch('characteristics')
+
+      // Deep comparison instead of reference comparison
+      if (JSON.stringify(currentChars) === JSON.stringify(characteristics)) {
+        return
+      }
+
+      setValue('characteristics', characteristics)
+    }
+
+    console.log('CharacteristicsWrapper', propertyId)
+
     return () => {
       try {
         return (
@@ -392,7 +399,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         return <Typography color='error'>Error loading characteristics</Typography>
       }
     }
-  }, [propertyId, control, handleCharacteristicsChange])
+  }, [propertyId, control, setValue, watch])
 
   // Create a separate component for images to avoid interference with characteristics
   const PropertyImages = React.useMemo(() => {
@@ -424,6 +431,16 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     handleGetAllImages,
     handleUpdateImagesOrder
   ])
+
+
+  const handleChangeState = (e: any) => {
+
+    setValue('city_id', undefined)
+
+    if (e.value) {
+      refreshCities({ state: e.value })
+    }
+  }
 
   const renderStepContent = (activeStep: number) => {
     switch (activeStep) {
@@ -479,6 +496,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 value={watch('state_id')}
                 response={states}
                 dataMap={{ value: 'id', label: 'name' }}
+                onChange={(e) => handleChangeState(e)}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -491,6 +509,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 value={watch('city_id')}
                 response={cities}
                 dataMap={{ value: 'id', label: 'name' }}
+                isDisabled={!watch('state_id')}
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
@@ -634,6 +653,15 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
 
   // Render condicional para carga inicial
 
+  const handleStep = (index: number) => {
+    // solo se puede mover el paso si es actualizacion
+    if (propertyId) {
+      setActiveStep(index)
+    } else {
+      notify('Complete el paso 1 y 2 para poder escoger entre pasos', 'warning')
+    }
+  }
+
   return (
     <>
       <Card>
@@ -653,7 +681,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           >
             {steps.map((step, index) => {
               return (
-                <Step key={index} onClick={() => setActiveStep(index)}>
+                <Step key={index} onClick={() => handleStep(index)}>
                   <StepLabel>
                     <div className='step-label'>
                       <CustomAvatar
@@ -721,7 +749,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                         {/** Si es crear y es el primer paso == "Crear"
                          * El resto de pasos == "Guardar"
                          */}
-                        {!propertyId && activeStep === 0 ? 'Crear' : 'Guardar'}
+                        {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
                     </Button>
                   </Grid>
                 </Grid>

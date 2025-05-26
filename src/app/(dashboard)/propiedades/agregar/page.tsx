@@ -25,7 +25,7 @@ const PropertyAdd: React.FC = () => {
   const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
   const { loading: propertyTypesLoading, data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
   const { loading: statesLoading, data: states, fetchData: fetchStates } = useStates()
-  const { loading: citiesLoading, data: cities, fetchData: fetchCities } = useCities()
+  const { data: cities, fetchData: fetchCities, refreshData: refreshCities } = useCities()
   const { loading: clientsLoading, data: clients, fetchData: fetchClients, refreshData: refreshClients } = useClients()
 
   useEffect(() => {
@@ -55,7 +55,6 @@ const PropertyAdd: React.FC = () => {
     negotiationsLoading ||
     propertyTypesLoading ||
     statesLoading ||
-    citiesLoading ||
     clientsLoading
   ) {
     return (
@@ -77,6 +76,7 @@ const PropertyAdd: React.FC = () => {
       cities={cities}
       clients={clients}
       refreshClients={refreshClients}
+      refreshCities={refreshCities}
     />
   )
 }

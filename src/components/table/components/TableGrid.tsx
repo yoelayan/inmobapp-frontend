@@ -61,14 +61,20 @@ const TableGrid = ({ table, headers, grid_params, actions, renderFilter }: Table
     <>
       <Grid container spacing={2} className='p-4'>
         {table.getHeaderGroups().map(headerGroup => (
-          <Grid container key={headerGroup.id} spacing={2} size={{ xs: 12, md: 3, lg: 3 }}>
+          <Grid
+            container
+            key={headerGroup.id}
+            spacing={2}
+            size={{ xs: 12, md: 3, lg: 3 }}
+            sx={{ alignContent: 'flex-start', alignItems: 'flex-start' }}
+          >
             {headerGroup.headers.map(header => (
-              <Grid key={header.id} size={{ xs: 12, md: 12, lg: 12 }}>
+              <Grid className='flex flex-col' key={header.id} size={{ xs: 12, md: 12, lg: 12 }}>
                 {header.column.getCanFilter() && (
                   <>
                     <Box
                       className={classnames({
-                        'flex items-center': header.column.getIsSorted(),
+                        'flex items-start': header.column.getIsSorted(),
                         'cursor-pointer select-none': header.column.getCanSort()
                       })}
                       onClick={header.column.getToggleSortingHandler()}
@@ -81,6 +87,7 @@ const TableGrid = ({ table, headers, grid_params, actions, renderFilter }: Table
                         desc: <i className='tabler-chevron-down text-xl' />
                       }[header.column.getIsSorted() as 'asc' | 'desc'] ?? null}
                     </Box>
+
                     {renderFilter(header.column)}
                   </>
                 )}

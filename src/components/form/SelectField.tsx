@@ -56,14 +56,27 @@ const SelectField = ({
   }, [response, value, dataMap])
 
   useEffect(() => {
-    if (value !== undefined && value !== null) {
+    if (value !== undefined && value !== null && value !== '') {
       const foundItem = items.find(item => item.value === value)
 
       setSelectedItem(foundItem || null)
+    } else {
+      setSelectedItem(null)
     }
   }, [value, items])
 
   const handleSelectChange = (value: string) => {
+    if (value === '') {
+      setSelectedItem(null)
+      setValue(name, null)
+
+      if (onChange) {
+        onChange(null)
+      }
+
+      return
+    }
+
     const item = items.find((item: OptionType) => item.value === value)
 
     if (item) {
@@ -87,7 +100,7 @@ const SelectField = ({
         <CustomTextField
           {...field}
           label={label}
-          value={selectedItem ? selectedItem.value : 'None'}
+          value={selectedItem ? selectedItem.value : ''}
           onChange={e => handleSelectChange(e.target.value)}
           disabled={isDisabled}
           error={!!error}
@@ -96,7 +109,7 @@ const SelectField = ({
           size='small'
           select
         >
-          <MenuItem value='None'>
+          <MenuItem value=''>
             <em>Seleccionar elemento</em>
           </MenuItem>
           {items.map((item: OptionType) => (

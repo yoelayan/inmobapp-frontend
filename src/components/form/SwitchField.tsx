@@ -11,13 +11,11 @@ interface SwitchFieldProps extends FieldProps {
 }
 
 const SwitchField = ({ value, label, name, onChange, control, error, setValue }: SwitchFieldProps) => {
-  const [checked, setChecked] = useState(value || false)
+  const [checked, setChecked] = useState(value ?? false)
 
   // Update internal state when external value changes
   useEffect(() => {
-    if (value !== undefined) {
-      setChecked(value)
-    }
+    setChecked(value ?? false)
   }, [value])
 
   const handleChange = (value: boolean) => {

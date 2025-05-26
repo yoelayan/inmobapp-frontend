@@ -135,9 +135,9 @@ const ImageField = ({
     (id?: number | string, index?: number) => {
       if (id !== undefined && deleteItem) {
         deleteItem(id)
-          .then(() => {
+          .then(async () => {
             if (refreshData) {
-              refreshData()
+              await refreshData()
             }
           })
           .catch(error => console.error('Error deleting image:', error))
@@ -154,7 +154,7 @@ const ImageField = ({
   )
 
   const onDropAccepted = useCallback(
-    (acceptedFiles: File[]) => {
+    async (acceptedFiles: File[]) => {
       const newFiles = acceptedFiles.map((file, idx) => ({
         id: `temp-${Date.now()}-${idx}`,
         name: file.name,
@@ -173,12 +173,14 @@ const ImageField = ({
 
       const fileList = acceptedFiles as unknown as FileList
 
-      if (onChange) {
-        onChange(fileList)
 
-        if (refreshData) {
-          refreshData()
-        }
+
+      if (onChange) {
+        await onChange(fileList)
+      }
+
+      if (refreshData) {
+        refreshData()
       }
     },
     [files, multiple, name, onChange, refreshData, setValue]

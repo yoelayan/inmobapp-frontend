@@ -12,13 +12,11 @@ interface TextFieldProps extends FieldProps {
 }
 
 const TextField = ({ value, label, name, onChange, control, error, setValue, disabled }: TextFieldProps) => {
-  const [inputValue, setInputValue] = useState(value || '')
+  const [inputValue, setInputValue] = useState(value ?? '')
 
   // Update internal state when external value changes
   useEffect(() => {
-    if (value !== undefined) {
-      setInputValue(value)
-    }
+    setInputValue(value ?? '')
   }, [value])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
