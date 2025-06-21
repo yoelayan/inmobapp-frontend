@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useMemo } from 'react'
 
 // Types
 import { MenuItem } from '@mui/material'
@@ -48,33 +48,28 @@ const SelectFieldAsync = ({
   setValue,
   children
 }: SelectFieldAsyncProps) => {
-  const [items, setItems] = useState<OptionType[]>([])
-
-  const [selectedItem, setSelectedItem] = useState<OptionType | null>(null)
-
+  // Estado solo para el valor de entrada (búsqueda)
   const [inputValue, setInputValue] = useState<string>('')
 
-  useEffect(() => {
-    if (response) {
-      const data = response.results || []
+  // Calcular items directamente desde la respuesta
+  const items = useMemo(() => {
+    if (!response) return []
 
-      setItems(
-        data.map((item: Record<string, any>) => ({
-          value: item[dataMap?.value],
-          label: item[dataMap?.label]
-        }))
-      )
+    const data = response.results || []
+
+    return data.map((item: Record<string, any>) => ({
+      value: item[dataMap?.value],
+      label: item[dataMap?.label]
+    }))
+  }, [response, dataMap])
+
+  // Encontrar el item seleccionado directamente
+  const selectedItem = useMemo(() => {
+    if (value === undefined || value === null) {
+      return null
     }
-  }, [response, value, dataMap])
 
-  useEffect(() => {
-    if (value !== undefined && value !== null) {
-      const foundItem = items.find(item => item.value === value)
-
-      setSelectedItem(foundItem || null)
-    } else {
-      setSelectedItem(null)
-    }
+    return items.find(item => item.value === value) || null
   }, [value, items])
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -88,10 +83,8 @@ const SelectFieldAsync = ({
   const handleSelectChange = (event: React.SyntheticEvent<Element, Event>, item: OptionType | null) => {
     // Handle the change event
     if (item) {
-      setSelectedItem(item)
       setValue(name, item.value)
     } else {
-      setSelectedItem(null)
       setValue(name, null)
     }
 
@@ -100,7 +93,10 @@ const SelectFieldAsync = ({
     }
   }
 
-  const combinedItems = [...(children ? [{ value: 'custom-children', label: '', custom: true }] : []), ...items]
+  // Combinar items con elementos hijos personalizados
+  const combinedItems = useMemo(() => {
+    return [...(children ? [{ value: 'custom-children', label: '', custom: true }] : []), ...items]
+  }, [children, items])
 
   return (
     <Controller

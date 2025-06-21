@@ -1,5 +1,5 @@
 // React imports
-import { useState, useEffect } from 'react'
+import React from 'react'
 
 import { Controller } from 'react-hook-form'
 
@@ -12,17 +12,12 @@ interface TextFieldProps extends FieldProps {
 }
 
 const TextField = ({ value, label, name, onChange, control, error, setValue, disabled }: TextFieldProps) => {
-  const [inputValue, setInputValue] = useState(value ?? '')
-
-  // Update internal state when external value changes
-  useEffect(() => {
-    setInputValue(value ?? '')
-  }, [value])
+  // No necesitamos mantener un estado interno duplicado
+  // El valor se puede usar directamente desde el prop value
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value
 
-    setInputValue(newValue)
     setValue(name, newValue)
 
     if (onChange) {
@@ -43,7 +38,7 @@ const TextField = ({ value, label, name, onChange, control, error, setValue, dis
             fullWidth
 
             // Override these props specifically
-            value={inputValue}
+            value={value ?? ''}
             onChange={handleChange}
             label={label}
             error={!!error}

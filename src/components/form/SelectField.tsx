@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo } from 'react'
 
 // Types
 import { MenuItem } from '@mui/material'
@@ -38,36 +38,31 @@ const SelectField = ({
   isDisabled,
   setValue
 }: SelectFieldAsyncProps) => {
-  const [items, setItems] = useState<OptionType[]>([])
+  // Calcular items directamente desde la respuesta usando useMemo
+  const items = useMemo(() => {
+    if (!response) return []
 
-  const [selectedItem, setSelectedItem] = useState<OptionType | null>(null)
+    const data = response.results || []
 
-  useEffect(() => {
-    if (response) {
-      const data = response.results || []
+    return data.map((item: Record<string, any>) => ({
+      value: item[dataMap?.value],
+      label: item[dataMap?.label]
+    }))
+  }, [response, dataMap])
 
-      setItems(
-        data.map((item: Record<string, any>) => ({
-          value: item[dataMap?.value],
-          label: item[dataMap?.label]
-        }))
-      )
+  // Encontrar el item seleccionado directamente sin estado adicional
+  const selectedValue = useMemo(() => {
+    if (value === undefined || value === null || value === '') {
+      return ''
     }
-  }, [response, value, dataMap])
 
-  useEffect(() => {
-    if (value !== undefined && value !== null && value !== '') {
-      const foundItem = items.find(item => item.value === value)
+    const foundItem = items.find(item => item.value === value)
 
-      setSelectedItem(foundItem || null)
-    } else {
-      setSelectedItem(null)
-    }
+    return foundItem ? foundItem.value : ''
   }, [value, items])
 
   const handleSelectChange = (value: string) => {
     if (value === '') {
-      setSelectedItem(null)
       setValue(name, null)
 
       if (onChange) {
@@ -79,13 +74,7 @@ const SelectField = ({
 
     const item = items.find((item: OptionType) => item.value === value)
 
-    if (item) {
-      setSelectedItem(item)
-      setValue(name, item.value)
-    } else {
-      setSelectedItem(null)
-      setValue(name, null)
-    }
+    setValue(name, item ? item.value : null)
 
     if (onChange) {
       onChange(item)
@@ -100,7 +89,7 @@ const SelectField = ({
         <CustomTextField
           {...field}
           label={label}
-          value={selectedItem ? selectedItem.value : ''}
+          value={selectedValue}
           onChange={e => handleSelectChange(e.target.value)}
           disabled={isDisabled}
           error={!!error}

@@ -1,0 +1,506 @@
+---
+description: Incluir en la respuesta mejores practicas para el uso de useEffect
+globs:
+alwaysApply: false
+---
+# Uso Correcto de useEffect en React y sus Alternativas
+
+El hook `useEffect` es fundamental en React, pero cuando se usa excesivamente o incorrectamente puede causar problemas significativos de rendimiento. Vamos a explorar cuándo deberías usar este hook, cuándo evitarlo y qué alternativas existen.
+
+## ¿Cuándo NO deberías usar useEffect?
+
+Existen varios casos donde muchos desarrolladores utilizan `useEffect` innecesariamente, causando renderizaciones adicionales y disminuyendo el rendimiento:
+
+### 1. Para transformar datos para renderizado
+
+**❌ Incorrecto:**
+```tsx
+interface Todo {
+  id: number;
+  text: string;
+  completed: boolean;
+}
+
+interface TodoListProps {
+  todos: Todo[];
+  filter: string;
+}
+
+function TodoList({ todos, filter }: TodoListProps) {
+  const [visibleTodos, setVisibleTodos] = useState<Todo[]>([]);
+
+  // 🔴 Evitar: estado redundante y Effect innecesario
+  useEffect(() => {
+    setVisibleTodos(getFilteredTodos(todos, filter));
+  }, [todos, filter]);
+
+  return (
+    <ul>
+      {visibleTodos.map(todo => <li key={todo.id}>{todo.text}</li>)}
+    </ul>
+  );
+}
+```
+
+**✅ Correcto:**
+```tsx
+function TodoList({ todos, filter }: TodoListProps) {
+  // ✅ Mejor: cálculo directo durante el renderizado
+  const visibleTodos = getFilteredTodos(todos, filter);
+
+  return (
+    <ul>
+      {visibleTodos.map(todo => <li key={todo.id}>{todo.text}</li>)}
+    </ul>
+  );
+}
+```
+
+Este enfoque es más eficiente porque evita un ciclo adicional de renderizado.
+
+### 2. Para calcular valores derivados del estado o props
+
+**❌ Incorrecto:**
+```tsx
+interface FormProps {
+  initialFirstName?: string;
+  initialLastName?: string;
+}
+
+function Form({ initialFirstName = 'Taylor', initialLastName = 'Swift' }: FormProps) {
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+  const [fullName, setFullName] = useState('');
+
+  // 🔴 Evitar: estado redundante y Effect innecesario
+  useEffect(() => {
+    setFullName(firstName + ' ' + lastName);
+  }, [firstName, lastName]);
+
+  return (
+    <form>
+      <input
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+      />
+      <input
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+      />
+      <p>Full Name: {fullName}</p>
+    </form>
+  );
+}
+```
+
+**✅ Correcto:**
+```tsx
+function Form({ initialFirstName = 'Taylor', initialLastName = 'Swift' }: FormProps) {
+  const [firstName, setFirstName] = useState(initialFirstName);
+  const [lastName, setLastName] = useState(initialLastName);
+
+  // ✅ Mejor: calculado durante el renderizado
+  const fullName = firstName + ' ' + lastName;
+
+  return (
+    <form>
+      <input
+        value={firstName}
+        onChange={(e) => setFirstName(e.target.value)}
+      />
+      <input
+        value={lastName}
+        onChange={(e) => setLastName(e.target.value)}
+      />
+      <p>Full Name: {fullName}</p>
+    </form>
+  );
+}
+```
+
+Cuando algo puede calcularse a partir de props o estado existente, no lo pongas en estado.
+
+## ¿Cuándo USAR useEffect correctamente?
+
+`useEffect` debe usarse principalmente para:
+
+### 1. Sincronizar con sistemas externos
+
+- Integración con bibliotecas externas (como jQuery widgets)
+- Suscripciones a APIs o WebSockets
+- Manipulación directa del DOM
+
+### 2. Control del ciclo de vida del componente
+
+```tsx
+interface UserProfileProps {
+  userId: string;
+}
+
+function UserProfile({ userId }: UserProfileProps) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Código ejecutado en montaje o cuando cambia userId
+    const fetchUser = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/users/${userId}`);
+        const userData = await response.json();
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [userId]);
+
+  if (loading) return <div>Loading...</div>;
+  if (!user) return <div>User not found</div>;
+
+  return (
+    <div>
+      <h1>{user.name}</h1>
+      <p>{user.email}</p>
+    </div>
+  );
+}
+```
+
+### 3. Suscripciones y limpieza de recursos
+
+```tsx
+interface ChatRoomProps {
+  roomId: string;
+  userId: string;
+}
+
+function ChatRoom({ roomId, userId }: ChatRoomProps) {
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  useEffect(() => {
+    // Crear conexión al montar o cuando cambien las dependencias
+    const connection = createConnection(roomId, userId);
+    connection.connect();
+
+    // Suscribirse a mensajes
+    const unsubscribe = connection.subscribe((message: Message) => {
+      setMessages(prev => [...prev, message]);
+    });
+
+    // Función de limpieza (ejecutada en desmontaje)
+    return () => {
+      unsubscribe();
+      connection.disconnect();
+    };
+  }, [roomId, userId]);
+
+  return (
+    <div>
+      {messages.map(message => (
+        <div key={message.id}>{message.text}</div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Alternativas para casos específicos
+
+### 1. Para cálculos costosos: useMemo
+
+Si tienes una operación de cálculo costosa que solo necesita volver a calcularse cuando cambien ciertas dependencias:
+
+```tsx
+import { useMemo, useState } from 'react';
+
+interface TodoListProps {
+  todos: Todo[];
+  filter: string;
+}
+
+function TodoList({ todos, filter }: TodoListProps) {
+  const [newTodo, setNewTodo] = useState('');
+
+  // ✅ No recalcula a menos que cambien todos o filter
+  const visibleTodos = useMemo(() => {
+    return getFilteredTodos(todos, filter);
+  }, [todos, filter]);
+
+  return (
+    <div>
+      <input
+        value={newTodo}
+        onChange={(e) => setNewTodo(e.target.value)}
+      />
+      <ul>
+        {visibleTodos.map(todo => <li key={todo.id}>{todo.text}</li>)}
+      </ul>
+    </div>
+  );
+}
+```
+
+### 2. Resetear todo el estado cuando una prop cambia
+
+En lugar de usar `useEffect` para restablecer estados cuando cambia una prop:
+
+**❌ Incorrecto:**
+```tsx
+interface ProfilePageProps {
+  userId: string;
+}
+
+function ProfilePage({ userId }: ProfilePageProps) {
+  const [comment, setComment] = useState('');
+
+  // 🔴 Evitar: Resetear estado cuando cambia la prop
+  useEffect(() => {
+    setComment('');
+  }, [userId]);
+
+  return (
+    <div>
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+    </div>
+  );
+}
+```
+
+**✅ Correcto:** Usa la prop `key` para forzar un remontaje completo:
+
+```tsx
+interface ProfilePageProps {
+  userId: string;
+}
+
+export default function ProfilePage({ userId }: ProfilePageProps) {
+  return (
+    <Profile
+      userId={userId}
+      key={userId} // Cuando cambia userId, React remontará el componente
+    />
+  );
+}
+
+function Profile({ userId }: { userId: string }) {
+  // ✅ Este y cualquier otro estado se resetearán automáticamente
+  const [comment, setComment] = useState('');
+
+  return (
+    <div>
+      <textarea
+        value={comment}
+        onChange={(e) => setComment(e.target.value)}
+      />
+    </div>
+  );
+}
+```
+
+### 3. Para valores derivados complejos: useMemo con dependencias
+
+```tsx
+interface Product {
+  id: number;
+  name: string;
+  price: number;
+  category: string;
+}
+
+interface ProductListProps {
+  products: Product[];
+  searchTerm: string;
+  selectedCategory: string;
+  sortBy: 'name' | 'price';
+}
+
+function ProductList({ products, searchTerm, selectedCategory, sortBy }: ProductListProps) {
+  // ✅ Cálculo complejo memoizado
+  const filteredAndSortedProducts = useMemo(() => {
+    let filtered = products.filter(product =>
+      product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+      (selectedCategory === 'all' || product.category === selectedCategory)
+    );
+
+    return filtered.sort((a, b) => {
+      if (sortBy === 'name') {
+        return a.name.localeCompare(b.name);
+      }
+      return a.price - b.price;
+    });
+  }, [products, searchTerm, selectedCategory, sortBy]);
+
+  return (
+    <div>
+      {filteredAndSortedProducts.map(product => (
+        <div key={product.id}>
+          <h3>{product.name}</h3>
+          <p>${product.price}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+```
+
+## Problemas comunes con useEffect
+
+### 1. Renders infinitos
+
+Ocurre cuando el efecto actualiza directamente las dependencias en las que se basa, creando un bucle:
+
+```tsx
+// 🔴 Causa un bucle infinito
+function Counter() {
+  const [counter, setCounter] = useState(0);
+
+  useEffect(() => {
+    setCounter(counter + 1);
+  }, [counter]); // counter cambia → efecto se ejecuta → counter cambia → bucle infinito
+
+  return <div>{counter}</div>;
+}
+```
+
+### 2. Dependencias omitidas o incorrectas
+
+Siempre incluya todos los valores reactivos usados en el efecto:
+
+```tsx
+// 🔴 Incorrecto: userId no está incluido en las dependencias
+useEffect(() => {
+  const connection = createConnection(roomId, userId);
+  connection.connect();
+  return () => connection.disconnect();
+}, [roomId]);
+
+// ✅ Correcto: todos los valores reactivos incluidos
+useEffect(() => {
+  const connection = createConnection(roomId, userId);
+  connection.connect();
+  return () => connection.disconnect();
+}, [roomId, userId]);
+```
+
+### 3. No limpiar recursos
+
+Si un efecto realiza suscripciones o asigna recursos, siempre debe incluir una función de limpieza:
+
+```tsx
+useEffect(() => {
+  const subscription = someAPI.subscribe();
+
+  // ✅ Limpieza adecuada para evitar fugas de memoria
+  return () => {
+    subscription.unsubscribe();
+  };
+}, [someAPI]);
+```
+
+## Patrones avanzados
+
+### 1. Custom Hook para efectos complejos
+
+```tsx
+// hooks/useLocalStorage.ts
+import { useState, useEffect } from 'react';
+
+export function useLocalStorage<T>(key: string, initialValue: T) {
+  // Estado para almacenar nuestro valor
+  const [storedValue, setStoredValue] = useState<T>(() => {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+
+  // Función para establecer el valor
+  const setValue = (value: T | ((val: T) => T)) => {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return [storedValue, setValue] as const;
+}
+
+// Uso
+function App() {
+  const [name, setName] = useLocalStorage('name', 'John Doe');
+
+  return (
+    <input
+      value={name}
+      onChange={(e) => setName(e.target.value)}
+    />
+  );
+}
+```
+
+### 2. useEffect con cleanup condicional
+
+```tsx
+function useInterval(callback: () => void, delay: number | null) {
+  const savedCallback = useRef(callback);
+
+  useEffect(() => {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() => {
+    if (delay === null) return;
+
+    const id = setInterval(() => savedCallback.current(), delay);
+
+    return () => clearInterval(id);
+  }, [delay]);
+}
+
+// Uso
+function Timer() {
+  const [count, setCount] = useState(0);
+  const [isRunning, setIsRunning] = useState(false);
+
+  useInterval(
+    () => setCount(c => c + 1),
+    isRunning ? 1000 : null
+  );
+
+  return (
+    <div>
+      <h1>{count}</h1>
+      <button onClick={() => setIsRunning(!isRunning)}>
+        {isRunning ? 'Pause' : 'Start'}
+      </button>
+    </div>
+  );
+}
+```
+
+## Recomendación final
+
+La documentación oficial de React lo resume bien: "Remover los Effects innecesarios hará que tu código sea más fácil de seguir, más rápido de ejecutar y menos propenso a errores".
+
+Antes de usar `useEffect`, pregúntate:
+
+1. ¿Estoy sincronizando con un sistema externo?
+2. ¿Puedo calcular este valor directamente durante el renderizado?
+3. ¿Necesito realmente este estado o puedo derivarlo de props/estado existente?
+4. ¿Hay una alternativa más simple como `useMemo` o la prop `key`?
+
+Siguiendo estas prácticas, tu código será más eficiente, mantenible y menos propenso a errores.

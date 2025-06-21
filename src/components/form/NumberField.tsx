@@ -1,5 +1,5 @@
 // React Imports
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 
 import { Controller } from 'react-hook-form'
 
@@ -12,20 +12,18 @@ interface NumberFieldProps extends FieldProps {
   integer?: boolean
 }
 
-const NumberField = ({ name, control, label, error, value, setValue, integer, disabled }: NumberFieldProps) => {
-  const [inputValue, setInputValue] = useState(value !== undefined && value !== null ? value : 0)
-
-  useEffect(() => {
-    if (value !== undefined && value !== null) {
-      setInputValue(value)
-    }
-  }, [value])
+const NumberField = ({ name, control, label, error, setValue, value, integer, disabled }: NumberFieldProps) => {
+  const [inputValue, setInputValue] = useState(value !== undefined && value !== null ? value : '')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let newValue = Number(e.target.value)
+    const inputVal = e.target.value
+
+    let newValue = 0
 
     if (integer) {
-      newValue = Math.floor(newValue)
+      newValue = Math.floor(Number(inputVal))
+    } else {
+      newValue = Number(inputVal)
     }
 
     setInputValue(newValue)
@@ -40,7 +38,6 @@ const NumberField = ({ name, control, label, error, value, setValue, integer, di
         <CustomTextField
           {...field}
           onChange={handleChange}
-          value={inputValue}
           fullWidth
           label={label}
           error={!!error}
@@ -50,6 +47,7 @@ const NumberField = ({ name, control, label, error, value, setValue, integer, di
             step: 1
           }}
           disabled={disabled}
+          value={inputValue}
         />
       )}
     />

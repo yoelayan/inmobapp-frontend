@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 
 import type { TextFieldProps } from '@mui/material/TextField'
 
@@ -17,17 +17,29 @@ const DebouncedInput = ({
   // States
   const [value, setValue] = useState(initialValue)
 
+  // Sincronizar el valor interno cuando cambia el valor externo
   useEffect(() => {
     setValue(initialValue)
   }, [initialValue])
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
+  // Usar useCallback para la función de debounce
+  const debouncedOnChange = useCallback(() => {
+    const handler = setTimeout(() => {
       onChange(value)
     }, debounce)
 
-    return () => clearTimeout(timeout)
+    return () => {
+      clearTimeout(handler)
+    }
   }, [value, onChange, debounce])
+
+  // Efecto para ejecutar el callback debounced
+  useEffect(() => {
+    // Solo ejecutar el debounce si el valor interno es diferente del valor inicial
+    if (value !== initialValue) {
+      return debouncedOnChange()
+    }
+  }, [value, initialValue, debouncedOnChange])
 
   return <CustomTextField {...props} value={value} onChange={e => setValue(e.target.value)} />
 }

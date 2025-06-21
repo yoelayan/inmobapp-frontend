@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 
 // MUI Imports
 import {
@@ -52,7 +52,6 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   onSuccess
 }) => {
   const [selectedCharacteristic, setSelectedCharacteristic] = useState<string | number>('')
-  const [characteristicType, setCharacteristicType] = useState<string>('text')
   const [value, setValue] = useState<string | number | boolean>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadingCharacteristics, setLoadingCharacteristics] = useState(false)
@@ -62,7 +61,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   const { control, setValue: setFormValue, reset } = useForm()
 
   // Fetch all available characteristics
-  const fetchAllCharacteristics = async () => {
+  const fetchAllCharacteristics = useCallback(async () => {
     setLoadingCharacteristics(true)
 
     try {
@@ -80,35 +79,29 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
     } finally {
       setLoadingCharacteristics(false)
     }
-  }
+  }, [allCharacteristics, notify])
 
+  // Cargar características cuando se abre el modal
   useEffect(() => {
     if (open) {
       fetchAllCharacteristics()
       reset()
       setSelectedCharacteristic('')
       setValue('')
-      setCharacteristicType('text')
     }
   }, [open, reset, fetchAllCharacteristics])
 
-  // Update characteristic type when selection changes
-  useEffect(() => {
-    if (selectedCharacteristic) {
-      const selected = availableCharacteristics.find(char => char.id === selectedCharacteristic)
+  // Calcular el tipo de característica seleccionada con useMemo
+  const characteristicType = useMemo(() => {
+    if (!selectedCharacteristic) return 'text'
 
-      if (selected) {
-        setCharacteristicType(selected.type_value || 'text')
+    const selected = availableCharacteristics.find(char => char.id === selectedCharacteristic)
 
-        // Reset the value when changing characteristic type
-        resetValue(selected.type_value || 'text')
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return selected?.type_value || 'text'
   }, [selectedCharacteristic, availableCharacteristics])
 
   // Reset value based on type
-  const resetValue = (type: string) => {
+  const resetValue = useCallback((type: string) => {
     let initialValue
 
     switch (type) {
@@ -127,7 +120,14 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
 
     setValue(initialValue)
     setFormValue('charValue', initialValue)
-  }
+  }, [setFormValue])
+
+  // Cuando cambia la característica seleccionada, resetear el valor según el tipo
+  useEffect(() => {
+    if (selectedCharacteristic) {
+      resetValue(characteristicType)
+    }
+  }, [selectedCharacteristic, characteristicType, resetValue])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -189,15 +189,14 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   }
 
   // Get characteristic name from selected ID
-  const getCharacteristicName = (): string => {
+  const characteristicName = useMemo(() => {
     const characteristic = availableCharacteristics.find(char => char.id === selectedCharacteristic)
 
     return characteristic ? characteristic.name : ''
-  }
+  }, [selectedCharacteristic, availableCharacteristics])
 
   // Render input based on characteristic type
   const renderInputField = () => {
-    const characteristicName = getCharacteristicName()
     const label = characteristicName || 'Valor'
 
     switch (characteristicType) {
