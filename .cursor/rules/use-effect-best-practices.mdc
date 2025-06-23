@@ -1,5 +1,5 @@
 ---
-description: Incluir en la respuesta mejores practicas para el uso de useEffect
+description:
 globs:
 alwaysApply: false
 ---

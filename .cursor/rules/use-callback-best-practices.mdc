@@ -1,0 +1,68 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# useCallback Best Practices
+
+## About This Rule
+This rule provides guidance on optimal usage of React's useCallback hook to improve performance and avoid common pitfalls in your components.
+
+## Scope
+Always
+
+## Rule
+When working with React's useCallback hook, follow these best practices:
+
+1. **Purpose of useCallback**:
+   - Use useCallback to memoize callback functions that are passed to child components or used as dependencies in other hooks
+   - Only use useCallback when necessary to prevent unnecessary re-renders or infinite effect loops
+
+2. **Dependency Array Management**:
+   - Always include all external values referenced by the callback in the dependency array
+   - Include state variables, props, and functions from parent scope that the callback uses
+   - Avoid empty dependency arrays unless the function truly never needs to change
+   - Use ESLint rules like exhaustive-deps to catch dependency issues
+
+3. **Function Creation**:
+   - Keep callback functions focused on a single responsibility
+   - Extract complex logic into separate functions when appropriate
+   - Ensure the function signature remains consistent between renders
+
+4. **Integration with Other Hooks**:
+   - When a useCallback function is used in useEffect, include it in the useEffect dependency array
+   - Use useCallback for event handlers passed to optimized child components using React.memo
+   - Pair with useMemo for complex calculations within callbacks
+
+5. **Performance Considerations**:
+   - Don't overuse useCallback for every function; focus on performance-critical paths
+   - Remember that useCallback itself has a cost - only use when the memoization benefit outweighs this cost
+   - Use React DevTools Profiler to verify performance improvements
+
+6. **Common Patterns**:
+   - Use for handlers that trigger API calls or state updates
+   - Use for callbacks passed to custom hooks
+   - Use for event handlers passed down multiple component levels
+
+7. **Pitfalls to Avoid**:
+   - Creating functions inside useCallback that could be moved outside the component
+   - Forgetting to update dependency arrays when the callback's dependencies change
+   - Creating circular dependencies between callbacks and state
+   - Using stale closures by not properly updating dependencies
+
+## Examples
+
+### Good Usage Pattern:
+```jsx
+const handleSubmit = useCallback((data) => {
+  setIsLoading(true);
+  apiService.submit(data)
+    .then(response => {
+      setResult(response);
+      setIsLoading(false);
+    })
+    .catch(error => {
+      setError(error);
+      setIsLoading(false);
+    });
+}, [apiService, setResult, setError, setIsLoading]);

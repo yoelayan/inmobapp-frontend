@@ -1,0 +1,65 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# useMemo Best Practices
+
+## About This Rule
+This rule provides guidance on the optimal usage of React's useMemo hook to improve performance and prevent unnecessary recalculations in your components.
+
+## Scope
+Always
+
+## Rule
+When working with React's useMemo hook, follow these best practices:
+
+1. **Purpose of useMemo**:
+   - Use useMemo to memoize (cache) the results of expensive calculations
+   - Use useMemo to maintain referential equality of objects and arrays between renders
+   - Only use useMemo when necessary to prevent unnecessary recalculations or re-renders
+
+2. **When to Use useMemo**:
+   - For computationally expensive calculations that don't need to run on every render
+   - When creating objects or arrays that are used as dependencies in other hooks
+   - When passing non-primitive values to memoized child components
+   - For complex data transformations that depend on specific props or state
+
+3. **Dependency Array Management**:
+   - Always include all values referenced by the calculation in the dependency array
+   - Keep dependency arrays as small as possible by limiting what your calculation needs
+   - Use ESLint rules like exhaustive-deps to catch dependency issues
+
+4. **Performance Considerations**:
+   - Don't overuse useMemo for simple calculations; it has its own performance cost
+   - The initial render will be slightly slower with useMemo; only use when the benefit on re-renders outweighs this cost
+   - Use React DevTools Profiler to verify performance improvements
+   - Consider extracting expensive calculations to worker threads for truly heavy computations
+
+5. **Common Patterns**:
+   - Memoizing derived state from props or other state
+   - Caching formatted or filtered data for lists
+   - Maintaining referential equality for objects passed to child components
+   - Avoiding unnecessary recalculations in useEffect dependencies
+
+6. **Pitfalls to Avoid**:
+   - Using useMemo for simple calculations where the overhead isn't worth it
+   - Creating complex dependency chains between different memoized values
+   - Memoizing primitive values (strings, numbers, booleans) unnecessarily
+   - Forgetting that useMemo runs during rendering (don't include side effects)
+
+## Examples
+
+### Good Usage Pattern - Expensive Calculation:
+```jsx
+// Memoize expensive calculation that depends on data
+const sortedAndFilteredItems = useMemo(() => {
+  console.log('Performing expensive calculation');
+  return items
+    .filter(item => item.category === selectedCategory)
+    .sort((a, b) => a.priority - b.priority)
+    .map(item => ({
+      ...item,
+      formattedDate: formatDate(item.timestamp)
+    }));
+}, [items, selectedCategory]);
