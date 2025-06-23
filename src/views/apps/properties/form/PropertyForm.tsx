@@ -126,8 +126,9 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   refreshClients,
   refreshCities,
 }) => {
+  console.log("render")
   const { baseForm, validateFirstStep, validateSecondStep, handleChangeImages } = usePropertyForm(propertyId)
-  const { control, handleSubmit, errors, isSubmitting, setValue, watch } = baseForm
+  const { control, handleSubmit, errors, isSubmitting, setValue, watch, getValues } = baseForm
   const { notify } = useNotification()
   const [images, setImages] = useState<IImage[]>([])
 
@@ -319,7 +320,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         handleSubmit().then(() => {
           // Save characteristics only if there's a propertyId
           if (propertyId) {
-            const characteristics = watch('characteristics')
+            const characteristics = getValues('characteristics')
 
             if (characteristics && characteristics.length > 0) {
               // Make sure the characteristics array matches the expected type
@@ -376,7 +377,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
       console.log('handleCharacteristicsChange', characteristics)
 
       // Only update if necessary to prevent render loops
-      const currentChars = watch('characteristics')
+      const currentChars = getValues('characteristics')
 
       // Deep comparison instead of reference comparison
       if (JSON.stringify(currentChars) === JSON.stringify(characteristics)) {
@@ -399,7 +400,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         return <Typography color='error'>Error loading characteristics</Typography>
       }
     }
-  }, [propertyId, control, setValue, watch])
+  }, [propertyId, control, setValue, getValues])
 
   // Create a separate component for images to avoid interference with characteristics
   const PropertyImages = React.useMemo(() => {
@@ -456,10 +457,9 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.name}
                 setValue={setValue}
-                value={watch('name')}
+                value={getValues('name')}
               />
             </Grid>
-
 
             <Grid size={{ xs: 12, sm: 3 }}>
               <SelectField
@@ -468,7 +468,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.status_id}
                 setValue={setValue}
-                value={watch('status_id')}
+                value={getValues('status_id')}
                 response={statuses}
                 dataMap={{ value: 'id', label: 'name' }}
               />
@@ -481,7 +481,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.type_property_id}
                 setValue={setValue}
-                value={watch('type_property_id')}
+                value={getValues('type_property_id')}
                 response={propertyTypes}
                 dataMap={{ value: 'id', label: 'name' }}
               />
@@ -493,10 +493,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.state_id}
                 setValue={setValue}
-                value={watch('state_id')}
+                value={getValues('state_id')}
                 response={states}
                 dataMap={{ value: 'id', label: 'name' }}
-                onChange={(e) => handleChangeState(e)}
+                onChange={e => handleChangeState(e)}
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
@@ -506,10 +506,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.city_id}
                 setValue={setValue}
-                value={watch('city_id')}
+                value={getValues('city_id')}
                 response={cities}
                 dataMap={{ value: 'id', label: 'name' }}
-                isDisabled={!watch('state_id')}
+                isDisabled={!getValues('state_id')}
               />
             </Grid>
             <Grid size={{ xs: 12 }}>
@@ -519,7 +519,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.address}
                 setValue={setValue}
-                value={watch('address')}
+                value={getValues('address')}
               />
             </Grid>
           </>
@@ -535,7 +535,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.franchise_id}
                 setValue={setValue}
-                value={watch('franchise_id')}
+                value={getValues('franchise_id')}
                 response={franchises}
                 dataMap={{ value: 'id', label: 'name' }}
               />
@@ -547,7 +547,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.assigned_to_id}
                 setValue={setValue}
-                value={watch('assigned_to_id')}
+                value={getValues('assigned_to_id')}
                 response={users}
                 dataMap={{ value: 'id', label: 'email' }}
               />
@@ -559,7 +559,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.type_negotiation_id}
                 setValue={setValue}
-                value={watch('type_negotiation_id')}
+                value={getValues('type_negotiation_id')}
                 response={negotiations}
                 dataMap={{ value: 'id', label: 'name' }}
               />
@@ -571,7 +571,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.price}
                 setValue={setValue}
-                value={watch('price')}
+                value={getValues('price')}
                 disabled={disabledPrice}
               />
             </Grid>
@@ -582,7 +582,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 control={control}
                 error={errors.rent_price}
                 setValue={setValue}
-                value={watch('rent_price')}
+                value={getValues('rent_price')}
                 disabled={disabledRentPrice}
               />
             </Grid>
@@ -595,7 +595,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                   control={control}
                   error={errors.owner_id}
                   setValue={setValue}
-                  value={watch('owner_id')}
+                  value={getValues('owner_id')}
                   response={clients}
                   dataMap={{ value: 'id', label: 'name' }}
                   refreshData={refreshClients}
@@ -626,7 +626,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                           control={control}
                           error={errors.description}
                           setValue={setValue}
-                          value={watch('description')}
+                          value={getValues('description')}
                         />
                       </CardContent>
                     </Card>

@@ -9,7 +9,8 @@ import type {
   Control,
   UseFormWatch,
   UseFormSetValue,
-  Path
+  Path,
+  UseFormGetValues
 } from 'react-hook-form'
 
 import { useForm } from 'react-hook-form'
@@ -49,6 +50,7 @@ interface UseBaseFormReturn<TFormData extends Record<string, any>> {
   isUpdateMode: boolean
   setError: UseFormSetError<TFormData>
   clearErrors: UseFormClearErrors<TFormData>
+  getValues: UseFormGetValues<TFormData>
 }
 
 export function useBaseForm<
@@ -79,7 +81,7 @@ export function useBaseForm<
     setValue,
     clearErrors,
     watch,
-
+    getValues,
     formState: { errors, isSubmitting }
   } = useForm<TFormData>({
     defaultValues: defaultValues as any // Set initial defaults
@@ -225,6 +227,7 @@ export function useBaseForm<
     watch,
     clearErrors,
     setError,
-    isUpdateMode
+    isUpdateMode,
+    getValues
   }
 }

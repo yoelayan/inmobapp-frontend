@@ -58,14 +58,14 @@ export const usePropertyForm = (propertyId?: string) => {
   const { uploadImages } = useProperties()
 
   const validateFirstStep = () => {
-    const { watch, setError, clearErrors } = baseForm
-    const name = watch('name')
-    const status_id = watch('status_id')
-    const type_property_id = watch('type_property_id')
-    const state_id = watch('state_id')
-    const city_id = watch('city_id')
-    const address = watch('address')
-    const characteristics = watch('characteristics')
+    const { setError, clearErrors, getValues } = baseForm
+    const name = getValues('name')
+    const status_id = getValues('status_id')
+    const type_property_id = getValues('type_property_id')
+    const state_id = getValues('state_id')
+    const city_id = getValues('city_id')
+    const address = getValues('address')
+    const characteristics = getValues('characteristics')
 
     const fields = {
       name,
@@ -95,14 +95,14 @@ export const usePropertyForm = (propertyId?: string) => {
   }
 
   const validateSecondStep = () => {
-    const { watch, setError, clearErrors } = baseForm
-    const franchise_id = watch('franchise_id')
+    const { setError, clearErrors, getValues } = baseForm
+    const franchise_id = getValues('franchise_id')
 
-    const assigned_to_id = watch('assigned_to_id')
-    const type_negotiation_id = watch('type_negotiation_id')
-    const owner_id = watch('owner_id')
-    const price = watch('price')
-    const rent_price = watch('rent_price')
+    const assigned_to_id = getValues('assigned_to_id')
+    const type_negotiation_id = getValues('type_negotiation_id')
+    const owner_id = getValues('owner_id')
+    const price = getValues('price')
+    const rent_price = getValues('rent_price')
 
     const fields = {
       assigned_to_id,
