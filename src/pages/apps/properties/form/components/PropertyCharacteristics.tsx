@@ -19,7 +19,7 @@ import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
 
 // Form components
-import type { Control } from 'react-hook-form'
+import type { Control, UseFormGetValues, UseFormSetValue } from 'react-hook-form'
 
 import TextField from '@/components/form/TextField'
 import NumberField from '@/components/form/NumberField'
@@ -35,10 +35,12 @@ import type { IPropertyCharacteristic, ICharacteristic } from '@/types/apps/Real
 interface PropertyCharacteristicsProps {
   propertyId?: string
   control: Control<any>
+  getValues: UseFormGetValues<any>
+  setValue: UseFormSetValue<any>
   onChange?: (characteristics: IPropertyCharacteristic[]) => void
 }
 
-const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ propertyId, control, onChange }) => {
+const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ propertyId, control, getValues, setValue, onChange }) => {
   const { notify } = useNotification()
   const { getPropertyCharacteristics, allCharacteristics, deleteCharacteristic, addCharacteristic } = useProperties()
 
@@ -57,11 +59,13 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
 
     try {
       const response = await getPropertyCharacteristics(propertyId)
+      let required: IPropertyCharacteristic[] = []
+      let optional: IPropertyCharacteristic[] = []
 
       // Process response based on required vs optional
       if (response.results) {
-        const required = response.results.filter(char => char.characteristic.is_required)
-        const optional = response.results.filter(char => !char.characteristic.is_required)
+        required = response.results.filter(char => char.characteristic.is_required)
+        optional = response.results.filter(char => !char.characteristic.is_required)
 
         setRequiredCharacteristics(required)
         setOptionalCharacteristics(optional)
@@ -72,8 +76,8 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
         }
       } else if (Array.isArray(response)) {
         // Backward compatibility for direct array responses
-        const required = response.filter(char => char.characteristic.is_required)
-        const optional = response.filter(char => !char.characteristic.is_required)
+        required = response.filter(char => char.characteristic.is_required)
+        optional = response.filter(char => !char.characteristic.is_required)
 
         setRequiredCharacteristics(required)
         setOptionalCharacteristics(optional)
@@ -83,6 +87,14 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
           onChange([...required, ...optional])
         }
       }
+
+      required.forEach(char => {
+        setValue(`char_${char.characteristic.code}`, char.value)
+      })
+
+      optional.forEach(char => {
+        setValue(`char_${char.characteristic.code}`, char.value)
+      })
     } catch (error) {
       console.error('Error fetching property characteristics:', error)
       notify('Error al cargar características', 'error')
@@ -161,12 +173,13 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
   }
 
   // Handle value change for a characteristic
-  const handleValueChange = (id: number, newValue: string | number | boolean) => {
+  const handleValueChange = (code: string, newValue: string | number | boolean) => {
     // Determine if it's required or optional
+
     let isRequired = false
     let updatedCharacteristics: IPropertyCharacteristic[] = []
 
-    const requiredIndex = requiredCharacteristics.findIndex(char => char.id === id)
+    const requiredIndex = requiredCharacteristics.findIndex(char => char.characteristic.code === code)
 
     if (requiredIndex >= 0) {
       isRequired = true
@@ -177,7 +190,7 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
       }
       setRequiredCharacteristics(updatedCharacteristics)
     } else {
-      const optionalIndex = optionalCharacteristics.findIndex(char => char.id === id)
+      const optionalIndex = optionalCharacteristics.findIndex(char => char.characteristic.code === code)
 
       if (optionalIndex >= 0) {
         updatedCharacteristics = [...optionalCharacteristics]
@@ -189,6 +202,8 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
       }
     }
 
+
+
     // Notify parent component
     if (onChange) {
       onChange(
@@ -197,48 +212,55 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
           : [...requiredCharacteristics, ...updatedCharacteristics]
       )
     }
+
+      if (code === 'construction_area' || code === 'land_area') {
+        const landArea = getValues('char_land_area')
+        const constructionArea = getValues('char_construction_area')
+        const totalArea = landArea + constructionArea
+
+        setValue('char_total_area', totalArea)
+        console.log('totalArea', totalArea)
+      }
   }
 
   // Create input field based on characteristic type
   const renderInputField = (characteristic: IPropertyCharacteristic) => {
     const {
       id,
-      value,
-      characteristic: { type_value, name }
+      characteristic: { type_value, name, code }
     } = characteristic
+
+    const params = {
+      name: `char_${code}`,
+      label: name,
+      control,
+      setValue: (name: string, value: string | number | boolean) => {
+        setValue(name, value)
+        handleValueChange(code, value)
+      },
+      value: getValues(`char_${code}`)
+    }
 
     switch (type_value) {
       case 'boolean':
         return (
           <SwitchField
             key={id}
-            name={`char_${id}`}
-            label={name}
-            control={control}
-            setValue={(_, newValue) => handleValueChange(id, newValue)}
-            value={value as boolean}
+            {...params}
           />
         )
       case 'integer':
         return (
           <NumberField
             key={id}
-            name={`char_${id}`}
-            label={name}
-            control={control}
-            setValue={(_, newValue) => handleValueChange(id, newValue)}
-            value={value as number}
+            {...params}
           />
         )
       case 'decimal':
         return (
           <NumberField
             key={id}
-            name={`char_${id}`}
-            label={name}
-            control={control}
-            setValue={(_, newValue) => handleValueChange(id, newValue)}
-            value={value as number}
+            {...params}
           />
         )
       case 'text':
@@ -246,11 +268,7 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
         return (
           <TextField
             key={id}
-            name={`char_${id}`}
-            label={name}
-            control={control}
-            setValue={(_, newValue) => handleValueChange(id, newValue)}
-            value={value as string}
+            {...params}
           />
         )
     }

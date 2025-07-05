@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 
 import { styled, useTheme } from '@mui/material/styles'
 import {
@@ -126,14 +126,14 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   refreshClients,
   refreshCities,
 }) => {
-  console.log("render")
+  console.log('render')
   const { baseForm, validateFirstStep, validateSecondStep, handleChangeImages } = usePropertyForm(propertyId)
   const { control, handleSubmit, errors, isSubmitting, setValue, watch, getValues } = baseForm
   const { notify } = useNotification()
   const [images, setImages] = useState<IImage[]>([])
 
   // Obtenemos las funciones de API para las imágenes
-  const { uploadImages, deleteImage, updateImagesOrder, getAllImages, updateCharacteristic } = useProperties()
+  const {deleteImage, updateImagesOrder, getAllImages, updateCharacteristic } = useProperties()
 
   // disabled de inputs, useState
   const [disabledPrice, setDisabledPrice] = useState(false)
@@ -149,7 +149,8 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     setOpen(!open)
   }
 
-  const handleGetAllImages = async () => {
+
+  const handleGetAllImages = useCallback(async () => {
     if (!propertyId) {
       return
     }
@@ -176,29 +177,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
       console.error('Error fetching images:', error)
       notify('Error al cargar las imágenes', 'error')
     }
-  }
-
-  // useEffect para manejar los disabled de precio y precio de alquiler basandose en Tipo de Negociacion
-  const typeNegotiationValue = watch('type_negotiation_id')
-
-  useEffect(() => {
-    // 1: Venta, 2: Alquiler, 3: Venta y Alquiler
-    if (typeNegotiationValue) {
-      if (typeNegotiationValue === 1) {
-        setValue('rent_price', 0)
-        setDisabledPrice(false)
-        setDisabledRentPrice(true)
-      } else if (typeNegotiationValue === 2) {
-        setValue('price', 0)
-
-        setDisabledPrice(true)
-        setDisabledRentPrice(false)
-      } else if (typeNegotiationValue === 3) {
-        setDisabledPrice(false)
-        setDisabledRentPrice(false)
-      }
-    }
-  }, [typeNegotiationValue, setValue, setDisabledPrice, setDisabledRentPrice])
+  }, [propertyId, notify, getAllImages, setValue])
 
   // useEffect para procesar imágenes cuando se carga el componente
   useEffect(() => {
@@ -310,9 +289,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           return
         }
 
-
         await handleSubmit()
-
 
         break
       case 2:
@@ -351,7 +328,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
-  const handleUpdateImagesOrder = async (images: any[]) => {
+  const handleUpdateImagesOrder = useCallback(async (images: any[]) => {
     if (!propertyId) {
       notify('Debe guardar la propiedad antes de reordenar imágenes', 'warning')
 
@@ -365,15 +342,13 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
       console.error('Error al actualizar el orden de las imágenes:', error)
       notify('Error al actualizar el orden de las imágenes', 'error')
     }
-  }
+  }, [propertyId, notify, updateImagesOrder])
 
   // Handler for characteristic changes
-
 
   // Try/catch to avoid any potential issues with characteristics
   const CharacteristicsWrapper = React.useMemo(() => {
     const handleCharacteristicsChange = (characteristics: any[]) => {
-
       console.log('handleCharacteristicsChange', characteristics)
 
       // Only update if necessary to prevent render loops
@@ -384,6 +359,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
         return
       }
 
+
       setValue('characteristics', characteristics)
     }
 
@@ -392,7 +368,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     return () => {
       try {
         return (
-          <PropertyCharacteristics propertyId={propertyId} control={control} onChange={handleCharacteristicsChange} />
+          <PropertyCharacteristics propertyId={propertyId} control={control} getValues={getValues} setValue={setValue} onChange={handleCharacteristicsChange} />
         )
       } catch (error) {
         console.error('Error rendering PropertyCharacteristics:', error)
@@ -426,21 +402,49 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     errors.images,
     images,
     setValue,
-    uploadImages,
     deleteImage,
     handleChangeImages,
     handleGetAllImages,
     handleUpdateImagesOrder
   ])
 
-
   const handleChangeState = (e: any) => {
-
     setValue('city_id', undefined)
 
     if (e.value) {
       refreshCities({ state: e.value })
     }
+  }
+
+  const handleChangeTypeNegotiation = (e: any) => {
+    if (!e) {
+      setValue('price', 0)
+      setValue('rent_price', 0)
+      setDisabledPrice(true)
+      setDisabledRentPrice(true)
+
+return;
+    }
+
+    const typeNegotiationValue = e.value
+
+      // 1: Venta, 2: Alquiler, 3: Venta y Alquiler
+      if (typeNegotiationValue) {
+        if (typeNegotiationValue === 1) {
+          setValue('rent_price', 0)
+          setDisabledPrice(false)
+          setDisabledRentPrice(true)
+        } else if (typeNegotiationValue === 2) {
+          setValue('price', 0)
+
+          setDisabledPrice(true)
+          setDisabledRentPrice(false)
+        } else if (typeNegotiationValue === 3) {
+          setDisabledPrice(false)
+          setDisabledRentPrice(false)
+        }
+      }
+
   }
 
   const renderStepContent = (activeStep: number) => {
@@ -561,6 +565,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                 setValue={setValue}
                 value={getValues('type_negotiation_id')}
                 response={negotiations}
+                onChange={e => handleChangeTypeNegotiation(e)}
                 dataMap={{ value: 'id', label: 'name' }}
               />
             </Grid>
@@ -745,11 +750,11 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                         )
                       }
                     >
-                        {isSubmitting ? <CircularProgress size={24} /> : null}
-                        {/** Si es crear y es el primer paso == "Crear"
-                         * El resto de pasos == "Guardar"
-                         */}
-                        {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
+                      {isSubmitting ? <CircularProgress size={24} /> : null}
+                      {/** Si es crear y es el primer paso == "Crear"
+                       * El resto de pasos == "Guardar"
+                       */}
+                      {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
                     </Button>
                   </Grid>
                 </Grid>
