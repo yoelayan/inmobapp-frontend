@@ -21,7 +21,7 @@ import { Controller } from 'react-hook-form'
 
 import CustomIconButton from '@core/components/mui/IconButton'
 
-import type FieldProps from '@/components/form/BaseField'
+import type FieldProps from '@/components/features/form/BaseField'
 
 interface EditorFieldProps extends FieldProps {}
 

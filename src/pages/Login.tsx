@@ -4,7 +4,7 @@
 import Typography from '@mui/material/Typography'
 
 // Component Imports
-import Link from '@components/Link'
+import Link from '@components/common/Link'
 import Logo from '@components/layout/shared/Logo'
 import LoginForm from '@auth/components/LoginForm'
 

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/material'
 
 // Component Imports
-import { SearchForm } from '@/views/apps/searches/form/SearchForm'
+import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
 
 // Hook Imports
 import useClients from '@/hooks/api/crm/useClients'

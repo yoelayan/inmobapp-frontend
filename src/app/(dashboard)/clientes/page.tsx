@@ -4,7 +4,7 @@
 import React from 'react'
 
 // Component Imports
-import ClientsTable from '@views/apps/clients/list/ClientsTable'
+import ClientsTable from '@/pages/apps/clients/list/ClientsTable'
 
 const Clients: React.FC = () => {
   return <ClientsTable />

@@ -1,5 +1,5 @@
 import type { ISearch } from '@/types/apps/ClientesTypes'
-import { apiRoutes } from '@api/routes'
+import { ENDPOINTS } from '@/services/api/endpoints'
 import BaseRepository from '../BaseRepository'
 import type { ResponseAPI } from '../BaseRepository'
 
@@ -9,7 +9,7 @@ class SearchesRepository extends BaseRepository<ISearch> {
   private static instance: SearchesRepository
 
   private constructor() {
-    super(apiRoutes.crm.searches)
+    super(ENDPOINTS.CRM.SEARCHES.BASE)
   }
 
   public static getInstance(): SearchesRepository {
@@ -20,24 +20,24 @@ class SearchesRepository extends BaseRepository<ISearch> {
     return SearchesRepository.instance
   }
 
-  public async getMatchedProperties(searchId: string): Promise<ResponseAPI<IRealProperty>> {
-    const url = apiRoutes.crm.searchesMatches.replace(':id', searchId)
+  public async getMatchedProperties(searchId: number): Promise<ResponseAPI<IRealProperty>> {
+    const url = ENDPOINTS.CRM.SEARCHES.PROPERTIES_MATCHED(searchId)
 
     return await this.apiClient.get<ResponseAPI<IRealProperty>>(url)
   }
 
   public async allCharacteristics(): Promise<ResponseAPI<ICharacteristic>> {
-    const url = apiRoutes.realstate.characteristics
+    const url = ENDPOINTS.REALSTATE.PROPERTY_CHARACTERISTICS.BASE
 
     return await this.apiClient.get<ResponseAPI<ICharacteristic>>(url)
   }
 
   public async addCharacteristic(
-    id: string,
+    id: number,
     characteristicId: string | number,
     value: string | number | boolean
   ): Promise<any> {
-    const url = apiRoutes.crm.searchesAddCharacteristic.replace(':id', id)
+    const url = ENDPOINTS.CRM.SEARCHES.CHARACTERISTICS.ADD(id)
 
     return await this.apiClient.post(url, {
       characteristic: {
@@ -47,16 +47,16 @@ class SearchesRepository extends BaseRepository<ISearch> {
     })
   }
 
-  public async deleteCharacteristic(id: string, characteristicId: string | number): Promise<any> {
-    const url = apiRoutes.crm.searchesDeleteCharacteristic.replace(':id', id)
+  public async deleteCharacteristic(id: number, characteristicId: string | number): Promise<any> {
+    const url = ENDPOINTS.CRM.SEARCHES.CHARACTERISTICS.DELETE(id)
 
     return await this.apiClient.delete(url, {
       characteristic_id: characteristicId
     })
   }
 
-  public async addObservation(id: string, observation: string, audio?: File): Promise<any> {
-    const url = apiRoutes.crm.searchesAddObservation.replace(':id', id)
+  public async addObservation(id: number, observation: string, audio?: File): Promise<any> {
+    const url = ENDPOINTS.CRM.SEARCHES.OBSERVATIONS.ADD(id)
 
     if (audio) {
       return await this.apiClient.post(
@@ -75,8 +75,8 @@ class SearchesRepository extends BaseRepository<ISearch> {
     })
   }
 
-  public async deleteObservation(id: string, observationId: string | number): Promise<any> {
-    const url = apiRoutes.crm.searchesDeleteObservation.replace(':id', id)
+  public async deleteObservation(id: number, observationId: string | number): Promise<any> {
+    const url = ENDPOINTS.CRM.SEARCHES.OBSERVATIONS.DELETE(id)
 
     return await this.apiClient.delete(url, {
       observation_id: observationId

@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation'
 
 import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/material'
 
-import { ClientForm } from '@/views/apps/clients/form/ClientForm'
+import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
 import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
 import useFranchises from '@/hooks/api/realstate/useFranchises'

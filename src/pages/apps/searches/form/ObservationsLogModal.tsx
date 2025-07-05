@@ -34,7 +34,7 @@ import useConfirmDialog from '../../../../hooks/useConfirmDialog'
 interface ObservationsLogModalProps {
   open: boolean
   onClose: () => void
-  searchId: string
+  searchId: number | null
   observations: IClientObservation[]
   onSuccess: () => void
 }
@@ -58,6 +58,7 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
   }, [observations])
 
   const handleDeleteObservation = async (observationId: number) => {
+    if (!searchId) return
     showConfirmDialog({
       title: '¿Eliminar observación?',
       message: '¿Estás seguro que deseas eliminar esta observación? Esta acción no se puede deshacer.',

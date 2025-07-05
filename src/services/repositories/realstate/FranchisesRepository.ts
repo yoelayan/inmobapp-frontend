@@ -1,12 +1,12 @@
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
-import { apiRoutes } from '@api/routes'
+import { ENDPOINTS } from '@/services/api/endpoints'
 import BaseRepository from '../BaseRepository'
 
 class FranchisesRepository extends BaseRepository<IFranchise> {
   private static instance: FranchisesRepository
 
   private constructor() {
-    super(apiRoutes.realstate.franchises)
+    super(ENDPOINTS.REALSTATE.FRANCHISES.BASE)
   }
 
   public static getInstance(): FranchisesRepository {

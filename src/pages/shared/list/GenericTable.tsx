@@ -6,16 +6,16 @@ import React from 'react'
 // Server Imports
 import Button from '@mui/material/Button'
 
-import type { ResponseAPI } from '@/api/repositories/BaseRepository'
+import type { ResponseAPI } from '@services/repositories/BaseRepository'
 
 // Component Imports
-import type { Header, TableAction } from '@components/table/TableComponent'
-import type { GridProps } from '@components/table/components/TableGrid'
-import TableComponent from '@components/table/TableComponent'
+import type { Header, TableAction } from '@components/features/table/TableComponent'
+import type { GridProps } from '@components/features/table/components/TableGrid'
+import TableComponent from '@components/features/table/TableComponent'
 import SectionHeader from '@components/layout/horizontal/SectionHeader'
 
 // Button Imports
-import Link from '@/components/Link'
+import Link from '@components/common/Link'
 
 interface GenericTableProps<T> {
   title: string

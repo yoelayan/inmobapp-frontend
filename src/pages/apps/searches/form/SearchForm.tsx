@@ -20,8 +20,8 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 
 // Component Imports
-import TextField from '@/components/form/TextField'
-import SelectFieldAsync from '@/components/form/SelectFieldAsync'
+import TextField from '@/components/features/form/TextField'
+import SelectFieldAsync from '@/components/features/form/SelectFieldAsync'
 
 // Hook Imports
 import { useSearchForm } from './hooks/useSearchForm'
@@ -29,14 +29,14 @@ import { useNotification } from '@/hooks/useNotification'
 import useClients from '@/hooks/api/crm/useClients'
 
 // Type Imports
-import type { ResponseAPI } from '@/api/repositories/BaseRepository'
+import type { ResponseAPI } from '@/services/repositories/BaseRepository'
 import type { ISearch, IClient } from '@/types/apps/ClientesTypes'
 import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
 
 // Components Imports
-import { ClientForm } from '@/views/apps/clients/form/ClientForm'
+import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 
 // Component Props
 interface SearchFormProps {

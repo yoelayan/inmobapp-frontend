@@ -6,7 +6,7 @@ import React, { useEffect } from 'react'
 // Component Imports
 import Grid from '@mui/material/Grid2'
 
-import PropertiesTable from '@views/apps/properties/list/PropertiesTable'
+import PropertiesTable from '@/pages/apps/properties/list/PropertiesTable'
 
 // Hooks
 import useProperties from '@/hooks/api/realstate/useProperties'

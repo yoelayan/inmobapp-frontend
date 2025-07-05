@@ -1,4 +1,4 @@
-import StatesRepository from '@/api/repositories/locations/StatesRepository'
+import StatesRepository from '@/services/repositories/locations/StatesRepository'
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
 
 export default function useStates() {

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Switch, FormControlLabel, FormHelperText } from '@mui/material'
 import { Controller } from 'react-hook-form'
 
-import type FieldProps from '@/components/form/BaseField'
+import type FieldProps from '@/components/features/form/BaseField'
 
 interface SwitchFieldProps extends FieldProps {
   onChange?: (value: any) => void

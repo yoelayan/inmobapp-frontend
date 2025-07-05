@@ -1,6 +1,6 @@
 // src/hooks/useClientForm.tsx
 import type { IClient } from '@/types/apps/ClientesTypes'
-import ClientsRepository from '@/api/repositories/crm/ClientsRepository' // Ensure correct path
+import ClientsRepository from '@/services/repositories/crm/ClientsRepository' // Ensure correct path
 import { useNotification } from '@/hooks/useNotification'
 import { useBaseForm } from '@/hooks/useBaseForm'
 

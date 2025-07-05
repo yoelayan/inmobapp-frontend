@@ -4,12 +4,12 @@ import React from 'react'
 
 import { Button, Box, CircularProgress, Grid2 as Grid } from '@mui/material'
 
-import type { ResponseAPI } from '@/api/repositories/BaseRepository'
+import type { ResponseAPI } from '@/services/repositories/BaseRepository'
 
 import { useClientForm } from './hooks/useClientForm'
 
-import TextField from '@/components/form/TextField' // Ajusta la ruta [20]
-import SelectField from '@/components/form/SelectField' // Ajusta la ruta [18
+import TextField from '@/components/features/form/TextField'
+import SelectField from '@/components/features/form/SelectField'
 
 import { useNotification } from '@/hooks/useNotification'
 import type { IStatus } from '@/types/apps/CatalogTypes'

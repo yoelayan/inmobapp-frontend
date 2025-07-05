@@ -6,7 +6,7 @@ import React, { useState, useEffect } from 'react'
 // MUI Imports
 import Grid from '@mui/material/Grid2'
 
-import HorizontalWithBorder from '@/components/card-statistics/HorizontalWithBorder'
+import HorizontalWithBorder from '@/components/common/card-statistics/HorizontalWithBorder'
 
 // Hooks
 import useProperties from '@/hooks/api/realstate/useProperties'

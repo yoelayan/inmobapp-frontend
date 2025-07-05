@@ -2,8 +2,8 @@
 import { useState } from 'react'
 
 // Api Imports
-import PropertiesRepository from '@/api/repositories/realstate/PropertiesRepository'
-import useBaseHookApi from '@/hooks/api/useBaseHookApi'
+import PropertiesRepository from '@/services/repositories/realstate/PropertiesRepository'
+import useBaseHookApi from '@hooks/api/useBaseHookApi'
 
 // Type Imports
 import type { IPropertyCharacteristic } from '@/types/apps/RealtstateTypes'
@@ -30,15 +30,15 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
   const [totalPropertiesError, setTotalPropertiesError] = useState<any>(null)
 
   const getAllImages = async (id: string | number) => {
-    return await PropertiesRepository.getAllImages(id.toString())
+    return await PropertiesRepository.getAllImages(Number(id))
   }
 
   const uploadImages = async (id: string | number, files: FileList) => {
-    return await PropertiesRepository.uploadImages(id.toString(), files)
+    return await PropertiesRepository.uploadImages(Number(id), files)
   }
 
   const deleteImage = async (id: string | number) => {
-    return await PropertiesRepository.deleteImage(id.toString())
+    return await PropertiesRepository.deleteImage(Number(id))
   }
 
   const updateImagesOrder = async (propertyId: string | number, images: any[]) => {
@@ -48,24 +48,24 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
       order: img.order
     }))
 
-    return await PropertiesRepository.updateImagesOrder(propertyId.toString(), imagesData)
+    return await PropertiesRepository.updateImagesOrder(Number(propertyId), imagesData)
   }
 
   const addCharacteristic = async (id: string | number, characteristicId: string | number) => {
-    return await PropertiesRepository.addCharacteristic(id.toString(), characteristicId.toString())
+    return await PropertiesRepository.addCharacteristic(Number(id), Number(characteristicId))
   }
 
   const deleteCharacteristic = async (id: string | number, characteristicId: string | number) => {
-    return await PropertiesRepository.deleteCharacteristic(id.toString(), characteristicId.toString())
+    return await PropertiesRepository.deleteCharacteristic(Number(id), Number(characteristicId))
   }
 
   const updateCharacteristic = async (id: string | number, characteristics: IPropertyCharacteristic[]) => {
-    return await PropertiesRepository.updateCharacteristic(id.toString(), characteristics)
+    return await PropertiesRepository.updateCharacteristic(Number(id), characteristics)
   }
 
   // Obtener todas las caracteristicas
   const getPropertyCharacteristics = async (id: string | number) => {
-    return await PropertiesRepository.getPropertyCharacteristics(id.toString())
+    return await PropertiesRepository.getPropertyCharacteristics(Number(id))
   }
 
   const allCharacteristics = async () => {

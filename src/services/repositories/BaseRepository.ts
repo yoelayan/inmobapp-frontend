@@ -1,4 +1,4 @@
-import ApiClient from '@api/apiClient'
+import ApiClient from '@/services/api/client'
 
 export type ResponseAPI<T> = {
   count: number

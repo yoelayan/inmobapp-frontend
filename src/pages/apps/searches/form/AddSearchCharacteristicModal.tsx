@@ -27,9 +27,9 @@ import AddIcon from '@mui/icons-material/Add'
 import { useForm } from 'react-hook-form'
 
 
-import TextField from '@/components/form/TextField'
-import NumberField from '@/components/form/NumberField'
-import SwitchField from '@/components/form/SwitchField'
+import TextField from '@/components/features/form/TextField'
+import NumberField from '@/components/features/form/NumberField'
+import SwitchField from '@/components/features/form/SwitchField'
 
 // Hook Imports
 import useSearches from '@/hooks/api/crm/useSearches'
@@ -41,7 +41,7 @@ import type { ICharacteristic } from '@/types/apps/RealtstateTypes'
 interface AddSearchCharacteristicModalProps {
   open: boolean
   onClose: () => void
-  searchId: string
+  searchId: number | null
   onSuccess: () => void
 }
 
@@ -51,7 +51,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   searchId,
   onSuccess
 }) => {
-  const [selectedCharacteristic, setSelectedCharacteristic] = useState<string | number>('')
+  const [selectedCharacteristic, setSelectedCharacteristic] = useState<number | null>(null)
   const [value, setValue] = useState<string | number | boolean>('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadingCharacteristics, setLoadingCharacteristics] = useState(false)
@@ -86,7 +86,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
     if (open) {
       fetchAllCharacteristics()
       reset()
-      setSelectedCharacteristic('')
+      setSelectedCharacteristic(null)
       setValue('')
     }
   }, [open, reset, fetchAllCharacteristics])
@@ -132,6 +132,13 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    if (!searchId) {
+      notify('No se puede añadir una característica sin un ID de búsqueda', 'error')
+      setIsSubmitting(false)
+
+      return
+    }
+
     if (!selectedCharacteristic) {
       notify('Debe seleccionar una característica', 'error')
 
@@ -167,7 +174,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
 
       notify('Característica añadida correctamente', 'success')
       reset()
-      setSelectedCharacteristic('')
+      setSelectedCharacteristic(null)
       resetValue('text')
       onSuccess()
       onClose()
@@ -181,7 +188,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
 
   const handleClose = () => {
     if (!isSubmitting) {
-      setSelectedCharacteristic('')
+      setSelectedCharacteristic(null)
       resetValue('text')
       reset()
       onClose()
@@ -298,7 +305,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
                   <Select
                     labelId='add-characteristic-label'
                     value={selectedCharacteristic}
-                    onChange={e => setSelectedCharacteristic(e.target.value)}
+                    onChange={e => setSelectedCharacteristic(Number(e.target.value))}
                     label='Seleccionar Característica'
                     disabled={loadingCharacteristics || isSubmitting || availableCharacteristics.length === 0}
                   >

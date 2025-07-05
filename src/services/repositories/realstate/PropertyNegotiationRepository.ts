@@ -1,12 +1,14 @@
+import { ENDPOINTS } from '@/services/api/endpoints'
+
 import type { IStatus } from '@/types/apps/CatalogTypes'
-import { apiRoutes } from '@api/routes'
+
 import BaseRepository from '../BaseRepository'
 
 class PropertyNegotiationRepository extends BaseRepository<IStatus> {
   private static instance: PropertyNegotiationRepository
 
   private constructor() {
-    super(apiRoutes.realstate.typeNegotiations, true)
+    super(ENDPOINTS.REALSTATE.TYPE_NEGOTIATIONS.BASE, true)
   }
 
   public static getInstance(): PropertyNegotiationRepository {

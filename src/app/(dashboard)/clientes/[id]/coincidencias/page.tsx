@@ -10,17 +10,17 @@ import { useParams } from 'next/navigation'
 import Grid from '@mui/material/Grid2'
 import { CircularProgress } from '@mui/material'
 
-import PropertiesTable from '@views/apps/properties/list/PropertiesTable'
+import PropertiesTable from '@/pages/apps/properties/list/PropertiesTable'
 import useSearches from '@/hooks/api/crm/useSearches'
 import useProperties from '@/hooks/api/realstate/useProperties'
 
 // Types
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
-import type { ResponseAPI } from '@/api/repositories/BaseRepository'
+  import type { ResponseAPI } from '@/services/repositories/BaseRepository'
 
 const ClientMatches: React.FC = () => {
   const params = useParams()
-  const clientId = params.id as string
+  const clientId = Number(params?.id)
   const [matchedProperties, setMatchedProperties] = useState<ResponseAPI<IRealProperty> | null>(null)
   const [loading, setLoading] = useState(true)
 

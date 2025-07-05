@@ -20,7 +20,7 @@ import type { CardStatsWithAreaChartProps } from '@/types/pages/widgetTypes'
 import CustomAvatar from '@core/components/mui/Avatar'
 
 // Styled Component Imports
-const AppReactApexCharts = dynamic(() => import('@/libs/styles/AppReactApexCharts'))
+const AppReactApexCharts = dynamic(() => import('@libs/styles/AppReactApexCharts'))
 
 const CardStatsWithAreaChart = (props: CardStatsWithAreaChartProps) => {
   // Props

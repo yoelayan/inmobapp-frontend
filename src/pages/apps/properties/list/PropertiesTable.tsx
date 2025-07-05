@@ -21,9 +21,9 @@ import useCities from '@/hooks/api/locations/useCities'
 import useConfirmDialog from '@/hooks/useConfirmDialog'
 
 // Table Component
-import type { Header, TableAction } from '@components/table/TableComponent'
-import type { GridProps } from '@components/table/components/TableGrid'
-import GenericTable from '@/views/shared/list/GenericTable'
+import type { Header, TableAction } from '@/components/features/table/TableComponent'
+import type { GridProps } from '@/components/features/table/components/TableGrid'
+import GenericTable from '@/pages/shared/list/GenericTable'
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'

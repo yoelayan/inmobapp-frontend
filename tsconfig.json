@@ -46,14 +46,14 @@
       "@configs/*": [
         "./src/configs/*"
       ],
-      "@views/*": [
-        "./src/views/*"
+      "@pages/*": [
+        "./src/pages/*"
       ],
       "@libs/*": [
         "./src/libs/*"
       ],
-      "@api/*": [
-        "./src/api/*"
+      "@services/*": [
+        "./src/services/*"
       ],
       "@types/*": [
         "./src/types/*"

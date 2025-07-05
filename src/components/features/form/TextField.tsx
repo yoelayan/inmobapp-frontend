@@ -5,7 +5,7 @@ import { Controller } from 'react-hook-form'
 
 import CustomTextField from '@core/components/mui/TextField'
 
-import type FieldProps from '@/components/form/BaseField'
+import type FieldProps from '@/components/features/form/BaseField'
 
 interface TextFieldProps extends FieldProps {
   onChange?: (value: any) => void

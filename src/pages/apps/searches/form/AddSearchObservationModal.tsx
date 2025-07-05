@@ -32,7 +32,7 @@ import { useNotification } from '@/hooks/useNotification'
 interface AddSearchObservationModalProps {
   open: boolean
   onClose: () => void
-  searchId: string
+  searchId: number | null
   onSuccess: () => void
 }
 
@@ -165,6 +165,13 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
 
       if (audioBlob) {
         audioFile = new File([audioBlob], 'audio-observation.wav', { type: 'audio/wav' })
+      }
+
+      if (!searchId) {
+        notify('No se puede añadir una observación sin un ID de búsqueda', 'error')
+        setIsSubmitting(false)
+
+        return
       }
 
       const response = await addObservation(searchId, observation, audioFile)

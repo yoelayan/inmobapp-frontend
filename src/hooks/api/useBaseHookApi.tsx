@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 
-import type { ResponseAPI, InterfaceRepositoryAPI } from '@/api/repositories/BaseRepository'
+import type { ResponseAPI, InterfaceRepositoryAPI } from '@/services/repositories/BaseRepository'
 
 type FetchState<T> = {
   data: ResponseAPI<T> | null

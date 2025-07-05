@@ -2,18 +2,18 @@
 
 import React, { useEffect } from 'react'
 
-import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/material'
+import { Card, CardContent, CardHeader } from '@mui/material'
 
-import { ClientForm } from '@/views/apps/clients/form/ClientForm'
+import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
 import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
 
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 
 const ClientPage: React.FC = () => {
-  const { data: statuses, fetchData: fetchStatuses, loading: loadingStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsersByFranchiseRepository()
-  const { data: franchises, fetchData: fetchFranchises, loading: loadingFranchises } = useFranchises()
+  const { data: statuses, fetchData: fetchStatuses } = useClientStatus()
+  const { data: users, fetchData: fetchUsers } = useUsersByFranchiseRepository()
+  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
 
 
   useEffect(() => {

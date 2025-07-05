@@ -16,7 +16,7 @@ import SortableList, { SortableItem, SortableKnob } from 'react-easy-sort'
 import { arrayMoveImmutable } from 'array-move'
 
 // Local imports
-import type FieldProps from '@/components/form/BaseField'
+import type FieldProps from '@/components/features/form/BaseField'
 
 interface IFile {
   id?: number | string

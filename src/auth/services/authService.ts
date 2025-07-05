@@ -1,7 +1,7 @@
 'use client'
 
 // authService.ts
-import ApiClient from '@/api/apiClient'
+import ApiClient from '@/services/api/client'
 import type { Session } from '@/auth/types/UserTypes'
 
 class AuthService {

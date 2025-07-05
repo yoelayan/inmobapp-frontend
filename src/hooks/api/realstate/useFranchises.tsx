@@ -1,4 +1,4 @@
-import FranchisesRepository from '@/api/repositories/realstate/FranchisesRepository'
+import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
 
 export default function useFranchises(defaultFilters?: Record<string, any>) {

@@ -6,7 +6,7 @@ import React, { useEffect } from 'react'
 import { Box, CircularProgress } from '@mui/material'
 
 // Component Imports
-import { PropertyForm } from '@/views/apps/properties/form/PropertyForm'
+import { PropertyForm } from '@/pages/apps/properties/form/PropertyForm'
 
 // Hooks Imports
 import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'

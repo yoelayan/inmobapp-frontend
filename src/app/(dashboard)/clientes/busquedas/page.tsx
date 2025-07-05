@@ -4,7 +4,7 @@
 import React from 'react'
 
 // Component Imports
-import SearchesTable from '@views/apps/searches/list/SearchesTable'
+import SearchesTable from '@/pages/apps/searches/list/SearchesTable'
 
 const SearchesPage: React.FC = () => {
   return <SearchesTable />

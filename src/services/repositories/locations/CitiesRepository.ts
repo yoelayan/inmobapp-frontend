@@ -1,12 +1,12 @@
 import type { IGeoItem } from '@/types/apps/LocationsTypes'
-import { apiRoutes } from '@api/routes'
+import { ENDPOINTS } from '@/services/api/endpoints'
 import BaseRepository from '../BaseRepository'
 
 class CitiesRepository extends BaseRepository<IGeoItem> {
   private static instance: CitiesRepository
 
   private constructor() {
-    super(apiRoutes.locations.cities, true)
+    super(ENDPOINTS.LOCATIONS.CITIES.BASE, true)
   }
 
   public static getInstance(): CitiesRepository {

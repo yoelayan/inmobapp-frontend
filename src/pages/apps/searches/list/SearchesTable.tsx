@@ -14,9 +14,9 @@ import SearchIcon from '@mui/icons-material/Search'
 import HistoryIcon from '@mui/icons-material/History'
 
 // Component Imports
-import GenericTable from '@/views/shared/list/GenericTable'
-import type { Header, TableAction } from '@components/table/TableComponent'
-import type { GridProps } from '@components/table/components/TableGrid'
+import GenericTable from '@/pages/shared/list/GenericTable'
+import type { Header, TableAction } from '@/components/features/table/TableComponent'
+import type { GridProps } from '@/components/features/table/components/TableGrid'
 import AddSearchCharacteristicModal from '../form/AddSearchCharacteristicModal'
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
 import ObservationsLogModal from '../form/ObservationsLogModal'
@@ -32,10 +32,10 @@ const SearchesTable: React.FC = () => {
   const [characteristicModalOpen, setCharacteristicModalOpen] = useState(false)
   const [observationModalOpen, setObservationModalOpen] = useState(false)
   const [observationsLogModalOpen, setObservationsLogModalOpen] = useState(false)
-  const [selectedSearchId, setSelectedSearchId] = useState<string>('')
+  const [selectedSearchId, setSelectedSearchId] = useState<number | null>(null)
   const [selectedSearch, setSelectedSearch] = useState<any>(null)
 
-  const handleOpenCharacteristicModal = (searchId: string) => {
+  const handleOpenCharacteristicModal = (searchId: number) => {
     setSelectedSearchId(searchId)
     setCharacteristicModalOpen(true)
   }
@@ -44,7 +44,7 @@ const SearchesTable: React.FC = () => {
     setCharacteristicModalOpen(false)
   }
 
-  const handleOpenObservationModal = (searchId: string) => {
+  const handleOpenObservationModal = (searchId: number) => {
     setSelectedSearchId(searchId)
     setObservationModalOpen(true)
   }
@@ -182,7 +182,7 @@ const SearchesTable: React.FC = () => {
         <AddSearchCharacteristicModal
           open={characteristicModalOpen}
           onClose={handleCloseCharacteristicModal}
-          searchId={selectedSearchId}
+          searchId={selectedSearchId ?? null}
           onSuccess={handleCharacteristicAdded}
         />
       )}
@@ -191,7 +191,7 @@ const SearchesTable: React.FC = () => {
         <AddSearchObservationModal
           open={observationModalOpen}
           onClose={handleCloseObservationModal}
-          searchId={selectedSearchId}
+          searchId={selectedSearchId ?? null}
           onSuccess={handleObservationAdded}
         />
       )}
@@ -200,7 +200,7 @@ const SearchesTable: React.FC = () => {
         <ObservationsLogModal
           open={observationsLogModalOpen}
           onClose={handleCloseObservationsLogModal}
-          searchId={selectedSearchId}
+          searchId={selectedSearchId ?? null}
           observations={selectedSearch.observations || []}
           onSuccess={handleObservationsLogAdded}
         />

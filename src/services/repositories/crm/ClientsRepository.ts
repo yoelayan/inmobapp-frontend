@@ -1,12 +1,12 @@
 import type { IClient } from '@/types/apps/ClientesTypes'
-import { apiRoutes } from '@api/routes'
+import { ENDPOINTS } from '@/services/api/endpoints'
 import BaseRepository from '../BaseRepository'
 
 class ClientsRepository extends BaseRepository<IClient> {
   private static instance: ClientsRepository
 
   private constructor() {
-    super(apiRoutes.crm.clients)
+    super(ENDPOINTS.CRM.CLIENTS.BASE)
   }
 
   public static getInstance(): ClientsRepository {

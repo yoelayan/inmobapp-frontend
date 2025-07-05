@@ -10,10 +10,10 @@ import EditIcon from '@mui/icons-material/Edit'
 
 import DeleteIcon from '@mui/icons-material/Delete'
 
-import GenericTable from '@/views/shared/list/GenericTable'
-import type { Header, TableAction } from '@components/table/TableComponent'
+import GenericTable from '@/pages/shared/list/GenericTable'
+import type { Header, TableAction } from '@/components/features/table/TableComponent'
 
-import type { GridProps } from '@components/table/components/TableGrid'
+import type { GridProps } from '@/components/features/table/components/TableGrid'
 
 // Hooks Imports
 import useClients from '@/hooks/api/crm/useClients'

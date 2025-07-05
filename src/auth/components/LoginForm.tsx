@@ -12,14 +12,14 @@ import FormControlLabel from '@mui/material/FormControlLabel'
 import Typography from '@mui/material/Typography'
 
 // API Imports
-import ApiClient from '@/api/apiClient'
+import ApiClient from '@/services/api/client'
 
 // Hooks Imports
 import { useNotification } from '@/hooks/useNotification'
 import { useAuth } from '@auth/hooks/useAuth'
 
 // Component Imports
-import Link from '@components/Link'
+import Link from '@components/common/Link'
 import CustomTextField from '@core/components/mui/TextField'
 
 const LoginForm = () => {
@@ -41,7 +41,7 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     await login(email, password)
-    const redirectURL = searchParams.get('redirectTo') ?? '/'
+    const redirectURL = searchParams?.get('redirectTo') ?? '/'
 
     router.push(redirectURL)
   }

@@ -8,7 +8,7 @@ import { useParams } from 'next/navigation'
 
 import { Box, CircularProgress } from '@mui/material'
 
-import { PropertyForm } from '@/views/apps/properties/form/PropertyForm'
+import { PropertyForm } from '@/pages/apps/properties/form/PropertyForm'
 
 import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
 import useFranchises from '@/hooks/api/realstate/useFranchises'

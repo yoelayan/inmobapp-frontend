@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 
 import { Controller } from 'react-hook-form'
 
-import type FieldProps from '@/components/form/BaseField'
+import type FieldProps from '@/components/features/form/BaseField'
 
 // MUI Imports
 import CustomTextField from '@core/components/mui/TextField'

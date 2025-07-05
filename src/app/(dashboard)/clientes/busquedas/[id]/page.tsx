@@ -4,7 +4,7 @@
 import React, { Suspense } from 'react'
 
 // Component Imports
-import { SearchForm } from '@/views/apps/searches/form/SearchForm'
+import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
 
 // Types
 

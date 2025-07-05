@@ -22,9 +22,9 @@ import { useTheme } from '@mui/material/styles'
 import type { ApexOptions } from 'apexcharts'
 
 // Component Imports
-import CardStatHorizontal from '@/components/card-statistics/Horizontal'
-import HorizontalWithBorder from '@/components/card-statistics/HorizontalWithBorder'
-import CardStatsWithAreaChart from '@/components/card-statistics/StatsWithAreaChart'
+import CardStatHorizontal from '@components/common/card-statistics/Horizontal'
+import HorizontalWithBorder from '@components/common/card-statistics/HorizontalWithBorder'
+import CardStatsWithAreaChart from '@components/common/card-statistics/StatsWithAreaChart'
 
 // Hook Imports
 import useProperties from '@/hooks/api/realstate/useProperties'

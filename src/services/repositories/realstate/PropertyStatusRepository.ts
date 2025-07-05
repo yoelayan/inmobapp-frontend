@@ -1,12 +1,12 @@
 import type { IStatus } from '@/types/apps/CatalogTypes'
-import { apiRoutes } from '@api/routes'
+import { ENDPOINTS } from '@/services/api/endpoints'
 import BaseRepository from '../BaseRepository'
 
 class PropertyStatusRepository extends BaseRepository<IStatus> {
   private static instance: PropertyStatusRepository
 
   private constructor() {
-    super(apiRoutes.realstate.propertyStatus, true)
+    super(ENDPOINTS.REALSTATE.PROPERTY_STATUS.BASE, true)
   }
 
   public static getInstance(): PropertyStatusRepository {
