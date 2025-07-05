@@ -1,0 +1,175 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`View Franchise Page should match snapshot 1`] = `
+<div
+  data-theme-provider="true"
+>
+  <div
+    data-testid="mock-sectionheader"
+    subtitle="Información completa de Test Franchise"
+    title="Detalles de la Franquicia"
+  />
+  <div
+    data-testid="mock-card"
+  >
+    <div
+      data-testid="mock-cardcontent"
+    >
+      <div
+        data-testid="mock-grid2"
+        spacing="3"
+      >
+        <div
+          data-testid="mock-grid2"
+        >
+          <div
+            data-testid="mock-typography"
+            variant="h6"
+          >
+            Información General
+          </div>
+          <div
+            data-testid="mock-box"
+            sx="[object Object]"
+          >
+            <div
+              color="text.secondary"
+              data-testid="mock-typography"
+              variant="body2"
+            >
+              Nombre
+            </div>
+            <div
+              data-testid="mock-typography"
+              font-weight="bold"
+              variant="body1"
+            >
+              Test Franchise
+            </div>
+          </div>
+          <div
+            data-testid="mock-box"
+            sx="[object Object]"
+          >
+            <div
+              color="text.secondary"
+              data-testid="mock-typography"
+              variant="body2"
+            >
+              Identificador
+            </div>
+            <div
+              data-testid="mock-typography"
+              variant="body1"
+            >
+              TEST-001
+            </div>
+          </div>
+          <div
+            data-testid="mock-box"
+            sx="[object Object]"
+          >
+            <div
+              color="text.secondary"
+              data-testid="mock-typography"
+              variant="body2"
+            >
+              Tipo
+            </div>
+            <div
+              aria-label="Comercial"
+              color="primary"
+              data-testid="mock-chip"
+            >
+              Comercial
+            </div>
+          </div>
+          <div
+            data-testid="mock-box"
+            sx="[object Object]"
+          >
+            <div
+              color="text.secondary"
+              data-testid="mock-typography"
+              variant="body2"
+            >
+              Estado
+            </div>
+            <div
+              aria-label="Activo"
+              color="success"
+              data-testid="mock-chip"
+            >
+              Activo
+            </div>
+          </div>
+        </div>
+        <div
+          data-testid="mock-grid2"
+        >
+          <div
+            data-testid="mock-typography"
+            variant="h6"
+          >
+            Información Adicional
+          </div>
+          <div
+            data-testid="mock-box"
+            sx="[object Object]"
+          >
+            <div
+              color="text.secondary"
+              data-testid="mock-typography"
+              variant="body2"
+            >
+              Franquicia Padre
+            </div>
+            <div
+              data-testid="mock-typography"
+              variant="body1"
+            >
+              N/A
+            </div>
+          </div>
+          <div
+            data-testid="mock-box"
+            sx="[object Object]"
+          >
+            <div
+              color="text.secondary"
+              data-testid="mock-typography"
+              variant="body2"
+            >
+              Fecha de Creación
+            </div>
+            <div
+              data-testid="mock-typography"
+              variant="body1"
+            >
+              1/1/2023
+            </div>
+          </div>
+          <div
+            data-testid="mock-box"
+            sx="[object Object]"
+          >
+            <div
+              color="text.secondary"
+              data-testid="mock-typography"
+              variant="body2"
+            >
+              Última Actualización
+            </div>
+            <div
+              data-testid="mock-typography"
+              variant="body1"
+            >
+              1/1/2023
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

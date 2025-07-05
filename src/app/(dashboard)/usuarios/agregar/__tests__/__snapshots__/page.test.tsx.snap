@@ -1,0 +1,16 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Add User Page should match snapshot 1`] = `
+<div
+  data-theme-provider="true"
+>
+  <div
+    data-testid="mock-sectionheader"
+    subtitle="Crear un nuevo usuario en el sistema"
+    title="Agregar Usuario"
+  />
+  <div
+    data-testid="mock-userform"
+  />
+</div>
+`;

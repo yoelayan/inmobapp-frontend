@@ -1,0 +1,55 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Users Page should match snapshot 1`] = `
+<div
+  data-theme-provider="true"
+>
+  <div
+    data-testid="mock-users-table"
+  >
+    <h1>
+      Usuarios
+    </h1>
+    <div
+      data-testid="users-table-content"
+    >
+      <button>
+        Agregar Usuario
+      </button>
+      <table>
+        <thead>
+          <tr>
+            <th>
+              Nombre
+            </th>
+            <th>
+              Email
+            </th>
+            <th>
+              Acciones
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              Test User
+            </td>
+            <td>
+              test@example.com
+            </td>
+            <td>
+              <button>
+                Ver
+              </button>
+              <button>
+                Editar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`;
