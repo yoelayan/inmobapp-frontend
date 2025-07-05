@@ -9,9 +9,10 @@ import type FieldProps from '@/components/features/form/BaseField'
 
 interface TextFieldProps extends FieldProps {
   onChange?: (value: any) => void
+  type?: 'text' | 'password' | 'email' | 'number' | 'tel' | 'url'
 }
 
-const TextField = ({ value, label, name, onChange, control, error, setValue, disabled }: TextFieldProps) => {
+const TextField = ({ value, label, name, onChange, control, error, setValue, disabled, type = 'text' }: TextFieldProps) => {
   // No necesitamos mantener un estado interno duplicado
   // El valor se puede usar directamente desde el prop value
 
@@ -36,6 +37,7 @@ const TextField = ({ value, label, name, onChange, control, error, setValue, dis
             {...field}
             inputRef={field.ref}
             fullWidth
+            type={type}
 
             // Override these props specifically
             value={value ?? ''}

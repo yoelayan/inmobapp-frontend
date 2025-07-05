@@ -33,9 +33,6 @@ export const ENDPOINTS = {
     FRANCHISES: {
       BASE: '/franchises/',
     },
-    USERS_BY_FRANCHISE: {
-      BASE: '/users-by-franchise/',
-    },
   },
   LOCATIONS: {
     CITIES: {
@@ -69,5 +66,10 @@ export const ENDPOINTS = {
         DELETE: (id: number) => `/searches/${id}/delete-observation/`,
       },
     },
+  },
+  USERS: {
+    BASE: '/users/',
+    BY_ID: (id: number) => `/users/${id}/`,
+    BY_FRANCHISE: (franchiseId: number) => `/users/franchise/${franchiseId}/`,
   },
 };

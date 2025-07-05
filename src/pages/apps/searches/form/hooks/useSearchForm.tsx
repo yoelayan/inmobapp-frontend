@@ -1,7 +1,9 @@
-import type { ISearch } from '@/types/apps/ClientesTypes'
-import SearchesRepository from '@/api/repositories/crm/SearchesRepository'
 import { useNotification } from '@/hooks/useNotification'
 import { useBaseForm } from '@/hooks/useBaseForm'
+
+import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
+
+import type { ISearch } from '@/types/apps/ClientesTypes'
 
 // Form data type
 type SearchFormData = ISearch
@@ -35,11 +37,11 @@ const transformSearchDataForForm = (search: ISearch): Partial<SearchFormData> =>
   return formData
 }
 
-export const useSearchForm = (searchId?: string, onSuccess?: (response: ISearch) => void) => {
+export const useSearchForm = (searchId?: number, onSuccess?: (response: ISearch) => void) => {
   const notificationHook = useNotification()
 
   // Use the base form hook
-  const baseForm = useBaseForm<ISearch, SearchFormData, string, SearchPayload>({
+  const baseForm = useBaseForm<ISearch, SearchFormData, number, SearchPayload>({
     id: searchId,
     repository: SearchesRepository,
     defaultValues: defaultSearchValues,

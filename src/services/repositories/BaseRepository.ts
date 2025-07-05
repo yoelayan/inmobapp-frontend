@@ -13,10 +13,10 @@ export type ResponseAPI<T> = {
 export type InterfaceRepositoryAPI<T> = {
   getAll(filters?: Record<string, any>): Promise<ResponseAPI<T>>
   refresh(filters?: Record<string, any>): Promise<ResponseAPI<T>>
-  get(id: string): Promise<T>
+  get(id: number): Promise<T>
   create(data: Record<string, any>): Promise<T>
-  update(id: string, data: Record<string, any>): Promise<T>
-  delete(id: string): Promise<T>
+  update(id: number, data: Record<string, any>): Promise<T>
+  delete(id: number): Promise<T>
 }
 
 export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
@@ -75,17 +75,17 @@ export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
 
     return freshData
   }
-  public async get(id: string): Promise<T> {
+  public async get(id: number): Promise<T> {
     return await this.apiClient.get<T>(`${this.base_url}${id}`)
   }
 
   public async create(data: Record<string, any>): Promise<T> {
     return await this.apiClient.post<T>(this.base_url, data)
   }
-  public async update(id: string, data: Record<string, any>): Promise<T> {
+  public async update(id: number, data: Record<string, any>): Promise<T> {
     return await this.apiClient.put<T>(`${this.base_url}${id}/`, data)
   }
-  public async delete(id: string): Promise<T> {
+  public async delete(id: number): Promise<T> {
     return await this.apiClient.delete<T>(`${this.base_url}${id}/`)
   }
 }

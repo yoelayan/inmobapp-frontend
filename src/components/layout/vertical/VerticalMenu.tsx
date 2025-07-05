@@ -112,6 +112,40 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           href: '/clientes/busquedas/agregar'
         }
       ]
+    },
+    {
+      type: 'subMenu',
+      label: 'Franquicias',
+      icon: <i className='tabler-building' />,
+      subMenu: [
+        {
+          type: 'item',
+          title: 'Todas',
+          href: '/franquicias'
+        },
+        {
+          type: 'item',
+          title: 'Agregar',
+          href: '/franquicias/agregar'
+        }
+      ]
+    },
+    {
+      type: 'subMenu',
+      label: 'Usuarios',
+      icon: <i className='tabler-users' />,
+      subMenu: [
+        {
+          type: 'item',
+          title: 'Todos',
+          href: '/usuarios'
+        },
+        {
+          type: 'item',
+          title: 'Agregar',
+          href: '/usuarios/agregar'
+        }
+      ]
     }
   ]
 

@@ -15,7 +15,7 @@ import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
 // Hook Imports
 import useClients from '@/hooks/api/crm/useClients'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
+import useUsers from '@/hooks/api/users/useUsers'
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 
 const CreateSearchPage: React.FC = () => {
@@ -24,7 +24,7 @@ const CreateSearchPage: React.FC = () => {
   // Get data for form
   const { data: clients, fetchData: fetchClients, refreshData: refreshClients, loading: loadingClients } = useClients()
   const { data: statuses, fetchData: fetchStatuses, loading: loadingStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsersByFranchiseRepository()
+  const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsers()
   const { data: franchises, fetchData: fetchFranchises, loading: loadingFranchises } = useFranchises()
 
   useEffect(() => {

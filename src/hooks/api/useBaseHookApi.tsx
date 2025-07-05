@@ -55,7 +55,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
       setState(prev => ({ ...prev, loading: true, error: null }))
 
       try {
-        const response = await repository.update(id.toString(), data)
+        const response = await repository.update(Number(id), data)
 
         setState({
           data: {
@@ -96,7 +96,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
       setState(prev => ({ ...prev, loading: true, error: null }))
 
       try {
-        const response = await repository.get(id.toString())
+        const response = await repository.get(Number(id))
 
         setState({
           data: {
@@ -156,7 +156,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
       setState(prev => ({ ...prev, loading: true }))
 
       try {
-        await repository.delete(id.toString())
+        await repository.delete(Number(id))
 
         setState({ data: null, loading: false, error: null, item: null, errors: null })
       } catch (error: any) {

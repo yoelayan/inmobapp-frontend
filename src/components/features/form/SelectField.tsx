@@ -24,6 +24,7 @@ interface SelectFieldAsyncProps extends FieldProps {
   onChange?: (value: any) => void
   defaultFilter?: Record<string, any>
   isDisabled?: boolean
+  multiple?: boolean
 }
 
 const SelectField = ({
@@ -36,7 +37,8 @@ const SelectField = ({
   dataMap,
   onChange,
   isDisabled,
-  setValue
+  setValue,
+  multiple
 }: SelectFieldAsyncProps) => {
   // Calcular items directamente desde la respuesta usando useMemo
   const items = useMemo(() => {
