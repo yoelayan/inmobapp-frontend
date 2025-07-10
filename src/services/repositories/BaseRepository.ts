@@ -1,18 +1,10 @@
 import ApiClient from '@/services/api/client'
+import type { ResponseAPI } from '@/types/api/response'
 
-export type ResponseAPI<T> = {
-  count: number
-  page_number: number
-  num_pages: number
-  per_page: number
-  next: string | null
-  previous: string | null
-  results: T[]
-}
 
 export type InterfaceRepositoryAPI<T> = {
-  getAll(filters?: Record<string, any>): Promise<ResponseAPI<T>>
-  refresh(filters?: Record<string, any>): Promise<ResponseAPI<T>>
+  getAll(params?: Record<string, any>): Promise<ResponseAPI<T>>
+  refresh(params?: Record<string, any>): Promise<ResponseAPI<T>>
   get(id: number): Promise<T>
   create(data: Record<string, any>): Promise<T>
   update(id: number, data: Record<string, any>): Promise<T>
@@ -66,8 +58,8 @@ export default class BaseRepository<T> implements InterfaceRepositoryAPI<T> {
     return await this.apiClient.get<ResponseAPI<T>>(this.base_url, filters)
   }
 
-  public async refresh(filters?: Record<string, any>): Promise<ResponseAPI<T>> {
-    const freshData = await this.apiClient.get<ResponseAPI<T>>(this.base_url, filters)
+  public async refresh(params?: Record<string, any>): Promise<ResponseAPI<T>> {
+    const freshData = await this.apiClient.get<ResponseAPI<T>>(this.base_url, params)
 
     if (this.useCache) {
       this.saveToCache(freshData)

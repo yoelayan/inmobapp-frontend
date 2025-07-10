@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 
-import { Box, TextField, InputAdornment, IconButton, Toolbar } from '@mui/material'
+import { Box, TextField, InputAdornment, IconButton, Toolbar, debounce } from '@mui/material'
 
 
 
@@ -21,17 +21,24 @@ const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', se
   const { state } = useTableContext()
   const [searchValue, setSearchValue] = useState('')
 
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      if (value) {
+        state.addFilter({ field: searchField, value })
+      } else {
+        state.removeFilter(searchField)
+      }
+    }, 300),
+    [searchField, state.addFilter, state.removeFilter]
+  )
+
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
 
     setSearchValue(value)
-
-    if (value) {
-      state.addFilter({ field: searchField, value })
-    } else {
-      state.removeFilter(searchField)
-    }
+    debouncedSearch(value)
   }
+
 
   const clearSearch = () => {
     setSearchValue('')
@@ -55,19 +62,21 @@ const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', se
         value={searchValue}
         onChange={handleSearchChange}
         sx={{ minWidth: 300 }}
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position='start'>
-              <SearchIcon />
-            </InputAdornment>
-          ),
-          endAdornment: searchValue ? (
-            <InputAdornment position='end'>
-              <IconButton size='small' onClick={clearSearch} edge='end' aria-label='clear search'>
-                <ClearIcon />
-              </IconButton>
-            </InputAdornment>
-          ) : null
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position='start'>
+                <SearchIcon />
+              </InputAdornment>
+            ),
+            endAdornment: searchValue ? (
+              <InputAdornment position='end'>
+                <IconButton size='small' onClick={clearSearch} edge='end' aria-label='clear search'>
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ) : null
+          }
         }}
       />
 

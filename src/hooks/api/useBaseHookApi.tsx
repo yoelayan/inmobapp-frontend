@@ -1,18 +1,29 @@
 import { useState, useCallback } from 'react'
 
-import type { ResponseAPI, InterfaceRepositoryAPI } from '@/services/repositories/BaseRepository'
+import type { InterfaceRepositoryAPI } from '@/services/repositories/BaseRepository'
+import type { FilterItem, SortingItem, ResponseAPI } from '@/types/api/response'
 
 type FetchState<T> = {
-  data: ResponseAPI<T> | null
+  data: ResponseAPI<T>
   loading: boolean
   error: string | null
   errors: any
   item: T | null
 }
 
-export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>, defaultFilters?: Record<string, any>) {
+const defaultResponseAPI: ResponseAPI<any> = {
+  count: 0,
+  page_number: 1,
+  num_pages: 0,
+  per_page: 1,
+  next: null,
+  previous: null,
+  results: []
+}
+
+export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>, defaultFilters?: FilterItem[]) {
   const [state, setState] = useState<FetchState<T>>({
-    data: null,
+    data: defaultResponseAPI,
     loading: true,
     error: null,
     item: null,
@@ -44,7 +55,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
       } catch (error: any) {
         console.log(error)
 
-        setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
+        setState({ data: defaultResponseAPI, loading: false, error: error.message, item: null, errors: error.response.data })
       }
     },
     [repository]
@@ -73,23 +84,41 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
           errors: null
         })
       } catch (error: any) {
-        setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
+        setState({ data: defaultResponseAPI, loading: false, error: error.message, item: null, errors: error.response.data })
       }
     },
     [repository]
   )
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (params?: { page: number, pageSize: number, filters: FilterItem[], sorting: SortingItem[] }): Promise<ResponseAPI<T>> => {
+    const { page = 1, pageSize = 10, filters = [], sorting = [] } = params || {}
+
     setState(prev => ({ ...prev, loading: true, error: null }))
 
+    const sortingParams = sorting.reduce((acc: Record<string, string>, item) => {
+      acc[`order_by_${item.id}`] = item.desc ? 'desc' : 'asc'
+
+      return acc
+    }, {} as Record<string, string>)
+
+    const filtersParams = filters.reduce((acc: Record<string, string>, item) => {
+      acc[item.field] = item.value
+
+      return acc
+    }, {} as Record<string, string>)
+
     try {
-      const response = await repository.getAll(defaultFilters)
+      const response = await repository.getAll({ page, per_page: pageSize, ...filtersParams, ...sortingParams })
 
       setState({ data: response, loading: false, error: null, item: null, errors: null })
+
+      return response
     } catch (error: any) {
-      setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
+      setState({ data: defaultResponseAPI, loading: false, error: error.message, item: null, errors: error.response.data })
+
+      return defaultResponseAPI
     }
-  }, [repository, defaultFilters])
+  }, [repository])
 
   const fetchItemById = useCallback(
     async (id: string | number) => {
@@ -114,14 +143,14 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
           errors: null
         })
       } catch (error: any) {
-        setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
+        setState({ data: defaultResponseAPI, loading: false, error: error.message, item: null, errors: error.response.data })
       }
     },
     [repository]
   )
 
   const refreshData = useCallback(
-    async (filters?: Record<string, any>) => {
+    async (filters?: FilterItem[]) => {
       setState(prev => ({ ...prev, loading: true }))
 
       try {
@@ -148,7 +177,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
         })
       }
     },
-    [repository, defaultFilters, state.data]
+    [repository, defaultFilters]
   )
 
   const deleteData = useCallback(
@@ -158,9 +187,9 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
       try {
         await repository.delete(Number(id))
 
-        setState({ data: null, loading: false, error: null, item: null, errors: null })
+        setState({ data: defaultResponseAPI, loading: false, error: null, item: null, errors: null })
       } catch (error: any) {
-        setState({ data: null, loading: false, error: error.message, item: null, errors: error.response.data })
+        setState({ data: defaultResponseAPI, loading: false, error: error.message, item: null, errors: error.response.data })
       }
     },
     [repository]

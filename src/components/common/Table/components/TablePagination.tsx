@@ -1,32 +1,68 @@
-// components/TablePagination.tsx
 import React from 'react'
 
-import { TablePagination as MuiTablePagination, Box } from '@mui/material'
+
+
+// MUI Imports
+import Pagination from '@mui/material/Pagination'
+import Typography from '@mui/material/Typography'
+import MenuItem from '@mui/material/MenuItem'
+
 
 import { useTableContext } from '../TableContext'
 
-const TablePagination = () => {
+import CustomTextField from '@core/components/mui/TextField'
 
-  const { state } = useTableContext()
+// Third Party Imports
+
+const TablePaginationComponent = React.memo(() => {
+
+
+  const { table, state } = useTableContext()
+
+
+  const handleChangePageSize = (event: React.ChangeEvent<HTMLInputElement>) => {
+    table.setPageSize(Number(event.target.value))
+  }
 
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'flex-end', p: 2 }}>
-      <MuiTablePagination
-        component='div'
-        count={state.totalCount}
-        page={state.pageIndex}
-        onPageChange={(_, newPage) => state.setPageIndex(newPage)}
-        rowsPerPage={state.pageSize}
-        onRowsPerPageChange={e => {
-          state.setPageSize(parseInt(e.target.value, 10))
-          state.setPageIndex(0) // Resetear a la primera página
-        }}
-        rowsPerPageOptions={[5, 10, 25, 50, 100]}
-        labelRowsPerPage='Filas por página:'
-        labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count !== -1 ? count : `más de ${to}`}`}
-      />
-    </Box>
+    <div className='flex justify-between items-center flex-wrap pli-6 border-bs bs-auto plb-[12.5px] gap-2'>
+      <Typography color='text.disabled'>
+        {`Mostrando ${
+          state.totalCount === 0
+            ? 0
+            : (table.getState().pagination.pageIndex * table.getState().pagination.pageSize) + 1
+        }
+        a ${Math.min(
+          (table.getState().pagination.pageIndex + 1) * table.getState().pagination.pageSize,
+          state.totalCount
+        )} de ${state.totalCount} entradas`}
+      </Typography>
+      <div className='flex items-center gap-2'>
+        <Pagination
+          shape='rounded'
+          color='primary'
+          variant='tonal'
+          count={state.totalPages}
+          page={table.getState().pagination.pageIndex + 1}
+          onChange={(_, page) => {
+            table.setPageIndex(page - 1)
+          }}
+          showFirstButton
+          showLastButton
+        />
+        <CustomTextField
+          select
+          value={state.pageSize}
+          onChange={handleChangePageSize}
+        >
+          <MenuItem value={10}>10</MenuItem>
+          <MenuItem value={25}>25</MenuItem>
+          <MenuItem value={50}>50</MenuItem>
+        </CustomTextField>
+      </div>
+    </div>
   )
-}
+})
 
-export default TablePagination
+
+export default TablePaginationComponent

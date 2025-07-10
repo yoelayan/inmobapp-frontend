@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader } from '@mui/material'
 
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
+import useUsersByFranchiseRepository from '@/hooks/api/users/useUsersByFranchise'
 
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 

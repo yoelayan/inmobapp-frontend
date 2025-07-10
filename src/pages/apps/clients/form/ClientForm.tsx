@@ -4,7 +4,7 @@ import React from 'react'
 
 import { Button, Box, CircularProgress, Grid2 as Grid } from '@mui/material'
 
-import type { ResponseAPI } from '@/services/repositories/BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 
 import { useClientForm } from './hooks/useClientForm'
 

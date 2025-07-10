@@ -1,23 +1,25 @@
 // TableStore.ts
 import { create } from 'zustand'
 
-import type { ResponseAPI, TableFilterItem, TableSorting, TableState } from './types'
+import type { TableState } from './types'
+import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response'
 
-export const createTableStore = <T>(
-  fetchFn: (params: {
-    page: number
-    pageSize: number
-    filters: TableFilterItem[]
-    sorting: TableSorting[]
-  }) => Promise<ResponseAPI<T>>
-) => {
+export const createTableStore = <T>(params: {
+  data: ResponseAPI<T>,
+  loading: boolean,
+  refresh: (params: { page: number, pageSize: number, filters: FilterItem[], sorting: SortingItem[] }) => Promise<ResponseAPI<T>>
+}) => {
+  const { results, count, num_pages, page_number } = params.data
+
+  console.log("createTableStore")
+
   return create<TableState<T>>((set, get) => ({
-    data: [],
-    loading: false,
-    pageIndex: 0,
+    data: results,
+    loading: params.loading,
+    pageIndex: (page_number || 1) - 1,
     pageSize: 10,
-    totalCount: 0,
-    totalPages: 0,
+    totalCount: count,
+    totalPages: num_pages || 1,
     filters: [],
     sorting: [],
 
@@ -28,26 +30,32 @@ export const createTableStore = <T>(
     setTotalCount: totalCount => set({ totalCount }),
     setTotalPages: totalPages => set({ totalPages }),
     setFilters: filters => set({ filters }),
-    addFilter: filter =>
+    addFilter: filter => {
       set(state => ({
         filters: [...state.filters.filter(f => f.field !== filter.field), filter],
-        pageIndex: 0 // Resetear a la primera página al filtrar
-      })),
-    removeFilter: field =>
+        pageIndex: 0
+      }))
+      setTimeout(() => get().fetchData(), 0)
+    },
+    removeFilter: field => {
       set(state => ({
         filters: state.filters.filter(f => f.field !== field),
-        pageIndex: 0 // Resetear a la primera página al quitar filtro
-      })),
+        pageIndex: 0
+      }))
+      setTimeout(() => get().fetchData(), 0)
+    },
     setSorting: sorting => set({ sorting }),
 
     fetchData: async () => {
-      const { pageIndex, pageSize, filters, sorting } = get()
+      const { pageIndex, pageSize, filters, sorting, data } = get()
 
       set({ loading: true })
 
+      console.log(data)
+
       try {
-        const response = await fetchFn({
-          page: pageIndex + 1, // API usa base 1
+        const response = await params.refresh({
+          page: pageIndex + 1,
           pageSize,
           filters,
           sorting
@@ -57,6 +65,7 @@ export const createTableStore = <T>(
           data: response.results,
           totalCount: response.count,
           totalPages: response.num_pages,
+          pageIndex: (response.page_number || 1) - 1,
           loading: false
         })
       } catch (error) {

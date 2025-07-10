@@ -16,7 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 // Hooks
 import useStates from '@/hooks/api/locations/useStates'
-import useUsersByFranchise from '@/hooks/api/realstate/useUsersByFranchise'
+import useUsersByFranchise from '@/hooks/api/users/useUsersByFranchise'
 import useCities from '@/hooks/api/locations/useCities'
 import useConfirmDialog from '@/hooks/useConfirmDialog'
 

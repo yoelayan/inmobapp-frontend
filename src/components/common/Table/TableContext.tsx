@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useMemo } from 'react'
+import React, { createContext, useCallback, useContext, useMemo } from 'react'
 
 import {
   useReactTable,
@@ -13,14 +13,15 @@ import {
 
 import { rankItem } from '@tanstack/match-sorter-utils'
 
-import type { ColumnDef, FilterFn, Table } from '@tanstack/react-table'
+import type { ColumnDef, FilterFn, PaginationState, SortingState, Table, Updater } from '@tanstack/react-table'
 
-import type { TableState } from './types'
+import type { TableState, TableAction } from './types'
 
 
 interface TableContextValue<T> {
   table: Table<T>
   state: TableState<T>
+  actions?: TableAction[]
 }
 
 const TableContext = createContext<TableContextValue<any> | undefined>(undefined)
@@ -38,12 +39,13 @@ export function useTableContext<T>() {
 interface TableProviderProps<T> {
   columns: ColumnDef<T>[]
   state: TableState<T>
+  actions?: TableAction[]
   children: React.ReactNode
 }
 
 
 
-export function TableProvider<T>({ columns, state, children }: TableProviderProps<T>) {
+export function TableProvider<T>({ columns, state, actions, children }: TableProviderProps<T>) {
 
   const CustomFilter: FilterFn<any> = (row, columnId, value, addMeta) => {
     if (Array.isArray(value)) {
@@ -64,6 +66,35 @@ export function TableProvider<T>({ columns, state, children }: TableProviderProp
 
     return true
   }
+
+  const handlePaginationChange = useCallback(
+    (updater: Updater<PaginationState>) => {
+      if (typeof updater === 'function') {
+        const { pageIndex, pageSize } = updater({
+          pageIndex: state.pageIndex,
+          pageSize: state.pageSize
+        })
+
+        state.setPageIndex(pageIndex)
+        state.setPageSize(pageSize)
+        state.fetchData()
+      }
+    },
+    [state.pageIndex, state.pageSize, state.setPageIndex, state.setPageSize, state.fetchData]
+  )
+
+  const handleSortingChange = useCallback(
+    (updater: Updater<SortingState>) => {
+      if (typeof updater === 'function') {
+        state.setSorting(updater(state.sorting))
+      } else {
+        state.setSorting(updater)
+      }
+
+      state.fetchData()
+    },
+    [state.sorting, state.setSorting, state.fetchData]
+  )
 
   // Crear instancia de la tabla con TanStack
   const table = useReactTable({
@@ -87,37 +118,20 @@ export function TableProvider<T>({ columns, state, children }: TableProviderProp
       },
       sorting: state.sorting
     },
-    onPaginationChange: updater => {
-      if (typeof updater === 'function') {
-        const { pageIndex, pageSize } = updater({
-          pageIndex: state.pageIndex,
-          pageSize: state.pageSize
-        })
+    onPaginationChange: handlePaginationChange,
 
-        state.setPageIndex(pageIndex)
-        state.setPageSize(pageSize)
-      }
-    },
-    onSortingChange: updater => {
-      if (typeof updater === 'function') {
-        state.setSorting(updater(state.sorting))
-      } else {
-        state.setSorting(updater)
-      }
-    }
+    onSortingChange: handleSortingChange
   })
 
   // Efecto para cargar datos cuando cambian dependencias relevantes
-  useEffect(() => {
-    state.fetchData()
-  }, [state.pageIndex, state.pageSize, state.filters, state.sorting])
 
   const contextValue = useMemo(
     () => ({
       table,
-      state
+      state,
+      actions
     }),
-    [table, state]
+    [table, state.data, state.loading, state.pageIndex, state.pageSize, actions]
   )
 
   return <TableContext.Provider value={contextValue}>{children}</TableContext.Provider>
