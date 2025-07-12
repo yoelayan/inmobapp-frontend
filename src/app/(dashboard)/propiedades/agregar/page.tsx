@@ -7,9 +7,10 @@ import { Box, CircularProgress } from '@mui/material'
 
 // Component Imports
 import { PropertyForm } from '@/pages/apps/properties/form/PropertyForm'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 // Hooks Imports
-import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
+import useUsers from '@/hooks/api/users/useUsers'
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 import usePropertyStatus from '@/hooks/api/realstate/usePropertyStatus'
 import usePropertyNegotiation from '@/hooks/api/realstate/usePropertyNegotiation'
@@ -19,7 +20,7 @@ import useCities from '@/hooks/api/locations/useCities'
 import useClients from '@/hooks/api/crm/useClients'
 
 const PropertyAdd: React.FC = () => {
-  const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsersByFranchiseRepository()
+  const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsers()
   const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
   const { loading: statusesLoading, data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
   const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
@@ -66,7 +67,9 @@ const PropertyAdd: React.FC = () => {
   }
 
   return (
-    <PropertyForm
+    <>
+      <BreadcrumbWrapper />
+      <PropertyForm
       franchises={franchises}
       users={users}
       statuses={statuses}
@@ -78,6 +81,7 @@ const PropertyAdd: React.FC = () => {
       refreshClients={refreshClients}
       refreshCities={refreshCities}
     />
+    </>
   )
 }
 

@@ -126,6 +126,7 @@ function parseArgs() {
   args.slice(2).forEach(arg => {
     if (arg.startsWith('--')) {
       const [key, value] = arg.slice(2).split('=')
+
       options[key] = value || true
     }
   })
@@ -143,21 +144,26 @@ function generateTest(type, entity, options = {}) {
   // Validar tipo
   if (!config.templates[type]) {
     console.error(`Tipo '${type}' no válido. Tipos disponibles: ${Object.keys(config.templates).join(', ')}`)
-    return false
+    
+return false
   }
 
   // Obtener configuración de la entidad
   const entityConf = entityConfig[entity]
+
   if (!entityConf) {
     console.error(`Entidad '${entity}' no configurada. Entidades disponibles: ${Object.keys(entityConfig).join(', ')}`)
-    return false
+    
+return false
   }
 
   // Leer template
   const templatePath = path.join(config.templatesDir, config.templates[type])
+
   if (!fs.existsSync(templatePath)) {
     console.error(`Template no encontrado: ${templatePath}`)
-    return false
+    
+return false
   }
 
   let template = fs.readFileSync(templatePath, 'utf8')
@@ -198,12 +204,14 @@ function generateTest(type, entity, options = {}) {
 
   // Determinar directorio de salida
   let outputDir
+
   switch (type) {
     case 'list':
       outputDir = path.join(config.outputDir, entity, '__tests__')
       break
     case 'form':
       const formAction = actionLower === 'edit' ? '[id]/editar' : 'agregar'
+
       outputDir = path.join(config.outputDir, entity, formAction, '__tests__')
       break
     case 'view':
@@ -218,6 +226,7 @@ function generateTest(type, entity, options = {}) {
 
   // Escribir archivo
   const outputFile = path.join(outputDir, 'page.test.tsx')
+
   fs.writeFileSync(outputFile, template)
 
   console.log(`✅ Test generado exitosamente: ${outputFile}`)

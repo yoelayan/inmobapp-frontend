@@ -1,29 +1,33 @@
-'use client'
+"use client"
+import React, { useMemo, useState, useEffect } from 'react';
 
-// React Imports
-import React, { useState, useEffect } from 'react'
-
-// Mui Imports
 import { useRouter } from 'next/navigation'
 
+import { Button } from '@mui/material';
+import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
-import SquareFootIcon from '@mui/icons-material/SquareFoot'
-import DoorFrontIcon from '@mui/icons-material/DoorFront'
-import DirectionsCarIcon from '@mui/icons-material/DirectionsCar'
-import BathtubIcon from '@mui/icons-material/Bathtub'
+
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
-// Hooks
-import useStates from '@/hooks/api/locations/useStates'
-import useUsersByFranchise from '@/hooks/api/users/useUsersByFranchise'
-import useCities from '@/hooks/api/locations/useCities'
-import useConfirmDialog from '@/hooks/useConfirmDialog'
+import type { ColumnDef } from '@tanstack/react-table'
 
-// Table Component
-import type { Header, TableAction } from '@/components/features/table/TableComponent'
-import type { GridProps } from '@/components/features/table/components/TableGrid'
-import GenericTable from '@/pages/shared/list/GenericTable'
+import SectionHeader from '@/components/layout/horizontal/SectionHeader';
+
+import {
+  Table,
+  TableContainer,
+  TableHeader,
+  TableBody,
+  TablePagination,
+  TableFilter,
+  createTableStore,
+  type TableAction,
+} from '@/components/common/Table';
+
+import useProperties from '@/hooks/api/realstate/useProperties';
+import useConfirmDialog from '@/hooks/useConfirmDialog'
+import type { IRealProperty } from '@/types/apps/RealtstateTypes';
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'
@@ -36,99 +40,92 @@ interface TableProps {
   subtitle?: string
 }
 
-const Table = ({ properties, refreshProperties, title, subtitle, deleteProperty }: TableProps) => {
-  const [defaultFiltersCities, setDefaultFiltersCities] = useState<any>({})
+const searchOnTag = (tag: any, row: any) => {
+  if (row.characteristics === null || row.characteristics.length === 0) return null
+
+  const value = row.characteristics.find((item: any) => item.code === tag.name)
+
+  return value ? value.value : null
+}
+
+const columns: ColumnDef<IRealProperty>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Nombre',
+    enableColumnFilter: true,
+    enableSorting: true,
+    sortingFn: 'alphanumeric'
+  },
+  {
+    accessorKey: 'assigned_to.email',
+    header: 'Asignado a',
+    enableColumnFilter: true
+  },
+  {
+    accessorKey: 'state.name',
+    header: 'Estado',
+    enableColumnFilter: true
+  },
+  {
+    accessorKey: 'city.name',
+    header: 'Ciudad',
+    enableColumnFilter: true
+  },
+  {
+    accessorKey: 'type_negotiation.name',
+    header: 'Tipo de Inmueble',
+    enableColumnFilter: false
+  },
+  {
+    accessorKey: 'price',
+    header: 'Precio (USD)',
+    enableColumnFilter: false,
+    cell: ({ getValue }) => {
+      const price = getValue()
+
+      
+return price ? `$${Number(price).toLocaleString()}` : ''
+    }
+  },
+  {
+    accessorKey: 'created_at',
+    header: 'Fecha de Creación',
+    enableColumnFilter: false
+  }
+]
+
+const PropertiesTable = ({ properties, refreshProperties, title, subtitle, deleteProperty }: TableProps) => {
+  const router = useRouter()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
-  const { fetchData: getStates, refreshData: refreshStates, data: states } = useStates()
+  const { data, loading } = useProperties()
 
-  const { fetchData: getCities, refreshData: refreshCities, data: cities } = useCities(defaultFiltersCities)
-
-  const { fetchData: getUsers, refreshData: refreshUsers, data: users } = useUsersByFranchise()
-
-  const router = useRouter()
-
-  const handleStateChange = async (StateSelected: Record<string, any>) => {
-    if (!StateSelected || StateSelected.value === '') {
-      return
-    }
-
-    setDefaultFiltersCities({ state: StateSelected.value })
-
-    if (refreshCities) {
-      refreshCities({ state: StateSelected.value })
-    }
-  }
+  const usePropertiesTableStore = useMemo(
+    () =>
+      createTableStore<IRealProperty>({
+        data: properties || data,
+        loading: loading,
+        refresh: refreshProperties
+      }),
+    [properties, data, loading, refreshProperties]
+  )
 
   const handleStatusChange = (status: string) => {
     setStatusFilter(status)
     refreshProperties({ status__code: status })
   }
 
-  const searchOnTag = (tag: any, row: any) => {
-    if (row.characteristics === null || row.characteristics.length === 0) return null
-
-    const value = row.characteristics.find((item: any) => item.code === tag.name)
-
-    return value ? value.value : null
-  }
-
-  useEffect(() => {
-    getStates()
-    getCities()
-    getUsers()
-  }, [getStates, getCities, getUsers])
-
-  const grid_params: GridProps = {
-    feature_image: 'first_image_url',
-    title: 'name',
-    subtitle: 'assigned_to__email',
-    feature_value: 'price',
-    sub_feature_value: 'address',
-    tags: [
-      {
-        label: 'Mt2',
-        name: 'total_area',
-        icon: <SquareFootIcon fontSize='large' />,
-        searchOn: searchOnTag
-      },
-      {
-        label: 'Habt.',
-        name: 'bedrooms',
-        icon: <DoorFrontIcon fontSize='large' />,
-        searchOn: searchOnTag
-      },
-      {
-        label: 'Baños',
-        name: 'bathrooms',
-        icon: <BathtubIcon fontSize='large' />,
-        searchOn: searchOnTag
-      },
-      {
-        label: 'Est.',
-        name: 'garages',
-        icon: <DirectionsCarIcon fontSize='large' />,
-        searchOn: searchOnTag
-      }
-    ]
-  }
-
   const actions: TableAction[] = [
     {
       label: 'Editar',
-      icon: (
-        <>
-          <EditIcon />
-        </>
-      ),
       onClick: (row: Record<string, any>) => {
         router.push(`/propiedades/${row.id}/`)
-      }
+      },
+      icon: <EditIcon fontSize="small" />
     },
     {
       label: 'Eliminar',
-      icon: <DeleteIcon />,
       onClick: (row: Record<string, any>) => {
         showConfirmDialog({
           title: 'Confirmar eliminación',
@@ -138,75 +135,12 @@ const Table = ({ properties, refreshProperties, title, subtitle, deleteProperty 
             refreshProperties()
           }
         })
-      }
+      },
+      icon: <DeleteIcon fontSize="small" />
     }
   ]
 
-  const headers: Header[] = [
-    {
-      key: 'assigned_to__email',
-      label: 'Asignado a',
-      filterable: true,
-      slot: 'default',
-      filter: 'select',
-      filter_name: 'assigned_to__name',
-      filter_params: {
-        response: users,
-        dataMap: {
-          value: 'id',
-          label: 'email'
-        },
-        refreshData: refreshUsers,
-        searchble: true,
-        filter_name: 'search'
-      }
-    },
-
-    {
-      key: 'name',
-      label: 'Nombre',
-      filterable: true,
-      slot: 'default',
-      filter_name: 'search'
-    },
-    {
-      key: 'state__name',
-      filter_name: 'state__name',
-      label: 'Estado',
-      filterable: true,
-      filter: 'select',
-      filter_params: {
-        response: states,
-        dataMap: {
-          value: 'id',
-          label: 'name'
-        },
-        refreshData: refreshStates,
-        searchble: true,
-        onChange: handleStateChange
-      }
-    },
-
-    {
-      key: 'city__name',
-      filter_name: 'city__name',
-      label: 'Ciudad',
-      filterable: true,
-      filter: 'select',
-      filter_params: {
-        response: cities,
-        dataMap: {
-          value: 'id',
-          label: 'name'
-        },
-        refreshData: refreshCities,
-        searchble: true
-      }
-    },
-    { key: 'type_negotiation__name', label: 'Tipo de Inmueble', filterable: false, slot: 'default' },
-    { key: 'price', label: 'Precio (USD)', filterable: false, slot: 'default' },
-    { key: 'created_at', label: 'Fecha de Creación', filterable: false, slot: 'default' }
-  ]
+  const tableStore = usePropertiesTableStore();
 
   return (
     <>
@@ -214,24 +148,39 @@ const Table = ({ properties, refreshProperties, title, subtitle, deleteProperty 
         <PropertiesCard onStatusChange={handleStatusChange} />
       </Box>
 
-      <GenericTable
-        title={title || 'Propiedades'}
-        subtitle={subtitle || 'Aquí puedes ver todas las propiedades disponibles'}
-        hrefAddButton='/propiedades/agregar'
-        headers={headers}
-        response={properties}
-        refreshData={(filters?: Record<string, any>) => {
-          // Preserve status filter when other filters change
-          const combinedFilters = statusFilter ? { ...filters, status__code: statusFilter } : filters
+      <Grid container spacing={2}>
+        <SectionHeader
+          title={title || 'Propiedades'}
+          subtitle={subtitle || 'Aquí puedes ver todas las propiedades disponibles'}
+          buttons={[
+            <Button
+              key="add"
+              variant='contained'
+              color='primary'
+              onClick={() => router.push('/propiedades/agregar')}
+            >
+              Agregar
+            </Button>
+          ]}
+        />
+        <Table columns={columns} state={tableStore} actions={actions}>
+          <TableFilter placeholder='Buscar propiedades...'>
+            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              Limpiar filtros
+            </Button>
+          </TableFilter>
 
-          return refreshProperties(combinedFilters)
-        }}
-        grid_params={grid_params}
-        actions={actions}
-      />
+          <TableContainer>
+            <TableHeader />
+            <TableBody />
+          </TableContainer>
+
+          <TablePagination />
+        </Table>
+      </Grid>
       <ConfirmDialog />
     </>
   )
-}
+};
 
-export default Table
+export default React.memo(PropertiesTable);

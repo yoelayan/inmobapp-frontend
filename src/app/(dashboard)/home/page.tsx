@@ -25,6 +25,7 @@ import type { ApexOptions } from 'apexcharts'
 import CardStatHorizontal from '@components/common/card-statistics/Horizontal'
 import HorizontalWithBorder from '@components/common/card-statistics/HorizontalWithBorder'
 import CardStatsWithAreaChart from '@components/common/card-statistics/StatsWithAreaChart'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 // Hook Imports
 import useProperties from '@/hooks/api/realstate/useProperties'
@@ -251,7 +252,9 @@ export default function Page() {
   }
 
   return (
-    <Grid container spacing={6}>
+    <>
+      <BreadcrumbWrapper />
+      <Grid container spacing={6}>
       {/* Filters Section */}
       <Grid size={{ xs: 12 }}>
         <Card>
@@ -489,5 +492,6 @@ export default function Page() {
         </Card>
       </Grid>
     </Grid>
+    </>
   )
 }

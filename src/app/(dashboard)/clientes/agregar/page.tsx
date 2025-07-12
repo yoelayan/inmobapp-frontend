@@ -6,13 +6,14 @@ import { Card, CardContent, CardHeader } from '@mui/material'
 
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useUsersByFranchiseRepository from '@/hooks/api/users/useUsersByFranchise'
+import useUsers from '@/hooks/api/users/useUsers'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 
 const ClientPage: React.FC = () => {
   const { data: statuses, fetchData: fetchStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers } = useUsersByFranchiseRepository()
+  const { data: users, fetchData: fetchUsers } = useUsers()
   const { data: franchises, fetchData: fetchFranchises } = useFranchises()
 
 
@@ -24,7 +25,9 @@ const ClientPage: React.FC = () => {
 
 
   return (
-    <Card>
+    <>
+      <BreadcrumbWrapper />
+      <Card>
       <CardHeader title='Crear Cliente' />
       <CardContent>
         <ClientForm
@@ -37,6 +40,7 @@ const ClientPage: React.FC = () => {
         />
       </CardContent>
     </Card>
+    </>
   )
 }
 

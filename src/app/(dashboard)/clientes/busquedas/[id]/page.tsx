@@ -5,11 +5,17 @@ import React, { Suspense } from 'react'
 
 // Component Imports
 import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 // Types
 
 function SearchPageContent({ params }: any) {
-  return <SearchForm searchId={params.id} />
+  return (
+    <>
+      <BreadcrumbWrapper />
+      <SearchForm searchId={params.id} />
+    </>
+  )
 }
 
 const SearchPage = ({ params }: any) => {

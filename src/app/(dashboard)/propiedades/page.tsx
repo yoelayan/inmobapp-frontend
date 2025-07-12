@@ -7,6 +7,7 @@ import React, { useEffect } from 'react'
 import Grid from '@mui/material/Grid2'
 
 import PropertiesTable from '@/pages/apps/properties/list/PropertiesTable'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 // Hooks
 import useProperties from '@/hooks/api/realstate/useProperties'
@@ -21,11 +22,14 @@ const Properties: React.FC = () => {
   }, [getProperties])
 
   return (
-    <Grid container spacing={6}>
+    <>
+      <BreadcrumbWrapper />
+      <Grid container spacing={6}>
       <Grid>
         <PropertiesTable properties={properties} refreshProperties={refreshProperties} deleteProperty={deleteProperty} />
       </Grid>
     </Grid>
+    </>
   )
 }
 

@@ -5,7 +5,7 @@ import React from 'react'
 
 // Component Imports
 import { FranchiseForm } from '@/pages/apps/franchises/form/FranchiseForm'
-import SectionHeader from '@/components/layout/horizontal/SectionHeader'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 interface EditFranchiseProps {
   params: {
@@ -16,7 +16,7 @@ interface EditFranchiseProps {
 const EditFranchise: React.FC<EditFranchiseProps> = ({ params }) => {
   return (
     <>
-      <SectionHeader title='Editar Franquicia' subtitle='Modificar los datos de la franquicia' />
+      <BreadcrumbWrapper />
       <FranchiseForm franchiseId={params.id} />
     </>
   )

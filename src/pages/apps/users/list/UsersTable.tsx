@@ -1,98 +1,201 @@
-'use client'
+"use client"
+import React, { useMemo } from 'react';
 
-// React Imports
-import React, { useEffect } from 'react'
-
-// Component Imports
 import { useRouter } from 'next/navigation'
+
+import { Button } from '@mui/material';
+import Grid from '@mui/material/Grid2'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import GroupIcon from '@mui/icons-material/Group'
 
-import GenericTable from '@/pages/shared/list/GenericTable'
-import type { Header, TableAction } from '@/components/features/table/TableComponent'
-import type { GridProps } from '@/components/features/table/components/TableGrid'
+import type { ColumnDef } from '@tanstack/react-table'
 
-// Hooks Imports
-import useUsers from '@/hooks/api/users/useUsers'
-import useFranchises from '@/hooks/api/realstate/useFranchises'
+import SectionHeader from '@/components/layout/horizontal/SectionHeader';
 
-const UsersTable: React.FC = () => {
-  const router = useRouter()
+import {
+  Table,
+  TableContainer,
+  TableHeader,
+  TableBody,
+  TablePagination,
+  TableFilter,
+  createTableStore,
+  type TableAction,
+} from '@/components/common/Table';
 
-  const { data: franchises, fetchData: fetchFranchises, refreshData: refreshFranchises } = useFranchises()
+import useUsers from '@/hooks/api/users/useUsers';
+import type { IUser } from '@/types/apps/UserTypes';
 
-  const grid_params: GridProps = {
-    title: 'name',
-    subtitle: 'email',
-    feature_value: 'group_names'
+const columns: ColumnDef<IUser>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Nombre',
+    enableColumnFilter: true,
+    enableSorting: true,
+    sortingFn: 'alphanumeric'
+  },
+  {
+    accessorKey: 'email',
+    header: 'Email',
+    enableColumnFilter: true
+  },
+  {
+    accessorKey: 'group_names',
+    header: 'Grupos',
+    enableColumnFilter: false,
+    cell: ({ getValue }) => {
+      const groups = getValue() as string[]
+
+      
+return groups ? groups.join(', ') : ''
+    }
+  },
+  {
+    accessorKey: 'is_active',
+    header: 'Activo',
+    enableColumnFilter: true,
+    filterFn: 'arrIncludes',
+    cell: ({ getValue }) => {
+      const isActive = getValue()
+
+      
+return (
+        <span style={{ color: isActive ? 'green' : 'red' }}>
+          {isActive ? 'Sí' : 'No'}
+        </span>
+      )
+    }
+  },
+  {
+    accessorKey: 'is_staff',
+    header: 'Staff',
+    enableColumnFilter: true,
+    filterFn: 'arrIncludes',
+    cell: ({ getValue }) => {
+      const isStaff = getValue()
+
+      
+return (
+        <span style={{ color: isStaff ? 'blue' : 'gray' }}>
+          {isStaff ? 'Sí' : 'No'}
+        </span>
+      )
+    }
+  },
+  {
+    accessorKey: 'is_superuser',
+    header: 'Superusuario',
+    enableColumnFilter: true,
+    filterFn: 'arrIncludes',
+    cell: ({ getValue }) => {
+      const isSuperuser = getValue()
+
+      
+return (
+        <span style={{ color: isSuperuser ? 'purple' : 'gray' }}>
+          {isSuperuser ? 'Sí' : 'No'}
+        </span>
+      )
+    }
+  },
+  {
+    accessorKey: 'date_joined',
+    header: 'Fecha de Registro',
+    enableColumnFilter: false
+  },
+  {
+    accessorKey: 'last_login',
+    header: 'Último Acceso',
+    enableColumnFilter: false
   }
+]
+
+const UsersTable = () => {
+  const router = useRouter()
+  const { data, loading, fetchData } = useUsers()
+
+  const useUsersTableStore = useMemo(
+    () =>
+      createTableStore<IUser>({
+        data: data,
+        loading: loading,
+        refresh: fetchData
+      }),
+    []
+  )
 
   const actions: TableAction[] = [
     {
       label: 'Ver',
-      icon: <VisibilityIcon />,
       onClick: (row: Record<string, any>) => {
         router.push(`/usuarios/${row.id}/ver/`)
-      }
+      },
+      icon: <VisibilityIcon fontSize="small" />
     },
     {
       label: 'Editar',
-      icon: <EditIcon />,
       onClick: (row: Record<string, any>) => {
         router.push(`/usuarios/${row.id}/editar/`)
-      }
+      },
+      icon: <EditIcon fontSize="small" />
     },
     {
       label: 'Gestionar Grupos',
-      icon: <GroupIcon />,
       onClick: (row: Record<string, any>) => {
         router.push(`/usuarios/${row.id}/grupos/`)
-      }
+      },
+      icon: <GroupIcon fontSize="small" />
     },
     {
       label: 'Eliminar',
-      icon: <DeleteIcon />,
       onClick: (row: Record<string, any>) => {
         console.log('Eliminar usuario', row)
 
         // TODO: Implementar confirmación y eliminación
-      }
+      },
+      icon: <DeleteIcon fontSize="small" />
     }
   ]
 
-  const headers: Header[] = [
-    { key: 'name', label: 'Nombre', filterable: true, slot: 'default' },
-    { key: 'email', label: 'Email', filterable: true, slot: 'default' },
-    { key: 'group_names', label: 'Grupos', filterable: false, slot: 'default' },
-    { key: 'is_active', label: 'Activo', filterable: true, slot: 'boolean' },
-    { key: 'is_staff', label: 'Staff', filterable: true, slot: 'boolean' },
-    { key: 'is_superuser', label: 'Superusuario', filterable: true, slot: 'boolean' },
-    { key: 'date_joined', label: 'Fecha de Registro', filterable: false, slot: 'default' },
-    { key: 'last_login', label: 'Último Acceso', filterable: false, slot: 'default' }
-  ]
-
-  const { data, refreshData, fetchData } = useUsers()
-
-  useEffect(() => {
-    fetchFranchises()
-    fetchData()
-  }, [fetchData, fetchFranchises])
+  const tableStore = useUsersTableStore();
 
   return (
-    <GenericTable
-      title='Usuarios'
-      subtitle='Gestión de Usuarios del Sistema'
-      hrefAddButton='usuarios/agregar/'
-      headers={headers}
-      response={data}
-      refreshData={refreshData}
-      grid_params={grid_params}
-      actions={actions}
-    />
-  )
-}
+    <>
+      <Grid container spacing={2}>
+        <SectionHeader
+          title='Usuarios'
+          subtitle='Gestión de Usuarios del Sistema'
+          buttons={[
+            <Button
+              key="add"
+              variant='contained'
+              color='primary'
+              onClick={() => router.push('/usuarios/agregar/')}
+            >
+              Agregar
+            </Button>
+          ]}
+        />
+        <Table columns={columns} state={tableStore} actions={actions}>
+          <TableFilter placeholder='Buscar usuarios...'>
+            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              Limpiar filtros
+            </Button>
+          </TableFilter>
 
-export default UsersTable
+          <TableContainer>
+            <TableHeader />
+            <TableBody />
+          </TableContainer>
+
+          <TablePagination />
+        </Table>
+      </Grid>
+    </>
+  )
+};
+
+export default React.memo(UsersTable);

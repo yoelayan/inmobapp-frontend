@@ -17,6 +17,20 @@ export interface TableAction {
   condition?: (row: Record<string, any>) => boolean
 }
 
+// Interface for column priority in mobile view
+export interface ColumnMeta {
+  priority?: number // Higher numbers = higher priority. Priority 1-3 will be shown in mobile main view
+  hideInMobile?: boolean // Hide column completely in mobile
+}
+
+// Extend TanStack Table ColumnDef to include our custom meta
+declare module '@tanstack/react-table' {
+  interface ColumnMeta {
+    priority?: number
+    hideInMobile?: boolean
+  }
+}
+
 // Render props interface for actions
 export interface TableActionsRenderProps {
   row: Record<string, any>

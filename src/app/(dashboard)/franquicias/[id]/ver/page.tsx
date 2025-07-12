@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { Card, CardContent, Typography, CircularProgress, Box, Grid2 as Grid, Chip } from '@mui/material'
 
 // Component Imports
-import SectionHeader from '@/components/layout/horizontal/SectionHeader'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 
@@ -58,8 +58,7 @@ const ViewFranchise: React.FC<ViewFranchiseProps> = ({ params }) => {
 
   return (
     <>
-      <SectionHeader title='Detalles de la Franquicia' subtitle={`Información completa de ${franchise.name}`} />
-
+      <BreadcrumbWrapper />
       <Card>
         <CardContent>
           <Grid container spacing={3}>

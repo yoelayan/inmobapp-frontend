@@ -1,16 +1,21 @@
 import '@testing-library/jest-dom'
-import { configure } from '@testing-library/react'
 import { TextDecoder, TextEncoder } from 'util'
+
+import { configure } from '@testing-library/react'
 
 // Configure testing library with modern best practices
 configure({
   testIdAttribute: 'data-testid',
+
   // Reduce timeout for better performance
   asyncUtilTimeout: 2000,
+
   // Show suggestions for better queries
   getElementError: (message, container) => {
     const prettierMessage = message + '\n\nTip: Use screen.debug() to see the current DOM structure.'
-    return new Error(prettierMessage)
+
+    
+return new Error(prettierMessage)
   },
 })
 
@@ -35,6 +40,7 @@ beforeEach(() => {
     ) {
       return
     }
+
     originalError(message)
   })
 
@@ -45,6 +51,7 @@ beforeEach(() => {
     ) {
       return
     }
+
     originalWarn(message)
   })
 })
@@ -202,7 +209,9 @@ Object.defineProperty(HTMLElement.prototype, 'scroll', {
 // Modern storage mocks with complete API
 const createStorageMock = () => {
   let store: Record<string, string> = {}
-  return {
+
+  
+return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
       store[key] = String(value)
@@ -238,7 +247,9 @@ Object.defineProperty(global, 'crypto', {
       for (let i = 0; i < array.length; i++) {
         array[i] = Math.floor(Math.random() * 256)
       }
-      return array
+
+      
+return array
     }),
     subtle: {
       digest: jest.fn(() => Promise.resolve(new ArrayBuffer(32))),
@@ -309,6 +320,7 @@ process.env.NEXT_PUBLIC_API_URL = 'http://localhost:3000/api'
 // URL and URLSearchParams are available in Node 18+, but let's ensure they're properly set
 if (!global.URL) {
   const { URL, URLSearchParams } = require('url')
+
   global.URL = URL
   global.URLSearchParams = URLSearchParams
 }

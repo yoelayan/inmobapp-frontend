@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 
-import { TableHead, TableRow, TableCell, Box, IconButton, Menu, MenuItem, ButtonGroup } from '@mui/material'
+import { TableHead, TableRow, TableCell, Box, IconButton, Menu, MenuItem, ButtonGroup, useMediaQuery } from '@mui/material'
 import { flexRender, type SortDirection } from '@tanstack/react-table'
 
 import FilterListIcon from '@mui/icons-material/FilterList'
@@ -9,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward'
 import SortIcon from '@mui/icons-material/Sort'
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward'
+import TrafficIcon from '@mui/icons-material/Traffic'
 
 import { useTableContext } from '../TableContext'
 
@@ -84,51 +85,117 @@ const Sort = ({ isSorted, handleClick }: SortProps) => {
   )
 }
 
-const TableHeader = React.memo(() => {
+interface TableHeaderProps {
+  priorityColumns?: number // Number of priority columns to show in mobile (default: 3)
+}
+
+const TableHeader = React.memo<TableHeaderProps>(({ priorityColumns = 3 }) => {
   const { table, actions } = useTableContext()
+  const isMobile = useMediaQuery('(max-width: 768px)')
+
+  // Separate columns into priority and non-priority for mobile
+  const { nonPriorityCells } = useMemo(() => {
+    if (!isMobile) {
+      return { nonPriorityCells: [] }
+    }
+
+    const allColumns = table.getAllColumns()
+
+    // Sort columns by priority (higher priority first), then by original order
+    const sortedColumns = [...allColumns].sort((a, b) => {
+      const priorityA = a.columnDef.meta?.priority || 0
+      const priorityB = b.columnDef.meta?.priority || 0
+
+      if (priorityA !== priorityB) {
+        return priorityB - priorityA // Higher priority first
+      }
+
+      // If same priority, maintain original order
+      return 0
+    })
+
+    // Filter out hidden columns
+    const visibleColumns = sortedColumns.filter(col =>
+      !col.columnDef.meta?.hideInMobile && col.getIsVisible()
+    )
+
+    // Take first N columns as priority, rest are non-priority
+    const nonPriorityColumnIds = visibleColumns.slice(priorityColumns).map(col => col.id)
+
+    return {
+      nonPriorityCells: nonPriorityColumnIds
+    }
+  }, [table, isMobile, priorityColumns])
 
   return (
     <TableHead>
       {table.getHeaderGroups().map(headerGroup => (
         <TableRow key={headerGroup.id}>
-          {headerGroup.headers.map(header => (
+          {/* Collapse icon header - only show in mobile */}
+
+
+          {headerGroup.headers.map(header => {
+            // In mobile, only show priority columns in main header
+            if (isMobile && nonPriorityCells.includes(header.column.id)) {
+              return null
+            }
+
+            return (
+              <TableCell
+                key={header.id}
+                align='left'
+                sx={{
+                  fontWeight: 'bold',
+                  cursor: header.column.getCanSort() ? 'pointer' : 'default',
+                  userSelect: 'none',
+                  minWidth: { xs: '80px', md: '120px' },
+                  width: 'auto',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  '&:hover': header.column.getCanSort()
+                    ? {
+                        backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                      }
+                    : {}
+                }}
+              >
+                {/* sort */}
+                <Box className='flex items-center justify-between' sx={{ width: '100%' }}>
+                  {flexRender(header.column.columnDef.header, header.getContext())}
+                  <ButtonGroup className='flex items-center justify-between'>
+                    {header.column.getCanSort() ? (
+                      <Sort
+                        isSorted={header.column.getIsSorted()}
+                        handleClick={header.column.getToggleSortingHandler() as (event: unknown) => void}
+                      />
+                    ) : null}
+                    {header.column.getCanFilter() && <Filter column={header.column} />}
+                  </ButtonGroup>
+                </Box>
+              </TableCell>
+            )
+          })}
+
+          {actions && (
             <TableCell
-              key={header.id}
-              align='left'
+              align='center'
               sx={{
-                fontWeight: 'bold',
-                cursor: header.column.getCanSort() ? 'pointer' : 'default',
-                userSelect: 'none',
-                minWidth: '120px',
                 width: 'auto',
                 whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                '&:hover': header.column.getCanSort()
-                  ? {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                    }
-                  : {}
+                minWidth: { xs: '60px', md: '80px' },
+                paddingLeft: { xs: 0.5, md: 1 },
+                paddingRight: { xs: 0.5, md: 1 }
               }}
             >
-              {/* sort */}
-              <Box className='flex items-center justify-between'>
-                {flexRender(header.column.columnDef.header, header.getContext())}
-                <ButtonGroup className='flex items-center justify-between'>
-                  {header.column.getCanSort() ? (
-                    <Sort
-                      isSorted={header.column.getIsSorted()}
-                      handleClick={header.column.getToggleSortingHandler() as (event: unknown) => void}
-                    />
-                  ) : null}
-                  {header.column.getCanFilter() && <Filter column={header.column} />}
-                </ButtonGroup>
-              </Box>
-            </TableCell>
-          ))}
-          {actions && (
-            <TableCell align='center' sx={{ width: 'auto', whiteSpace: 'nowrap' }}>
-              Acciones
+              {/* si es mobile mostrar icono de semaforo */}
+              {isMobile ? (
+                <IconButton aria-label='Acciones' size='small'>
+                  <TrafficIcon />
+                </IconButton>
+              ) : (
+                'Acciones'
+              )}
             </TableCell>
           )}
         </TableRow>
@@ -137,4 +204,5 @@ const TableHeader = React.memo(() => {
   )
 })
 
+TableHeader.displayName = 'TableHeader'
 export default TableHeader

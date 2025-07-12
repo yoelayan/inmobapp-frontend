@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { createMockComponent } from '../utils/test-utils'
 
 // Mock GenericTable Component
@@ -74,6 +75,7 @@ jest.mock('@mui/material', () => ({
   Chip: MockChip,
   Grid2: MockGrid2,
   Grid: MockGrid,
+
   // Add any other MUI components that might be used
   TextField: createMockComponent('TextField'),
   FormControl: createMockComponent('FormControl'),

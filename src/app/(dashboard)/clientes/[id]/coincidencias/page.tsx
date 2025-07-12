@@ -13,10 +13,11 @@ import { CircularProgress } from '@mui/material'
 import PropertiesTable from '@/pages/apps/properties/list/PropertiesTable'
 import useSearches from '@/hooks/api/crm/useSearches'
 import useProperties from '@/hooks/api/realstate/useProperties'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 // Types
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
-  import type { ResponseAPI } from '@/services/repositories/BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 
 const ClientMatches: React.FC = () => {
   const params = useParams()
@@ -66,7 +67,9 @@ const ClientMatches: React.FC = () => {
   return loading ? (
     <CircularProgress />
   ) : (
-    <Grid container spacing={6}>
+    <>
+      <BreadcrumbWrapper />
+      <Grid container spacing={6}>
       <Grid>
         <PropertiesTable
           title='Propiedades encontradas'
@@ -77,6 +80,7 @@ const ClientMatches: React.FC = () => {
         />
       </Grid>
     </Grid>
+    </>
   )
 }
 

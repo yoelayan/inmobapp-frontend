@@ -1,5 +1,5 @@
-import type { ICharacteristic } from '@/types/apps/RealtstateTypes'
 import { useEffect, useCallback, useState } from 'react'
+
 import { type Control, useFieldArray } from 'react-hook-form'
 
 // MUI components
@@ -19,6 +19,8 @@ import {
 // Icons
 import AddIcon from '@mui/icons-material/Add'
 import DeleteIcon from '@mui/icons-material/Delete'
+
+import type { ICharacteristic } from '@/types/apps/RealtstateTypes'
 
 const defaultValues = {
   characteristics: [] as ICharacteristic[]
@@ -66,6 +68,7 @@ const PropertyCharacteristics = ({ control, propertyId, onChange }: PropertyChar
   useEffect(() => {
     const loadCharacteristics = async () => {
       setLoading(true)
+
       if (propertyId) {
         const characteristics = await getPropertyCharacteristics(propertyId)
 

@@ -8,12 +8,13 @@ interface TableContainerProps {
 
 const TableContainer: React.FC<TableContainerProps> = ({ children }) => {
   return (
-    <MuiTableContainer sx={{ maxHeight: 'calc(100vh - 200px)' }}>
+    <MuiTableContainer sx={{ maxHeight: 'calc(100vh - 200px)', overflowX: 'auto', width: '100%' }}>
       <MuiTable
         stickyHeader
         sx={{
-          tableLayout: 'fixed',
-          width: '100%'
+          tableLayout: 'auto',
+          width: '100%',
+          minWidth: '100%'
         }}
       >
         {children}

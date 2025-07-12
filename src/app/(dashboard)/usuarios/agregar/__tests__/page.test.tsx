@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react'
+
 import { render, screen } from '@/tests/utils/test-utils'
 import { setupHookMocks } from '@/tests/__mocks__/hooks'
 import '@/tests/__mocks__/components'
@@ -22,6 +23,7 @@ describe('Add User Page', () => {
   it('should render section header with correct title', () => {
     render(<AddUser />)
     const sectionHeader = screen.getByTestId('mock-sectionheader')
+
     expect(sectionHeader).toBeInTheDocument()
   })
 
@@ -32,11 +34,13 @@ describe('Add User Page', () => {
 
   it('should have correct page structure', () => {
     const { container } = render(<AddUser />)
+
     expect(container.firstChild).toBeInTheDocument()
   })
 
   it('should match snapshot', () => {
     const { container } = render(<AddUser />)
+
     expect(container.firstChild).toMatchSnapshot()
   })
 })

@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/mater
 
 // Component Imports
 import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 // Hook Imports
 import useClients from '@/hooks/api/crm/useClients'
@@ -49,7 +50,9 @@ const CreateSearchPage: React.FC = () => {
   }
 
   return (
-    <Card>
+    <>
+      <BreadcrumbWrapper />
+      <Card>
       <CardHeader title='Crear Búsqueda de Cliente' />
       <CardContent>
         <SearchForm
@@ -62,6 +65,7 @@ const CreateSearchPage: React.FC = () => {
         />
       </CardContent>
     </Card>
+    </>
   )
 }
 

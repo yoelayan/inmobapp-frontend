@@ -1,32 +1,89 @@
-'use client'
+"use client"
+import React, { useMemo, useState, useEffect } from 'react';
 
-// React Imports
-import React, { useEffect, useState } from 'react'
-
-// Next Imports
 import { useRouter } from 'next/navigation'
 
-// MUI Imports
+import { Button } from '@mui/material';
+import Grid from '@mui/material/Grid2'
+
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import SearchIcon from '@mui/icons-material/Search'
 import HistoryIcon from '@mui/icons-material/History'
 
+import type { ColumnDef } from '@tanstack/react-table'
+
+import SectionHeader from '@/components/layout/horizontal/SectionHeader';
+
+import {
+  Table,
+  TableContainer,
+  TableHeader,
+  TableBody,
+  TablePagination,
+  TableFilter,
+  createTableStore,
+  type TableAction,
+} from '@/components/common/Table';
+
 // Component Imports
-import GenericTable from '@/pages/shared/list/GenericTable'
-import type { Header, TableAction } from '@/components/features/table/TableComponent'
-import type { GridProps } from '@/components/features/table/components/TableGrid'
 import AddSearchCharacteristicModal from '../form/AddSearchCharacteristicModal'
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
 import ObservationsLogModal from '../form/ObservationsLogModal'
 
 // Hooks Imports
-import useSearches from '@/hooks/api/crm/useSearches'
+import useSearches from '@/hooks/api/crm/useSearches';
+import { useNotification } from '@/hooks/useNotification';
+import type { ISearch } from '@/types/apps/ClientesTypes';
 
-import { useNotification } from '@/hooks/useNotification'
+const columns: ColumnDef<ISearch>[] = [
+  {
+    accessorKey: 'client__name',
+    header: 'Nombre',
+    enableColumnFilter: true,
+    enableSorting: true,
+    sortingFn: 'alphanumeric'
+  },
+  {
+    accessorKey: 'description',
+    header: 'Descripción',
+    enableColumnFilter: true
+  },
+  {
+    accessorKey: 'budget',
+    header: 'Presupuesto',
+    enableColumnFilter: true,
+    cell: ({ getValue }) => {
+      const budget = getValue()
 
-const SearchesTable: React.FC = () => {
+      
+return budget ? `$${Number(budget).toLocaleString()}` : ''
+    }
+  },
+  {
+    accessorKey: 'characteristics',
+    header: 'Características',
+    enableColumnFilter: false,
+    cell: ({ getValue }) => {
+      const characteristics = getValue() as any[]
+
+      if (!characteristics || characteristics.length === 0) return 'Sin características'
+
+      return (
+        <div>
+          {characteristics.map((char: any, index: number) => (
+            <span key={index} style={{ display: 'block', fontSize: '0.8em' }}>
+              {char.characteristic?.name}: {char.value}
+            </span>
+          ))}
+        </div>
+      )
+    }
+  }
+]
+
+const SearchesTable = () => {
   const router = useRouter()
   const { notify } = useNotification()
   const [characteristicModalOpen, setCharacteristicModalOpen] = useState(false)
@@ -34,6 +91,18 @@ const SearchesTable: React.FC = () => {
   const [observationsLogModalOpen, setObservationsLogModalOpen] = useState(false)
   const [selectedSearchId, setSelectedSearchId] = useState<number | null>(null)
   const [selectedSearch, setSelectedSearch] = useState<any>(null)
+
+  const { data, loading, fetchData, refreshData } = useSearches()
+
+  const useSearchesTableStore = useMemo(
+    () =>
+      createTableStore<ISearch>({
+        data: data,
+        loading: loading,
+        refresh: refreshData
+      }),
+    []
+  )
 
   const handleOpenCharacteristicModal = (searchId: number) => {
     setSelectedSearchId(searchId)
@@ -91,75 +160,54 @@ const SearchesTable: React.FC = () => {
     refreshData()
   }
 
-  const grid_params: GridProps = {
-    title: 'client__name',
-    subtitle: 'description',
-    feature_value: 'budget'
-  }
-
   const actions: TableAction[] = [
     {
       label: 'Añadir Característica',
-      icon: <AddCircleOutlineIcon />,
       onClick: (row: Record<string, any>) => {
         handleOpenCharacteristicModal(row.id)
-      }
+      },
+      icon: <AddCircleOutlineIcon fontSize="small" />
     },
     {
       label: 'Añadir Observación',
-      icon: <AddCircleOutlineIcon />,
       onClick: (row: Record<string, any>) => {
         handleOpenObservationModal(row.id)
-      }
+      },
+      icon: <AddCircleOutlineIcon fontSize="small" />
     },
     {
       label: 'Ver Bitácora',
-      icon: <HistoryIcon />,
       onClick: (row: Record<string, any>) => {
         handleOpenObservationsLogModal(row)
-      }
+      },
+      icon: <HistoryIcon fontSize="small" />
     },
     {
       label: 'Ver Coincidencias',
-      icon: <SearchIcon />,
       onClick: (row: Record<string, any>) => {
         router.push(`/clientes/${row.id}/coincidencias`)
-      }
+      },
+      icon: <SearchIcon fontSize="small" />
     },
     {
       label: 'Editar',
-      icon: <EditIcon />,
       onClick: (row: Record<string, any>) => {
-        console.log('Editar', row)
         router.push(`/clientes/search/${row.id}/`)
-      }
+      },
+      icon: <EditIcon fontSize="small" />
     },
     {
       label: 'Eliminar',
-      icon: <DeleteIcon />,
       onClick: (row: Record<string, any>) => {
         console.log('Eliminar', row)
-      }
+
+        // TODO: Implementar confirmación y eliminación
+      },
+      icon: <DeleteIcon fontSize="small" />
     }
   ]
 
-  const { data, refreshData, fetchData } = useSearches()
-
-  const headers: Header[] = [
-    { key: 'client__name', label: 'Nombre', filterable: true, slot: 'default' },
-    { key: 'description', label: 'Descripción', filterable: true, slot: 'default' },
-    { key: 'budget', label: 'Presupuesto', filterable: true, slot: 'default' },
-    {
-      key: 'characteristics',
-      label: 'Características',
-      filterable: false,
-      slot: 'characteristics',
-      slot_params: {
-        allowDelete: true,
-        onDelete: handleSearchDeleted
-      }
-    }
-  ]
+  const tableStore = useSearchesTableStore();
 
   useEffect(() => {
     fetchData()
@@ -167,16 +215,36 @@ const SearchesTable: React.FC = () => {
 
   return (
     <>
-      <GenericTable
-        title='Búsquedas de Clientes'
-        subtitle='Listado de Búsquedas'
-        hrefAddButton='/clientes/busquedas/agregar'
-        headers={headers}
-        response={data}
-        refreshData={refreshData}
-        grid_params={grid_params}
-        actions={actions}
-      />
+      <Grid container spacing={2}>
+        <SectionHeader
+          title='Búsquedas de Clientes'
+          subtitle='Listado de Búsquedas'
+          buttons={[
+            <Button
+              key="add"
+              variant='contained'
+              color='primary'
+              onClick={() => router.push('/clientes/busquedas/agregar')}
+            >
+              Agregar
+            </Button>
+          ]}
+        />
+        <Table columns={columns} state={tableStore} actions={actions}>
+          <TableFilter placeholder='Buscar búsquedas...'>
+            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              Limpiar filtros
+            </Button>
+          </TableFilter>
+
+          <TableContainer>
+            <TableHeader />
+            <TableBody />
+          </TableContainer>
+
+          <TablePagination />
+        </Table>
+      </Grid>
 
       {characteristicModalOpen && (
         <AddSearchCharacteristicModal
@@ -207,6 +275,6 @@ const SearchesTable: React.FC = () => {
       )}
     </>
   )
-}
+};
 
-export default SearchesTable
+export default React.memo(SearchesTable);

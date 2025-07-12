@@ -8,15 +8,16 @@ import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/mater
 
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useUsersByFranchiseRepository from '@/hooks/api/realstate/useUsersByFranchise'
+import useUsers from '@/hooks/api/users/useUsers'
 import useFranchises from '@/hooks/api/realstate/useFranchises'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 const ClientPage: React.FC = () => {
   const params = useParams()
   const clientId = params?.id ? String(params.id) : undefined // Obtiene el ID de la URL si existe
 
   const { data: statuses, fetchData: fetchStatuses, loading: loadingStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsersByFranchiseRepository()
+  const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsers()
   const { data: franchises, fetchData: fetchFranchises, loading: loadingFranchises } = useFranchises()
 
   useEffect(() => {
@@ -35,7 +36,9 @@ const ClientPage: React.FC = () => {
   }
 
   return (
-    <Card>
+    <>
+      <BreadcrumbWrapper />
+      <Card>
       <CardHeader title='Actualizar Cliente' />
       <CardContent>
         <ClientForm
@@ -48,6 +51,7 @@ const ClientPage: React.FC = () => {
         />
       </CardContent>
     </Card>
+    </>
   )
 }
 

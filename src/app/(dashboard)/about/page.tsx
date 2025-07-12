@@ -9,6 +9,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import type { ColumnDef } from '@tanstack/react-table'
 
 import SectionHeader from '@/components/layout/horizontal/SectionHeader';
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb';
 
 
 
@@ -105,7 +106,9 @@ const UsuariosTable = () => {
 
 
   return (
-    <Grid container spacing={2}>
+    <>
+      <BreadcrumbWrapper />
+      <Grid container spacing={2}>
       <SectionHeader title='Clientes' subtitle='Lista de clientes' buttons={[]} />
       <Table columns={columns} state={tableStore} actions={actions}>
         <TableFilter placeholder='Buscar clientes...'>
@@ -122,7 +125,7 @@ const UsuariosTable = () => {
         <TablePagination />
       </Table>
     </Grid>
-
+    </>
   )
 };
 

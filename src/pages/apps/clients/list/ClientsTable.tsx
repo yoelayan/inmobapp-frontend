@@ -1,103 +1,163 @@
-'use client'
+"use client"
+import React, { useMemo } from 'react';
 
-// React Imports
-import React, { useEffect } from 'react'
-
-// Component Imports
 import { useRouter } from 'next/navigation'
 
-import EditIcon from '@mui/icons-material/Edit'
+import { Button } from '@mui/material';
+import Grid from '@mui/material/Grid2'
 
+import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 
-import GenericTable from '@/pages/shared/list/GenericTable'
-import type { Header, TableAction } from '@/components/features/table/TableComponent'
+import type { ColumnDef } from '@tanstack/react-table'
 
-import type { GridProps } from '@/components/features/table/components/TableGrid'
+import SectionHeader from '@/components/layout/horizontal/SectionHeader';
 
-// Hooks Imports
-import useClients from '@/hooks/api/crm/useClients'
+import {
+  Table,
+  TableContainer,
+  TableHeader,
+  TableBody,
+  TablePagination,
+  TableFilter,
+  createTableStore,
+  type TableAction,
+} from '@/components/common/Table';
 
-import useFranchises from '@/hooks/api/realstate/useFranchises'
+import useClients from '@/hooks/api/crm/useClients';
+import type { IClient } from '@/types/apps/ClientesTypes';
 
-const Table: React.FC = () => {
-  const router = useRouter()
+const columns: ColumnDef<IClient>[] = [
+  {
+    accessorKey: 'name',
+    header: 'Nombre',
+    enableColumnFilter: true,
+    enableSorting: true,
+    sortingFn: 'alphanumeric',
+    meta: {
+      priority: 10 // High priority - always show in mobile
+    }
+  },
+  {
+    accessorKey: 'email',
+    header: 'Correo Electrónico',
+    enableColumnFilter: true,
+    meta: {
+      priority: 9 // High priority - always show in mobile
+    }
+  },
+  {
+    accessorKey: 'phone',
+    header: 'Teléfono',
+    enableColumnFilter: false,
+    meta: {
+      priority: 8 // High priority - always show in mobile
+    }
+  },
+  {
+    accessorKey: 'assigned_to_name',
+    header: 'Usuario Asignado',
+    enableColumnFilter: false,
+    meta: {
+      priority: 5 // Medium priority - show in collapse on mobile
+    }
+  },
+  {
+    accessorKey: 'status_name',
+    header: 'Estado',
+    enableColumnFilter: true,
+    filterFn: 'arrIncludes',
+    cell: ({ getValue }) => {
+      const status = getValue()
 
-  const { data: franchises, fetchData: fetchFranchises, refreshData: refreshFranchises } = useFranchises()
-
-  const grid_params: GridProps = {
-    title: 'name',
-    subtitle: 'status__name',
-    feature_value: 'assigned_to_name'
+      
+return (
+        <span style={{ color: status === 'Activo' ? 'green' : 'red' }}>
+          {status === 'Activo' ? 'Activo' : 'Inactivo'}
+        </span>
+      )
+    },
+    meta: {
+      priority: 6 // Medium priority - show in collapse on mobile
+    }
+  },
+  {
+    accessorKey: 'franchise_name',
+    header: 'Franquicia',
+    enableColumnFilter: true,
+    meta: {
+      priority: 4 // Lower priority - show in collapse on mobile
+    }
+  },
+  {
+    accessorKey: 'formated_created_at',
+    header: 'Fecha de Creación',
+    enableColumnFilter: false,
+    meta: {
+      priority: 3 // Lower priority - show in collapse on mobile
+    }
   }
+]
+
+const ClientsTable = () => {
+  const router = useRouter()
+  const { data, loading, fetchData } = useClients()
+
+  const useClientsTableStore = useMemo(
+    () =>
+      createTableStore<IClient>({
+        data: data,
+        loading: loading,
+        refresh: fetchData
+      }),
+    []
+  )
 
   const actions: TableAction[] = [
     {
       label: 'Editar',
-      icon: <EditIcon />,
       onClick: (row: Record<string, any>) => {
-        console.log('Editar', row)
         router.push(`/clientes/${row.id}/`)
-      }
+      },
+      icon: <EditIcon fontSize="small" />
     },
     {
       label: 'Eliminar',
-      icon: <DeleteIcon />,
       onClick: (row: Record<string, any>) => {
         console.log('Eliminar', row)
-      }
+
+        // TODO: Implementar confirmación y eliminación
+      },
+      icon: <DeleteIcon fontSize="small" />
     }
   ]
 
-  const headers: Header[] = [
-    {
-      key: 'franchise_name',
-      label: 'Franquicia',
-      filterable: true,
-      slot: 'default',
-      filter: 'select',
-      filter_params: {
-        response: franchises,
-        dataMap: {
-          value: 'id',
-          label: 'name'
-        },
-        refreshData: refreshFranchises,
-        searchble: true,
-        filter_name: 'search'
-      }
-    },
-    { key: 'name', label: 'Nombre', filterable: true, slot: 'default' },
-    { key: 'email', label: 'Correo Electrónico', filterable: true, slot: 'default' },
-    {
-      key: 'assigned_to_name',
-      label: 'Usuario Asignado',
-      filterable: false,
-      slot: 'default'
-    },
-    { key: 'status_name', label: 'Estado', filterable: true, slot: 'default' },
-    { key: 'formated_created_at', label: 'Fecha de Creación', filterable: false, slot: 'default' }
-  ]
-
-  const { data, refreshData, fetchData } = useClients()
-
-  useEffect(() => {
-    fetchFranchises()
-    fetchData()
-  }, [fetchData, fetchFranchises])
+  const tableStore = useClientsTableStore();
 
   return (
-    <GenericTable
-      title='Clientes'
-      subtitle='Listado de Clientes'
-      hrefAddButton='clientes/agregar/'
-      headers={headers}
-      response={data}
-      refreshData={refreshData}
-      grid_params={grid_params}
-      actions={actions}
-    />
-  )
-}
+    <>
+      <Grid container spacing={2}>
+        <SectionHeader title='Clientes' subtitle='Listado de Clientes' />
+        <Table columns={columns} state={tableStore} actions={actions}>
+          <TableFilter placeholder='Buscar clientes...'>
+            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              Limpiar filtros
+            </Button>
+            <Button key='add' variant='contained' color='primary' onClick={() => router.push('/clientes/agregar/')}>
+              Agregar
+            </Button>
+          </TableFilter>
 
-export default Table
+          <TableContainer>
+            <TableHeader />
+            <TableBody />
+          </TableContainer>
+
+          <TablePagination />
+        </Table>
+      </Grid>
+    </>
+  )
+};
+
+export default React.memo(ClientsTable);

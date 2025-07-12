@@ -6,7 +6,7 @@ import React, { useEffect, useState } from 'react'
 import { Card, CardContent, Typography, CircularProgress, Box, Grid2 as Grid, Chip, Avatar } from '@mui/material'
 
 // Component Imports
-import SectionHeader from '@/components/layout/horizontal/SectionHeader'
+import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 import UsersRepository from '@/services/repositories/users/UsersRepository'
 import type { IUser } from '@/types/apps/UserTypes'
 
@@ -58,8 +58,7 @@ const ViewUser: React.FC<ViewUserProps> = ({ params }) => {
 
   return (
     <>
-      <SectionHeader title='Detalles del Usuario' subtitle={`Información completa de ${user.name}`} />
-
+      <BreadcrumbWrapper />
       <Card>
         <CardContent>
           <Grid container spacing={3}>

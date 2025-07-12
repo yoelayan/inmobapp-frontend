@@ -7,7 +7,11 @@ import React from 'react'
 import SearchesTable from '@/pages/apps/searches/list/SearchesTable'
 
 const SearchesPage: React.FC = () => {
-  return <SearchesTable />
+  return (
+    <>
+      <SearchesTable />
+    </>
+  )
 }
 
 export default SearchesPage

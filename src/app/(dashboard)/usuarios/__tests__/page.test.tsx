@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react'
+
 import { render, screen } from '@/tests/utils/test-utils'
 import { setupHookMocks } from '@/tests/__mocks__/hooks'
 import '@/tests/__mocks__/components'
@@ -50,6 +51,7 @@ describe('Users Page', () => {
 
   it('should match snapshot', () => {
     const { container } = render(<Users />)
+
     expect(container.firstChild).toMatchSnapshot()
   })
 })

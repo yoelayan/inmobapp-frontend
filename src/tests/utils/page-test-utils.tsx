@@ -1,7 +1,8 @@
 import React from 'react'
-import { render, screen, waitFor } from './test-utils'
-import { mockNavigation, mockParams } from './test-utils'
+
 import type { RenderResult } from '@testing-library/react'
+
+import { render, screen, waitFor , mockNavigation, mockParams } from './test-utils'
 
 // Mock next/navigation for pages
 jest.mock('next/navigation', () => ({
@@ -15,20 +16,24 @@ jest.mock('next/navigation', () => ({
  * Interface for page test configuration
  */
 interface PageTestConfig {
+
   /**
    * Page component to test
    */
   component: React.ComponentType<any>
+
   /**
    * Props to pass to the component
    */
   props?: any
+
   /**
    * Mock data for hooks
    */
   mockData?: {
     [key: string]: any
   }
+
   /**
    * Expected elements to be present
    */
@@ -59,7 +64,8 @@ export class PageTestHelper {
    */
   async testRender() {
     expect(this.renderResult.container).toBeInTheDocument()
-    return this
+    
+return this
   }
 
   /**
@@ -67,6 +73,7 @@ export class PageTestHelper {
    */
   async testTitles() {
     const { expectedElements } = this.config
+
     if (expectedElements?.titles) {
       for (const title of expectedElements.titles) {
         await waitFor(() => {
@@ -74,7 +81,9 @@ export class PageTestHelper {
         })
       }
     }
-    return this
+
+    
+return this
   }
 
   /**
@@ -82,6 +91,7 @@ export class PageTestHelper {
    */
   async testButtons() {
     const { expectedElements } = this.config
+
     if (expectedElements?.buttons) {
       for (const button of expectedElements.buttons) {
         await waitFor(() => {
@@ -89,7 +99,9 @@ export class PageTestHelper {
         })
       }
     }
-    return this
+
+    
+return this
   }
 
   /**
@@ -97,6 +109,7 @@ export class PageTestHelper {
    */
   async testInputs() {
     const { expectedElements } = this.config
+
     if (expectedElements?.inputs) {
       for (const input of expectedElements.inputs) {
         await waitFor(() => {
@@ -104,7 +117,9 @@ export class PageTestHelper {
         })
       }
     }
-    return this
+
+    
+return this
   }
 
   /**
@@ -112,12 +127,15 @@ export class PageTestHelper {
    */
   async testLoading() {
     const { expectedElements } = this.config
+
     if (expectedElements?.loading) {
       await waitFor(() => {
         expect(screen.getByText(/cargando/i)).toBeInTheDocument()
       })
     }
-    return this
+
+    
+return this
   }
 
   /**
@@ -125,12 +143,15 @@ export class PageTestHelper {
    */
   async testError() {
     const { expectedElements } = this.config
+
     if (expectedElements?.error) {
       await waitFor(() => {
         expect(screen.getByText(/error/i)).toBeInTheDocument()
       })
     }
-    return this
+
+    
+return this
   }
 
   /**
@@ -138,6 +159,7 @@ export class PageTestHelper {
    */
   async testTable() {
     const { expectedElements } = this.config
+
     if (expectedElements?.tables) {
       for (const table of expectedElements.tables) {
         await waitFor(() => {
@@ -145,7 +167,9 @@ export class PageTestHelper {
         })
       }
     }
-    return this
+
+    
+return this
   }
 
   /**
@@ -178,7 +202,8 @@ export class PageTestHelper {
     await this.testLoading()
     await this.testError()
     await this.testTable()
-    return this
+    
+return this
   }
 
   /**

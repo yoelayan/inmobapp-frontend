@@ -7,7 +7,11 @@ import React from 'react'
 import ClientsTable from '@/pages/apps/clients/list/ClientsTable'
 
 const Clients: React.FC = () => {
-  return <ClientsTable />
+  return (
+    <>
+      <ClientsTable />
+    </>
+  )
 }
 
 export default Clients

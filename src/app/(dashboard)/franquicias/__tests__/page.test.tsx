@@ -2,6 +2,7 @@
  * @jest-environment jsdom
  */
 import React from 'react'
+
 import { render, screen } from '@/tests/utils/test-utils'
 import { setupHookMocks } from '@/tests/__mocks__/hooks'
 import '@/tests/__mocks__/components'
@@ -50,6 +51,7 @@ describe('Franchises Page', () => {
 
   it('should match snapshot', () => {
     const { container } = render(<Franchises />)
+
     expect(container.firstChild).toMatchSnapshot()
   })
 })
@@ -73,6 +75,7 @@ describe('Franchises Page - Different Data', () => {
   it('should have correct franchise table content', () => {
     render(<Franchises />)
     const tableContent = screen.getByTestId('franchises-table-content')
+
     expect(tableContent).toBeInTheDocument()
   })
 })
