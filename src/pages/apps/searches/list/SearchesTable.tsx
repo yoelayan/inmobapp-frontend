@@ -5,12 +5,15 @@ import { useRouter } from 'next/navigation'
 
 import { Button } from '@mui/material';
 import Grid from '@mui/material/Grid2'
+import Box from '@mui/material/Box'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline'
 import SearchIcon from '@mui/icons-material/Search'
 import HistoryIcon from '@mui/icons-material/History'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import AddIcon from '@mui/icons-material/Add'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -57,7 +60,7 @@ const columns: ColumnDef<ISearch>[] = [
     cell: ({ getValue }) => {
       const budget = getValue()
 
-      
+
 return budget ? `$${Number(budget).toLocaleString()}` : ''
     }
   },
@@ -219,22 +222,32 @@ const SearchesTable = () => {
         <SectionHeader
           title='Búsquedas de Clientes'
           subtitle='Listado de Búsquedas'
-          buttons={[
-            <Button
-              key="add"
-              variant='contained'
-              color='primary'
-              onClick={() => router.push('/clientes/busquedas/agregar')}
-            >
-              Agregar
-            </Button>
-          ]}
         />
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar búsquedas...'>
-            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
-              Limpiar filtros
-            </Button>
+            <Box className='flex gap-4 w-full'>
+              <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+                Limpiar filtros
+              </Button>
+              <Button
+                key='update'
+                startIcon={<RefreshIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => fetchData()}
+              >
+                Actualizar
+              </Button>
+              <Button
+                key='add'
+                startIcon={<AddIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => router.push('/clientes/busquedas/agregar')}
+              >
+                Agregar
+              </Button>
+            </Box>
           </TableFilter>
 
           <TableContainer>

@@ -8,6 +8,7 @@ import useBaseHookApi from '@hooks/api/useBaseHookApi'
 // Type Imports
 import type { IPropertyCharacteristic } from '@/types/apps/RealtstateTypes'
 import type { PropertyMetricsFilters } from '@/types/apps/RealtstateMetricsTypes'
+import type { FilterItem } from '@/types/api/response'
 
 export default function useProperties(defaultFilters?: Record<string, any>) {
   /**
@@ -18,8 +19,7 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
       updateCharacteristic - detail
      */
 
-  const { fetchData, refreshData, getData, fetchItemById, createData, updateData, deleteData, data, loading, error, errors, item } =
-    useBaseHookApi(PropertiesRepository, defaultFilters)
+  const baseHookApi=useBaseHookApi(PropertiesRepository, defaultFilters as FilterItem[])
 
   const [metricsData, setMetricsData] = useState<any>(null)
   const [metricsLoading, setMetricsLoading] = useState<boolean>(false)
@@ -119,26 +119,15 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     deleteCharacteristic,
     updateCharacteristic,
     getPropertyCharacteristics,
-    fetchData,
-    refreshData,
-    getData,
-    fetchItemById,
     allCharacteristics,
-    createData,
-    updateData,
-    deleteData,
     getMetrics,
     getTotalProperties,
-    data,
-    loading,
-    error,
-    errors,
-    item,
     metricsData,
     metricsLoading,
     metricsError,
     totalProperties,
     totalPropertiesLoading,
-    totalPropertiesError
+    totalPropertiesError,
+    ...baseHookApi
   }
 }

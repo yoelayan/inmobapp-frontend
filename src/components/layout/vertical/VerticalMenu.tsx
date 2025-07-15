@@ -93,26 +93,27 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           type: 'item',
           title: 'Agregar',
           href: '/clientes/agregar'
-        }
-      ]
-    },
-    {
-      type: 'subMenu',
-      label: 'Búsquedas',
-      icon: <i className='tabler-search' />,
-      subMenu: [
-        {
-          type: 'item',
-          title: 'Todas',
-          href: '/clientes/busquedas'
         },
         {
-          type: 'item',
-          title: 'Agregar',
-          href: '/clientes/busquedas/agregar'
+          type: 'subMenu',
+          title: 'Búsquedas',
+          icon: <i className='tabler-search' />,
+          subMenu: [
+            {
+              type: 'item',
+              title: 'Todas',
+              href: '/clientes/busquedas'
+            },
+            {
+              type: 'item',
+              title: 'Agregar',
+              href: '/clientes/busquedas/agregar'
+            }
+          ]
         }
       ]
     },
+
     {
       type: 'subMenu',
       label: 'Franquicias',
@@ -182,12 +183,23 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           }
 
           if (item.type === 'subMenu') {
+
             return (
               <SubMenu key={index} label={item.label} icon={item.icon}>
                 {item.subMenu?.map((subMenuItem, subMenuIndex) => (
-                  <MenuItem key={subMenuIndex} title={subMenuItem.title} href={subMenuItem.href}>
-                    {subMenuItem.title}
-                  </MenuItem>
+                  subMenuItem.subMenu ? (
+                    <SubMenu key={subMenuIndex} label={subMenuItem.label || subMenuItem.title} icon={subMenuItem.icon}>
+                      {subMenuItem.subMenu.map((nestedItem, nestedIndex) => (
+                        <MenuItem key={nestedIndex} title={nestedItem.title} href={nestedItem.href}>
+                          {nestedItem.title}
+                        </MenuItem>
+                      ))}
+                    </SubMenu>
+                  ) : (
+                    <MenuItem key={subMenuIndex} title={subMenuItem.title} href={subMenuItem.href}>
+                      {subMenuItem.title}
+                    </MenuItem>
+                  )
                 ))}
               </SubMenu>
             )

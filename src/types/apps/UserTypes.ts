@@ -1,17 +1,30 @@
+import type { IFranchise } from './FranquiciaTypes'
+
+export interface IUserPermission {
+  id?: number
+  name: string
+  codename: string
+  description?: string
+}
+
+export interface IUserGroup {
+  id?: number
+  name: string
+  permissions: IUserPermission[]
+}
+
 export interface IUser {
   id: number
   name: string
   email: string
   image?: string | null
   username?: string
-  is_active?: boolean
-  is_staff?: boolean
-  is_superuser?: boolean
   date_joined?: string
   last_login?: string
-  groups?: number[]
+  groups?: IUserGroup[]
   group_names?: string[]
-  user_permissions?: number[]
+  user_permissions?: IUserPermission[]
+  franchise?: IFranchise
 }
 
 export interface IUserFormData {
@@ -19,9 +32,7 @@ export interface IUserFormData {
   email: string
   password?: string
   password_confirm?: string
-  image?: File | null
-  is_active?: boolean
-  is_staff?: boolean
-  is_superuser?: boolean
-  groups?: number[]
+  franchise?: number
+  role?: number[]
+  permissions?: string[]
 }

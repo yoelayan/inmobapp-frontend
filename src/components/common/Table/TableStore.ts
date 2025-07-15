@@ -45,13 +45,12 @@ export const createTableStore = <T>(params: {
       setTimeout(() => get().fetchData(), 0)
     },
     setSorting: sorting => set({ sorting }),
+    addSorting: sorting => set({ sorting: [...get().sorting, sorting] }),
 
     fetchData: async () => {
-      const { pageIndex, pageSize, filters, sorting, data } = get()
+      const { pageIndex, pageSize, filters, sorting } = get()
 
       set({ loading: true })
-
-      console.log(data)
 
       try {
         const response = await params.refresh({
@@ -66,8 +65,9 @@ export const createTableStore = <T>(params: {
           totalCount: response.count,
           totalPages: response.num_pages,
           pageIndex: (response.page_number || 1) - 1,
-          loading: false
+          loading: false,
         })
+
       } catch (error) {
         console.error('Error fetching table data:', error)
         set({ loading: false })

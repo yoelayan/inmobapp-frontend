@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import React, { useEffect } from 'react'
+import React from 'react'
 
 // Component Imports
 import Grid from '@mui/material/Grid2'
@@ -15,18 +15,20 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 // MUI Imports
 
 const Properties: React.FC = () => {
-  const { fetchData: getProperties, refreshData: refreshProperties, data: properties, deleteData: deleteProperty } = useProperties()
+  const { fetchData: fetchProperties, data: properties, deleteData: deleteProperty, loading } = useProperties()
 
-  useEffect(() => {
-    getProperties()
-  }, [getProperties])
 
   return (
     <>
       <BreadcrumbWrapper />
       <Grid container spacing={6}>
       <Grid>
-        <PropertiesTable properties={properties} refreshProperties={refreshProperties} deleteProperty={deleteProperty} />
+          <PropertiesTable
+            properties={properties}
+            loading={loading}
+            fetchProperties={fetchProperties}
+            deleteProperty={deleteProperty}
+          />
       </Grid>
     </Grid>
     </>

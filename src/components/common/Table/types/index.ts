@@ -18,14 +18,11 @@ export interface TableAction {
 }
 
 // Interface for column priority in mobile view
-export interface ColumnMeta {
-  priority?: number // Higher numbers = higher priority. Priority 1-3 will be shown in mobile main view
-  hideInMobile?: boolean // Hide column completely in mobile
-}
+
 
 // Extend TanStack Table ColumnDef to include our custom meta
 declare module '@tanstack/react-table' {
-  interface ColumnMeta {
+  export interface ColumnMeta {
     priority?: number
     hideInMobile?: boolean
   }
@@ -58,5 +55,6 @@ export interface TableState<T> {
   addFilter: (filter: FilterItem) => void
   removeFilter: (field: string) => void
   setSorting: (sorting: SortingItem[]) => void
+  addSorting: (sorting: SortingItem) => void
   fetchData: () => Promise<void>
 }

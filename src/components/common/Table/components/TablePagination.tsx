@@ -6,6 +6,7 @@ import React from 'react'
 import Pagination from '@mui/material/Pagination'
 import Typography from '@mui/material/Typography'
 import MenuItem from '@mui/material/MenuItem'
+import useMediaQuery from '@mui/material/useMediaQuery'
 
 
 import { useTableContext } from '../TableContext'
@@ -18,6 +19,8 @@ const TablePaginationComponent = React.memo(() => {
 
 
   const { table, state } = useTableContext()
+
+  const isMobile = useMediaQuery('(max-width: 600px)')
 
 
   const handleChangePageSize = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,6 +50,7 @@ const TablePaginationComponent = React.memo(() => {
           onChange={(_, page) => {
             table.setPageIndex(page - 1)
           }}
+          size={isMobile ? 'small' : 'medium'}
           showFirstButton
           showLastButton
         />

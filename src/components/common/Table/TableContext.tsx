@@ -80,20 +80,20 @@ export function TableProvider<T>({ columns, state, actions, children }: TablePro
         state.fetchData()
       }
     },
-    [state.pageIndex, state.pageSize, state.setPageIndex, state.setPageSize, state.fetchData]
+    [state]
   )
 
   const handleSortingChange = useCallback(
     (updater: Updater<SortingState>) => {
       if (typeof updater === 'function') {
-        state.setSorting(updater(state.sorting))
-      } else {
-        state.setSorting(updater)
+        const sorting = updater(state.sorting)
+
+        state.setSorting(sorting)
       }
 
       state.fetchData()
     },
-    [state.sorting, state.setSorting, state.fetchData]
+    [state]
   )
 
   // Crear instancia de la tabla con TanStack
@@ -131,7 +131,7 @@ export function TableProvider<T>({ columns, state, actions, children }: TablePro
       state,
       actions
     }),
-    [table, state.data, state.loading, state.pageIndex, state.pageSize, actions]
+    [table, state, actions]
   )
 
   return <TableContext.Provider value={contextValue}>{children}</TableContext.Provider>

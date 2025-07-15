@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 
 import { Button } from '@mui/material';
 import Grid from '@mui/material/Grid2'
+import Box from '@mui/material/Box'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import AddIcon from '@mui/icons-material/Add'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -51,7 +54,7 @@ const columns: ColumnDef<IFranchise>[] = [
     cell: ({ getValue }) => {
       const type = getValue()
 
-      
+
 return type === 'COMMERCIAL' ? 'Comercial' : 'Personal'
     }
   },
@@ -68,7 +71,7 @@ return type === 'COMMERCIAL' ? 'Comercial' : 'Personal'
     cell: ({ getValue }) => {
       const isActive = getValue()
 
-      
+
 return (
         <span style={{ color: isActive ? 'green' : 'red' }}>
           {isActive ? 'Activo' : 'Inactivo'}
@@ -131,22 +134,32 @@ const FranchisesTable = () => {
         <SectionHeader
           title='Franquicias'
           subtitle='Gestión de Franquicias del Sistema'
-          buttons={[
-            <Button
-              key="add"
-              variant='contained'
-              color='primary'
-              onClick={() => router.push('/franquicias/agregar/')}
-            >
-              Agregar
-            </Button>
-          ]}
         />
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar franquicias...'>
-            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
-              Limpiar filtros
-            </Button>
+            <Box className='flex gap-4 w-full'>
+              <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+                Limpiar filtros
+              </Button>
+              <Button
+                key='update'
+                startIcon={<RefreshIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => fetchData()}
+              >
+                Actualizar
+              </Button>
+              <Button
+                key='add'
+                startIcon={<AddIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => router.push('/franquicias/agregar/')}
+              >
+                Agregar
+              </Button>
+            </Box>
           </TableFilter>
 
           <TableContainer>

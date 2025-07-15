@@ -150,7 +150,10 @@ const TableBody = React.memo<TableBodyProps>(({
           <TableRow
             hover
             onClick={onRowClick ? () => handleRowClick(row) : undefined}
-            sx={onRowClick ? { cursor: 'pointer' } : {}}
+            sx={{
+              ...(onRowClick ? { cursor: 'pointer' } : {}),
+              maxHeight: '10px'
+            }}
           >
 
             {/* Main cells */}
@@ -169,7 +172,7 @@ const TableBody = React.memo<TableBodyProps>(({
               return (
                 <TableCell
                   key={cell.id}
-                  align='left'
+                  align='center'
                   sx={{
                     minWidth: { xs: '80px', md: '120px' },
                     width: isLastCell && !actions ? '100%' : 'auto',
@@ -177,8 +180,9 @@ const TableBody = React.memo<TableBodyProps>(({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     padding: { xs: '8px 4px', md: '16px' },
+
                     '&:first-of-type': {
-                      paddingLeft: { xs: 1, md: 2 }
+                      paddingLeft: { xs: 4, md: 2 }
                     },
                     '&:last-child': {
                       paddingRight: { xs: 1, md: 2 }
@@ -210,7 +214,7 @@ const TableBody = React.memo<TableBodyProps>(({
           <TableRow sx={{ display: { xs: 'table-row', md: 'none' } }}>
             <TableCell
               colSpan={priorityCells.length + (actions && showActions ? 1 : 0)}
-              sx={{ p: 0, border: 0, width: '100%' }}
+              sx={{ p: 0, border: 0, width: '100%', height: 'auto' }}
             >
               <Collapse in={openRow === row.id} timeout='auto' unmountOnExit>
                 <Box sx={{ m: 2, width: '100%' }}>
@@ -274,9 +278,13 @@ const TableBody = React.memo<TableBodyProps>(({
 
   if (state.loading) {
     return (
-      <MuiTableBody>
+      <MuiTableBody sx={{ height: 'calc(100vh - 300px)' }}>
         <TableRow>
-          <TableCell colSpan={table.getAllColumns().length + (actions && showActions ? 1 : 0)} align='center' sx={{ py: 6 }}>
+          <TableCell
+            colSpan={table.getAllColumns().length + (actions && showActions ? 1 : 0)}
+            align='center'
+            sx={{ py: 6 }}
+          >
             <CircularProgress />
           </TableCell>
         </TableRow>
@@ -286,9 +294,13 @@ const TableBody = React.memo<TableBodyProps>(({
 
   if (table.getRowModel().rows.length === 0) {
     return (
-      <MuiTableBody>
+      <MuiTableBody sx={{ height: 'calc(100vh - 300px)' }}>
         <TableRow>
-          <TableCell colSpan={table.getAllColumns().length + (actions && showActions ? 1 : 0)} align='center' sx={{ py: 6 }}>
+          <TableCell
+            colSpan={table.getAllColumns().length + (actions && showActions ? 1 : 0)}
+            align='center'
+            sx={{ py: 6 }}
+          >
             <Typography variant='body1'>No se encontraron datos</Typography>
           </TableCell>
         </TableRow>

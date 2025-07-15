@@ -7,10 +7,9 @@ import Typography from '@mui/material/Typography'
 interface SectionHeaderProps {
   title: string
   subtitle: string
-  buttons?: React.ReactNode[]
 }
 
-const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle, buttons }) => {
+const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle }) => {
   return (
     <div className='flex flex-wrap sm:items-center justify-between max-sm:flex-col gap-6'>
       <div>
@@ -19,14 +18,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({ title, subtitle, buttons 
         </Typography>
         <Typography>{subtitle}</Typography>
       </div>
-      <div className='flex flex-wrap max-sm:flex-col gap-4'>
-        {buttons &&
-          buttons.map((button, index) => (
-            <div className='max-sm:is-full is-auto' key={index}>
-              {button}
-            </div>
-          ))}
-      </div>
+
     </div>
   )
 }

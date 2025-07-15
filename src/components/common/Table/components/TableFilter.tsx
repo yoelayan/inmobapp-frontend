@@ -2,12 +2,15 @@
 
 import React, { useState, useCallback } from 'react'
 
-import { Box, TextField, InputAdornment, IconButton, Toolbar, debounce } from '@mui/material'
+import { Box, TextField, InputAdornment, IconButton, Toolbar, debounce, Modal, Button, Card, CardHeader, CardContent } from '@mui/material'
 
 
-
+import SettingsIcon from '@mui/icons-material/Settings'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
+
+// useMediaQuery
+import { useMediaQuery } from '@mui/material'
 
 import { useTableContext } from '../TableContext'
 
@@ -15,11 +18,14 @@ interface TableFilterProps {
   placeholder?: string
   searchField?: string
   children?: React.ReactNode
+  className?: string
 }
 
-const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', searchField = 'search', children }) => {
+const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', searchField = 'search', children, className}) => {
   const { state } = useTableContext()
   const [searchValue, setSearchValue] = useState('')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const isMobile = useMediaQuery('(max-width: 600px)')
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
@@ -52,7 +58,8 @@ const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', se
         display: 'flex',
         justifyContent: 'space-between',
         flexWrap: 'wrap',
-        gap: 2
+        gap: 2,
+        ...(className && { className })
       }}
     >
       <TextField
@@ -80,7 +87,58 @@ const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', se
         }}
       />
 
-      <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>{children}</Box>
+      {!isMobile && (
+        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+          {children}
+        </Box>
+      )}
+      {isMobile && (
+        <>
+          <Button className="w-full" variant='contained' color='primary' onClick={() => setIsModalOpen(true)} startIcon={<SettingsIcon />}>
+            Opciones
+          </Button>
+          <Modal open={isModalOpen} onClose={() => setIsModalOpen(false)}>
+            <Card className="table-filter-modal" style={{
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              width: '90%',
+              maxWidth: '600px',
+              padding: 0,
+              borderRadius: 16,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+              overflow: 'hidden'
+            }}>
+              <CardHeader
+                className="table-filter-modal-header"
+                title={<span className="font-semibold text-lg">Opciones</span>}
+                action={
+                  <IconButton onClick={() => setIsModalOpen(false)} size="small" aria-label="Cerrar">
+                    <ClearIcon />
+                  </IconButton>
+                }
+                style={{
+                  borderBottom: '1px solid #e0e0e0',
+                  background: 'var(--mui-palette-background-default, #fff)',
+                  padding: 16
+                }}
+              />
+              <CardContent
+                className="table-filter-modal-content flex flex-col gap-4"
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 16,
+                  padding: 24
+                }}
+              >
+                {children}
+              </CardContent>
+            </Card>
+          </Modal>
+        </>
+      )}
     </Toolbar>
   )
 }

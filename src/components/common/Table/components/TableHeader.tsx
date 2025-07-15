@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react'
 
-import { TableHead, TableRow, TableCell, Box, IconButton, Menu, MenuItem, ButtonGroup, useMediaQuery } from '@mui/material'
+import { TableHead, TableRow, TableCell, Box, IconButton, Menu, MenuItem, useMediaQuery } from '@mui/material'
 import { flexRender, type SortDirection } from '@tanstack/react-table'
 
 import FilterListIcon from '@mui/icons-material/FilterList'
@@ -143,7 +143,7 @@ const TableHeader = React.memo<TableHeaderProps>(({ priorityColumns = 3 }) => {
             return (
               <TableCell
                 key={header.id}
-                align='left'
+                align='center'
                 sx={{
                   fontWeight: 'bold',
                   cursor: header.column.getCanSort() ? 'pointer' : 'default',
@@ -161,17 +161,16 @@ const TableHeader = React.memo<TableHeaderProps>(({ priorityColumns = 3 }) => {
                 }}
               >
                 {/* sort */}
-                <Box className='flex items-center justify-between' sx={{ width: '100%' }}>
+                <Box className='flex gap-2 items-center justify-between' sx={{ width: '100%', padding: '0 12px' }}>
+                  {header.column.getCanSort() ? (
+                    <Sort
+                      isSorted={header.column.getIsSorted()}
+                      handleClick={header.column.getToggleSortingHandler() as (event: unknown) => void}
+                    />
+                  ) : null}
                   {flexRender(header.column.columnDef.header, header.getContext())}
-                  <ButtonGroup className='flex items-center justify-between'>
-                    {header.column.getCanSort() ? (
-                      <Sort
-                        isSorted={header.column.getIsSorted()}
-                        handleClick={header.column.getToggleSortingHandler() as (event: unknown) => void}
-                      />
-                    ) : null}
-                    {header.column.getCanFilter() && <Filter column={header.column} />}
-                  </ButtonGroup>
+
+                  {header.column.getCanFilter() && <Filter column={header.column} />}
                 </Box>
               </TableCell>
             )

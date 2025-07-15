@@ -70,7 +70,6 @@ const BreadcrumbWrapper: React.FC<BreadcrumbWrapperProps> = ({
   showContainer = false,
   showDivider = true,
   padding = 16,
-  marginBottom = 24,
   className = '',
   size = 'medium',
   elevation = 0
@@ -86,7 +85,7 @@ const BreadcrumbWrapper: React.FC<BreadcrumbWrapperProps> = ({
 
   if (showContainer) {
     return (
-      <Box sx={{ marginBottom }}>
+      <Box>
         <Paper
           elevation={elevation}
           sx={{
@@ -105,7 +104,7 @@ const BreadcrumbWrapper: React.FC<BreadcrumbWrapperProps> = ({
   }
 
   return (
-    <Box sx={{ marginBottom }}>
+    <Box>
       <Box sx={{ padding: typeof padding === 'number' ? `${padding}px 0` : padding }}>
         {breadcrumbElement}
       </Box>

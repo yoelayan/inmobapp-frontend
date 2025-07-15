@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation'
 
@@ -9,6 +9,8 @@ import Box from '@mui/material/Box'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import AddIcon from '@mui/icons-material/Add'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -25,28 +27,25 @@ import {
   type TableAction,
 } from '@/components/common/Table';
 
-import useProperties from '@/hooks/api/realstate/useProperties';
 import useConfirmDialog from '@/hooks/useConfirmDialog'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes';
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'
+import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response';
 
 interface TableProps {
   properties: any
-  refreshProperties: (filters?: Record<string, any>) => Promise<void>
+  loading: boolean
+  fetchProperties: (
+    params?: { page: number, pageSize: number, filters: FilterItem[], sorting: SortingItem[] }
+  ) => Promise<ResponseAPI<IRealProperty>>
+
   deleteProperty: (id: string) => Promise<void>
   title?: string
   subtitle?: string
 }
 
-const searchOnTag = (tag: any, row: any) => {
-  if (row.characteristics === null || row.characteristics.length === 0) return null
-
-  const value = row.characteristics.find((item: any) => item.code === tag.name)
-
-  return value ? value.value : null
-}
 
 const columns: ColumnDef<IRealProperty>[] = [
   {
@@ -83,7 +82,7 @@ const columns: ColumnDef<IRealProperty>[] = [
     cell: ({ getValue }) => {
       const price = getValue()
 
-      
+
 return price ? `$${Number(price).toLocaleString()}` : ''
     }
   },
@@ -94,26 +93,24 @@ return price ? `$${Number(price).toLocaleString()}` : ''
   }
 ]
 
-const PropertiesTable = ({ properties, refreshProperties, title, subtitle, deleteProperty }: TableProps) => {
+const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle, deleteProperty }: TableProps) => {
   const router = useRouter()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
-  const { data, loading } = useProperties()
-
   const usePropertiesTableStore = useMemo(
     () =>
       createTableStore<IRealProperty>({
-        data: properties || data,
+        data: properties,
         loading: loading,
-        refresh: refreshProperties
+        refresh: fetchProperties
       }),
-    [properties, data, loading, refreshProperties]
+    []
   )
 
   const handleStatusChange = (status: string) => {
     setStatusFilter(status)
-    refreshProperties({ status__code: status })
+    fetchProperties({ filters: [{ field: 'status__code', value: statusFilter }], page: 1, pageSize: 10, sorting: [] })
   }
 
   const actions: TableAction[] = [
@@ -132,7 +129,7 @@ const PropertiesTable = ({ properties, refreshProperties, title, subtitle, delet
           message: `¿Estás seguro que deseas eliminar la propiedad "${row.name}"?`,
           onConfirm: async () => {
             await deleteProperty(row.id)
-            refreshProperties()
+            fetchProperties()
           }
         })
       },
@@ -152,22 +149,33 @@ const PropertiesTable = ({ properties, refreshProperties, title, subtitle, delet
         <SectionHeader
           title={title || 'Propiedades'}
           subtitle={subtitle || 'Aquí puedes ver todas las propiedades disponibles'}
-          buttons={[
-            <Button
-              key="add"
-              variant='contained'
-              color='primary'
-              onClick={() => router.push('/propiedades/agregar')}
-            >
-              Agregar
-            </Button>
-          ]}
         />
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
-            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
-              Limpiar filtros
-            </Button>
+            <Box className='flex gap-4 w-full'>
+              <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+                Limpiar filtros
+              </Button>
+              <Button
+                key='update'
+                startIcon={<RefreshIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => fetchProperties()}
+              >
+                Actualizar
+              </Button>
+
+              <Button
+                key='add'
+                startIcon={<AddIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => router.push('/propiedades/agregar')}
+              >
+                Agregar
+              </Button>
+            </Box>
           </TableFilter>
 
           <TableContainer>

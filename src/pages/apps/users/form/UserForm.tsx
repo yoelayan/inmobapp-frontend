@@ -2,28 +2,29 @@
 
 import React from 'react'
 
-import { Button, Box, CircularProgress, Grid2 as Grid, Typography, Divider } from '@mui/material'
-
-import type { FieldError } from 'react-hook-form'
-
-import type { ResponseAPI } from '@/services/repositories/BaseRepository'
-import { useUserForm } from './hooks/useUserForm'
-
-import TextField from '@/components/features/form/TextField'
-import SelectField from '@/components/features/form/SelectField'
-import SwitchField from '@/components/features/form/SwitchField'
-import ImageField from '@/components/features/form/ImageField'
+import {
+  Box, CircularProgress, Grid2 as Grid, Typography, Card, CardHeader, CardContent,
+  Accordion, AccordionSummary, AccordionDetails,
+  Divider,
+  Button,
+  CardActions,
+  TextField,
+  Select,
+  Checkbox
+} from '@mui/material'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 
 import { useNotification } from '@/hooks/useNotification'
 
-import type { IUser } from '@/types/apps/UserTypes'
+import type { IUser, IUserPermission, IUserGroup } from '@/types/apps/UserTypes'
+import type { IUserFormData } from '@/types/apps/UserTypes'
 
+// Definición de grupos de permisos
 
-// Necesitamos crear un hook para obtener grupos
-// Para ahora, usaremos datos mock
-interface IGroup {
-  id: number
+interface PermissionGroup {
+  codename: string
   name: string
+  permissions: IUserPermission[]
 }
 
 interface UserFormProps {
@@ -32,24 +33,70 @@ interface UserFormProps {
 }
 
 export const UserForm: React.FC<UserFormProps> = ({ userId, onSuccess }) => {
-  const {
-    control,
-    handleSubmit,
-    errors,
-    isSubmitting,
-    isLoading,
-    serverError,
-    setValue,
-    watch
-  } = useUserForm(userId, onSuccess)
+
 
   const { notify } = useNotification()
+  const isLoading = false
+  const isSubmitting = false
+  const serverError = null
+  const watch = () => { }
 
-  // TODO: Reemplazar con un hook real para obtener grupos
-  const mockGroups: IGroup[] = [
-    { id: 1, name: 'Administradores' },
-    { id: 2, name: 'Usuarios' },
-    { id: 3, name: 'Editores' }
+  const control = {
+    _formValues: {}
+  }
+
+  // Definición de grupos de permisos
+  const permissionGroups: PermissionGroup[] = [
+    {
+      codename: 'propiedades',
+      name: 'Propiedades',
+      permissions: [
+        { codename: 'properties_view', name: 'Ver propiedades', description: 'Permite ver la lista de propiedades' },
+        { codename: 'properties_create', name: 'Crear propiedades', description: 'Permite crear nuevas propiedades' },
+        { codename: 'properties_edit', name: 'Editar propiedades', description: 'Permite modificar propiedades existentes' },
+        { codename: 'properties_delete', name: 'Eliminar propiedades', description: 'Permite eliminar propiedades' }
+      ]
+    },
+    {
+      codename: 'clientes',
+      name: 'Clientes',
+      permissions: [
+        { codename: 'clients_view', name: 'Ver clientes', description: 'Permite ver la lista de clientes' },
+        { codename: 'clients_create', name: 'Crear clientes', description: 'Permite crear nuevos clientes' },
+        { codename: 'clients_edit', name: 'Editar clientes', description: 'Permite modificar clientes existentes' },
+        { codename: 'clients_delete', name: 'Eliminar clientes', description: 'Permite eliminar clientes' }
+      ]
+    },
+    {
+      codename: 'franquicias',
+      name: 'Franquicias',
+      permissions: [
+        { codename: 'franchises_view', name: 'Ver franquicias', description: 'Permite ver la lista de franquicias' },
+        { codename: 'franchises_create', name: 'Crear franquicias', description: 'Permite crear nuevas franquicias' },
+        { codename: 'franchises_edit', name: 'Editar franquicias', description: 'Permite modificar franquicias existentes' },
+        { codename: 'franchises_delete', name: 'Eliminar franquicias', description: 'Permite eliminar franquicias' }
+      ]
+    },
+    {
+      codename: 'usuarios',
+      name: 'Usuarios',
+      permissions: [
+        { codename: 'users_view', name: 'Ver usuarios', description: 'Permite ver la lista de usuarios' },
+        { codename: 'users_create', name: 'Crear usuarios', description: 'Permite crear nuevos usuarios' },
+        { codename: 'users_edit', name: 'Editar usuarios', description: 'Permite modificar usuarios existentes' },
+        { codename: 'users_delete', name: 'Eliminar usuarios', description: 'Permite eliminar usuarios' }
+      ]
+    },
+    {
+      codename: 'administracion',
+      name: 'Administración',
+      permissions: [
+        { codename: 'admin_settings', name: 'Configuración', description: 'Permite acceder a la configuración del sistema' },
+        { codename: 'admin_reports', name: 'Reportes', description: 'Permite generar y ver reportes' },
+        { codename: 'admin_backup', name: 'Respaldos', description: 'Permite crear y restaurar respaldos' },
+        { codename: 'admin_logs', name: 'Logs del sistema', description: 'Permite ver los logs del sistema' }
+      ]
+    }
   ]
 
   if (isLoading) {
@@ -65,151 +112,80 @@ export const UserForm: React.FC<UserFormProps> = ({ userId, onSuccess }) => {
     notify(serverError, 'error')
   }
 
+  // Mock data for watch values - replace with actual form values
+
   return (
-    <form onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        {/* Información básica */}
-        <Grid size={12}>
-          <Typography variant='h6' component='h2' gutterBottom>
-            Información Personal
-          </Typography>
-          <Divider />
-        </Grid>
+    <form onSubmit={e => e.preventDefault()}>
+      <Card>
+        <CardHeader title={userId ? 'Editar Usuario' : 'Crear Usuario'} />
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid size={12}>
+              <TextField
+                label='Nombre'
+                name='name'
+              />
+            </Grid>
+            <Grid size={12}>
+              <TextField label='Email' name='email' />
+            </Grid>
+            <Grid size={6}>
+              <TextField label='Contraseña' name='password' />
+            </Grid>
+            <Grid size={6}>
+              <TextField label='Repetir Contraseña' name='password_confirm' />
+            </Grid>
+            <Grid size={6}>
+              <Select label='Franquicia' name='franchise' />
+            </Grid>
+            <Grid size={6}>
+              <Select label='Rol' name='role' multiple />
+            </Grid>
 
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            name='name'
-            label='Nombre Completo'
-            control={control}
-            error={errors.name}
-            setValue={setValue}
-            value={watch('name')}
-          />
-        </Grid>
+            {/* Sección de Permisos */}
+            <Grid size={12}>
+              <Typography variant='h6' sx={{ mb: 2 }}>
+                Permisos
+              </Typography>
 
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            name='email'
-            label='Email'
-            control={control}
-            error={errors.email}
-            setValue={setValue}
-            value={watch('email')}
-          />
-        </Grid>
-
-        <Grid size={12}>
-          <ImageField
-            name='image'
-            label='Imagen de Perfil'
-            control={control}
-            error={errors.image}
-            setValue={setValue}
-            value={watch('image')}
-          />
-        </Grid>
-
-        {/* Credenciales */}
-        <Grid size={12}>
-          <Typography variant='h6' component='h2' gutterBottom sx={{ mt: 3 }}>
-            Credenciales
-          </Typography>
-          <Divider />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            name='password'
-            label={userId ? 'Nueva Contraseña (opcional)' : 'Contraseña'}
-            control={control}
-            error={errors.password}
-            setValue={setValue}
-            value={watch('password')}
-            type='password'
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <TextField
-            name='password_confirm'
-            label='Confirmar Contraseña'
-            control={control}
-            error={errors.password_confirm}
-            setValue={setValue}
-            value={watch('password_confirm')}
-            type='password'
-          />
-        </Grid>
-
-        {/* Permisos */}
-        <Grid size={12}>
-          <Typography variant='h6' component='h2' gutterBottom sx={{ mt: 3 }}>
-            Permisos y Estado
-          </Typography>
-          <Divider />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <SwitchField
-            name='is_active'
-            label='Usuario Activo'
-            control={control}
-            error={errors.is_active}
-            setValue={setValue}
-            value={watch('is_active')}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <SwitchField
-            name='is_staff'
-            label='Acceso al Admin'
-            control={control}
-            error={errors.is_staff}
-            setValue={setValue}
-            value={watch('is_staff')}
-          />
-        </Grid>
-
-        <Grid size={{ xs: 12, sm: 4 }}>
-          <SwitchField
-            name='is_superuser'
-            label='Superusuario'
-            control={control}
-            error={errors.is_superuser}
-            setValue={setValue}
-            value={watch('is_superuser')}
-          />
-        </Grid>
-
-        <Grid size={12}>
-          <SelectField
-            name='groups'
-            label='Grupos'
-            control={control}
-            error={errors.groups as FieldError}
-            setValue={setValue}
-            value={watch('groups')}
-            response={{ results: mockGroups } as ResponseAPI<IGroup>}
-            dataMap={{ value: 'id', label: 'name' }}
-            multiple={true}
-          />
-        </Grid>
-
-        {/* Botón de envío */}
-        <Grid
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            width: '100%',
-            mt: 3
-          }}
-        >
-          <Button type='submit' variant='contained' disabled={isSubmitting || isLoading}>
-            {isSubmitting ? 'Guardando...' : userId ? 'Actualizar Usuario' : 'Crear Usuario'}
+              {permissionGroups.map(group => (
+                <Accordion key={group.codename} sx={{ mb: 1 }}>
+                  <AccordionSummary
+                    expandIcon={<ExpandMoreIcon />}
+                    aria-controls={`${group.codename}-content`}
+                    id={`${group.codename}-header`}
+                  >
+                    <Typography variant='subtitle1' fontWeight='medium'>
+                      {group.name}
+                    </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Grid container spacing={2}>
+                      {group.permissions.map(permission => (
+                        <Grid size={6} key={permission.codename}>
+                          <Checkbox
+                            label={permission.name}
+                            name={`permissions.${permission.codename}`}
+                          />
+                          <Typography variant='caption' color='text.secondary' display='block'>
+                            {permission.description}
+                          </Typography>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </AccordionDetails>
+                </Accordion>
+              ))}
+            </Grid>
+          </Grid>
+        </CardContent>
+        <Divider />
+        <CardActions className='flex justify-end'>
+          <Button variant='contained' type='submit'>
+            Guardar
           </Button>
-        </Grid>
-      </Grid>
+        </CardActions>
+      </Card>
     </form>
   )
 }
