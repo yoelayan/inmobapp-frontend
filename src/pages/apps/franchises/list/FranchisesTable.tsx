@@ -1,9 +1,9 @@
-"use client"
-import React, { useMemo } from 'react';
+'use client'
+import React, { useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material';
+import { Button } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -15,7 +15,8 @@ import AddIcon from '@mui/icons-material/Add'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
-import SectionHeader from '@/components/layout/horizontal/SectionHeader';
+import SectionHeader from '@/components/layout/horizontal/SectionHeader'
+import DetailFranchiseModal from '@/pages/apps/franchises/modals/DetailFranchise'
 
 import {
   Table,
@@ -25,20 +26,43 @@ import {
   TablePagination,
   TableFilter,
   createTableStore,
-  type TableAction,
-} from '@/components/common/Table';
+  type TableAction
+} from '@/components/common/Table'
 
-import useFranchises from '@/hooks/api/realstate/useFranchises';
-import type { IFranchise } from '@/types/apps/FranquiciaTypes';
+import useFranchises from '@/hooks/api/realstate/useFranchises'
+import type { IFranchise } from '@/types/apps/FranquiciaTypes'
+
+import { type FranchiseTypes, mappedFranchiseTypes } from '@/validations/franchiseSchema'
+import useConfirmDialog from '@/hooks/useConfirmDialog'
+
+
+
+const FranchisesTable = () => {
+  const router = useRouter()
+  const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
+  const { data, loading, fetchData, deleteData: deleteFranchise } = useFranchises()
+  const [open, setOpen] = useState(false)
+  const [selectedFranchise, setSelectedFranchise] = useState<IFranchise | null>(null)
+
+  const handleOpenDetail = (franchise: IFranchise) => {
+    setSelectedFranchise(franchise)
+    setOpen(true)
+  }
+
+  const useFranchisesTableStore = useMemo(
+    () =>
+      createTableStore<IFranchise>({
+        data: data,
+        loading: loading,
+        refresh: fetchData
+      }),
+    []
+  )
+
+  const tableStore = useFranchisesTableStore()
+
 
 const columns: ColumnDef<IFranchise>[] = [
-  {
-    accessorKey: 'identifier',
-    header: 'Identificador',
-    enableColumnFilter: true,
-    enableSorting: true,
-    sortingFn: 'alphanumeric'
-  },
   {
     accessorKey: 'name',
     header: 'Nombre',
@@ -52,89 +76,83 @@ const columns: ColumnDef<IFranchise>[] = [
     enableColumnFilter: true,
     filterFn: 'arrIncludes',
     cell: ({ getValue }) => {
-      const type = getValue()
+      const type = getValue() as FranchiseTypes
 
-
-return type === 'COMMERCIAL' ? 'Comercial' : 'Personal'
+      return mappedFranchiseTypes[type]
     }
   },
   {
-    accessorKey: 'parent_name',
+    accessorKey: 'parent',
     header: 'Franquicia Padre',
-    enableColumnFilter: false
-  },
-  {
-    accessorKey: 'is_active',
-    header: 'Estado',
     enableColumnFilter: true,
-    filterFn: 'arrIncludes',
     cell: ({ getValue }) => {
-      const isActive = getValue()
+      const parent = getValue() as IFranchise
 
+      if (parent) {
+        return (
+          <Button
+            variant="text"
+            color="primary"
+            onClick={e => {
+              e.stopPropagation()
+              handleOpenDetail(parent)
+            }}
+            tabIndex={0}
+            role="button"
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                e.stopPropagation()
+                handleOpenDetail(parent)
+              }
+            }}
+          >
+            {parent.name}
+          </Button>
+        )
+      }
 
-return (
-        <span style={{ color: isActive ? 'green' : 'red' }}>
-          {isActive ? 'Activo' : 'Inactivo'}
-        </span>
-      )
+      return '-'
     }
-  },
-  {
-    accessorKey: 'created_at',
-    header: 'Fecha de Creación',
-    enableColumnFilter: false
   }
 ]
-
-const FranchisesTable = () => {
-  const router = useRouter()
-  const { data, loading, fetchData } = useFranchises()
-
-  const useFranchisesTableStore = useMemo(
-    () =>
-      createTableStore<IFranchise>({
-        data: data,
-        loading: loading,
-        refresh: fetchData
-      }),
-    []
-  )
 
   const actions: TableAction[] = [
     {
       label: 'Ver',
       onClick: (row: Record<string, any>) => {
-        router.push(`/franquicias/${row.id}/ver/`)
+        handleOpenDetail(row as IFranchise)
       },
-      icon: <VisibilityIcon fontSize="small" />
+      icon: <VisibilityIcon fontSize='small' />
     },
     {
       label: 'Editar',
       onClick: (row: Record<string, any>) => {
         router.push(`/franquicias/${row.id}/editar/`)
       },
-      icon: <EditIcon fontSize="small" />
+      icon: <EditIcon fontSize='small' />
     },
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        console.log('Eliminar franquicia', row)
-
-        // TODO: Implementar confirmación y eliminación
+        showConfirmDialog({
+          title: 'Confirmar eliminación',
+          message: `¿Estás seguro que deseas eliminar la franquicia "${row.name}"?`,
+          onConfirm: async () => {
+            await deleteFranchise(row.id)
+            tableStore.fetchData()
+          }
+        })
       },
-      icon: <DeleteIcon fontSize="small" />
+      icon: <DeleteIcon fontSize='small' />
     }
   ]
 
-  const tableStore = useFranchisesTableStore();
 
   return (
     <>
       <Grid container spacing={2}>
-        <SectionHeader
-          title='Franquicias'
-          subtitle='Gestión de Franquicias del Sistema'
-        />
+        <SectionHeader title='Franquicias' subtitle='Gestión de Franquicias del Sistema' />
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar franquicias...'>
             <Box className='flex gap-4 w-full'>
@@ -146,7 +164,7 @@ const FranchisesTable = () => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => fetchData()}
+                onClick={() => tableStore.fetchData()}
               >
                 Actualizar
               </Button>
@@ -170,8 +188,10 @@ const FranchisesTable = () => {
           <TablePagination />
         </Table>
       </Grid>
+      <ConfirmDialog />
+      <DetailFranchiseModal open={open} onClose={() => setOpen(false)} franchise={selectedFranchise} />
     </>
   )
-};
+}
 
-export default React.memo(FranchisesTable);
+export default React.memo(FranchisesTable)

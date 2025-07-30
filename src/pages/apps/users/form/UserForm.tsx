@@ -1,191 +1,115 @@
-'use client'
-
+// forms/UserForm.tsx
 import React from 'react'
 
-import {
-  Box, CircularProgress, Grid2 as Grid, Typography, Card, CardHeader, CardContent,
-  Accordion, AccordionSummary, AccordionDetails,
-  Divider,
-  Button,
-  CardActions,
-  TextField,
-  Select,
-  Checkbox
-} from '@mui/material'
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { useQuery } from '@tanstack/react-query'
 
-import { useNotification } from '@/hooks/useNotification'
+import { Grid2 } from '@mui/material'
 
-import type { IUser, IUserPermission, IUserGroup } from '@/types/apps/UserTypes'
-import type { IUserFormData } from '@/types/apps/UserTypes'
+import type { z } from 'zod'
 
-// Definición de grupos de permisos
+import { Form, FormField, PageContainer } from '@components/common/forms/Form'
 
-interface PermissionGroup {
-  codename: string
-  name: string
-  permissions: IUserPermission[]
-}
+import UsersRepository from '@services/repositories/users/UsersRepository'
+
+import { userSchema, editUserSchema } from '@/validations/userSchema'
+
+
+
+import useFranchises  from '@hooks/api/realstate/useFranchises'
+
+type UserFormData = z.infer<typeof userSchema>
+type EditUserFormData = z.infer<typeof editUserSchema>
 
 interface UserFormProps {
-  userId?: string
-  onSuccess?: (response: IUser) => void
+  mode?: 'create' | 'edit'
+  userId?: number
+  onSuccess?: (user: UserFormData | EditUserFormData) => void
 }
 
-export const UserForm: React.FC<UserFormProps> = ({ userId, onSuccess }) => {
+const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
+  const { fetchData: fetchFranchises } = useFranchises()
 
 
-  const { notify } = useNotification()
-  const isLoading = false
-  const isSubmitting = false
-  const serverError = null
-  const watch = () => { }
+  const franchises = useQuery({
+    queryKey: ['franchises'],
+    queryFn: () => fetchFranchises(),
+  })
 
-  const control = {
-    _formValues: {}
+
+  const handleSuccess = (userData: UserFormData | EditUserFormData) => {
+    console.log(`Usuario ${mode === 'edit' ? 'actualizado' : 'creado'}:`, userData)
+    onSuccess?.(userData)
   }
 
-  // Definición de grupos de permisos
-  const permissionGroups: PermissionGroup[] = [
-    {
-      codename: 'propiedades',
-      name: 'Propiedades',
-      permissions: [
-        { codename: 'properties_view', name: 'Ver propiedades', description: 'Permite ver la lista de propiedades' },
-        { codename: 'properties_create', name: 'Crear propiedades', description: 'Permite crear nuevas propiedades' },
-        { codename: 'properties_edit', name: 'Editar propiedades', description: 'Permite modificar propiedades existentes' },
-        { codename: 'properties_delete', name: 'Eliminar propiedades', description: 'Permite eliminar propiedades' }
-      ]
-    },
-    {
-      codename: 'clientes',
-      name: 'Clientes',
-      permissions: [
-        { codename: 'clients_view', name: 'Ver clientes', description: 'Permite ver la lista de clientes' },
-        { codename: 'clients_create', name: 'Crear clientes', description: 'Permite crear nuevos clientes' },
-        { codename: 'clients_edit', name: 'Editar clientes', description: 'Permite modificar clientes existentes' },
-        { codename: 'clients_delete', name: 'Eliminar clientes', description: 'Permite eliminar clientes' }
-      ]
-    },
-    {
-      codename: 'franquicias',
-      name: 'Franquicias',
-      permissions: [
-        { codename: 'franchises_view', name: 'Ver franquicias', description: 'Permite ver la lista de franquicias' },
-        { codename: 'franchises_create', name: 'Crear franquicias', description: 'Permite crear nuevas franquicias' },
-        { codename: 'franchises_edit', name: 'Editar franquicias', description: 'Permite modificar franquicias existentes' },
-        { codename: 'franchises_delete', name: 'Eliminar franquicias', description: 'Permite eliminar franquicias' }
-      ]
-    },
-    {
-      codename: 'usuarios',
-      name: 'Usuarios',
-      permissions: [
-        { codename: 'users_view', name: 'Ver usuarios', description: 'Permite ver la lista de usuarios' },
-        { codename: 'users_create', name: 'Crear usuarios', description: 'Permite crear nuevos usuarios' },
-        { codename: 'users_edit', name: 'Editar usuarios', description: 'Permite modificar usuarios existentes' },
-        { codename: 'users_delete', name: 'Eliminar usuarios', description: 'Permite eliminar usuarios' }
-      ]
-    },
-    {
-      codename: 'administracion',
-      name: 'Administración',
-      permissions: [
-        { codename: 'admin_settings', name: 'Configuración', description: 'Permite acceder a la configuración del sistema' },
-        { codename: 'admin_reports', name: 'Reportes', description: 'Permite generar y ver reportes' },
-        { codename: 'admin_backup', name: 'Respaldos', description: 'Permite crear y restaurar respaldos' },
-        { codename: 'admin_logs', name: 'Logs del sistema', description: 'Permite ver los logs del sistema' }
-      ]
-    }
-  ]
-
-  if (isLoading) {
-    return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
-        <CircularProgress />
-        <span style={{ marginLeft: '10px' }}>Cargando datos del usuario...</span>
-      </Box>
-    )
+  const handleError = (error: any) => {
+    console.error('Error en el formulario:', error)
   }
 
-  if (serverError && !isLoading && !isSubmitting) {
-    notify(serverError, 'error')
+  // Default values for create mode
+  const defaultValues: Partial<UserFormData> = {
+    name: '',
+    password: '',
+    confirmPassword: '',
+    image: '',
+    email: '',
+    franchise: franchises?.data?.results?.find(franchise => franchise.franchise_type === 'MASTER')?.id,
   }
 
-  // Mock data for watch values - replace with actual form values
+  // Use appropriate schema based on mode
+  const schema = mode === 'edit' ? editUserSchema : userSchema
 
   return (
-    <form onSubmit={e => e.preventDefault()}>
-      <Card>
-        <CardHeader title={userId ? 'Editar Usuario' : 'Crear Usuario'} />
-        <CardContent>
-          <Grid container spacing={3}>
-            <Grid size={12}>
-              <TextField
-                label='Nombre'
-                name='name'
-              />
-            </Grid>
-            <Grid size={12}>
-              <TextField label='Email' name='email' />
-            </Grid>
-            <Grid size={6}>
-              <TextField label='Contraseña' name='password' />
-            </Grid>
-            <Grid size={6}>
-              <TextField label='Repetir Contraseña' name='password_confirm' />
-            </Grid>
-            <Grid size={6}>
-              <Select label='Franquicia' name='franchise' />
-            </Grid>
-            <Grid size={6}>
-              <Select label='Rol' name='role' multiple />
-            </Grid>
-
-            {/* Sección de Permisos */}
-            <Grid size={12}>
-              <Typography variant='h6' sx={{ mb: 2 }}>
-                Permisos
-              </Typography>
-
-              {permissionGroups.map(group => (
-                <Accordion key={group.codename} sx={{ mb: 1 }}>
-                  <AccordionSummary
-                    expandIcon={<ExpandMoreIcon />}
-                    aria-controls={`${group.codename}-content`}
-                    id={`${group.codename}-header`}
-                  >
-                    <Typography variant='subtitle1' fontWeight='medium'>
-                      {group.name}
-                    </Typography>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Grid container spacing={2}>
-                      {group.permissions.map(permission => (
-                        <Grid size={6} key={permission.codename}>
-                          <Checkbox
-                            label={permission.name}
-                            name={`permissions.${permission.codename}`}
-                          />
-                          <Typography variant='caption' color='text.secondary' display='block'>
-                            {permission.description}
-                          </Typography>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </Grid>
-          </Grid>
-        </CardContent>
-        <Divider />
-        <CardActions className='flex justify-end'>
-          <Button variant='contained' type='submit'>
-            Guardar
-          </Button>
-        </CardActions>
-      </Card>
-    </form>
+    <PageContainer
+      title={mode === 'edit' ? 'Editar Usuario' : 'Crear Usuario'}
+      subtitle={mode === 'edit' ? 'Modifica los datos del usuario' : 'Completa todos los campos requeridos'}
+    >
+      <Form
+        schema={schema}
+        defaultValues={defaultValues}
+        repository={UsersRepository}
+        mode={mode}
+        entityId={userId}
+        onSuccess={handleSuccess}
+        onError={handleError}
+      >
+        <Grid2 container spacing={2}>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <FormField name='name' label='Nombre Completo' required fullWidth/>
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <FormField name='email' type='email' label='Correo Electrónico' required fullWidth/>
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <FormField name='password' type='password' label='Contraseña' required={mode === 'create'} fullWidth/>
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 6 }}>
+            <FormField
+              name='confirmPassword'
+              type='password'
+              label='Confirmar Contraseña'
+              required={mode === 'create'}
+              fullWidth
+            />
+          </Grid2>
+          <Grid2 size={{ xs: 12, md: 4 }}>
+            <FormField
+              name='franchise'
+              type='select'
+              label='Franquicia'
+              options={
+                franchises?.data?.results?.map(franchise => ({
+                  value: franchise.id,
+                  label: franchise.name
+                })) || []
+              }
+              required
+              fullWidth
+            />
+          </Grid2>
+        </Grid2>
+      </Form>
+    </PageContainer>
   )
 }
+
+export default UserForm

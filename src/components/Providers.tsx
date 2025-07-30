@@ -5,6 +5,9 @@ import { useId } from 'react'
 
 import dynamic from 'next/dynamic'
 
+// React Query Imports
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
 // Type Imports
 import type { ChildrenType, Direction, Mode, SystemMode } from '@core/types'
 import type { Settings } from '@core/contexts/settingsContext'
@@ -28,6 +31,16 @@ type Props = ChildrenType & {
   serverSystemMode?: SystemMode
   serverSettings?: Settings
 }
+
+// Create a query client instance
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000, // 10 minutes
+    },
+  },
+})
 
 // The actual providers implementation
 const ProvidersImpl = (props: Props) => {
@@ -61,17 +74,19 @@ const ProvidersImpl = (props: Props) => {
 
   return (
     <div key={uniqueId} suppressHydrationWarning={true}>
-      <AuthProvider>
-        <NotificationProvider>
-          <VerticalNavProvider>
-            <SettingsProvider settingsCookie={clientSettings} mode={clientMode}>
-              <ThemeProvider direction={direction} systemMode={clientSystemMode}>
-                {children}
-              </ThemeProvider>
-            </SettingsProvider>
-          </VerticalNavProvider>
-        </NotificationProvider>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <NotificationProvider>
+            <VerticalNavProvider>
+              <SettingsProvider settingsCookie={clientSettings} mode={clientMode}>
+                <ThemeProvider direction={direction} systemMode={clientSystemMode}>
+                  {children}
+                </ThemeProvider>
+              </SettingsProvider>
+            </VerticalNavProvider>
+          </NotificationProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </div>
   )
 }

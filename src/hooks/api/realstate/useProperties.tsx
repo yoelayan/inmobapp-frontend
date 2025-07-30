@@ -2,7 +2,7 @@
 import { useState } from 'react'
 
 // Api Imports
-import PropertiesRepository from '@/services/repositories/realstate/PropertiesRepository'
+import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
 import useBaseHookApi from '@hooks/api/useBaseHookApi'
 
 // Type Imports

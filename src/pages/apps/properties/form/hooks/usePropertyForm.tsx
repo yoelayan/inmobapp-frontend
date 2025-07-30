@@ -2,7 +2,7 @@ import { useRouter } from 'next/navigation'
 
 import { useBaseForm } from '@/hooks/useBaseForm'
 import { useNotification } from '@/hooks/useNotification'
-import PropertiesRepository from '@/api/repositories/realstate/PropertiesRepository'
+import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
 import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 

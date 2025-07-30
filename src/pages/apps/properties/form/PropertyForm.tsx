@@ -33,16 +33,10 @@ import { ClientForm } from '../../clients/form/ClientForm'
 import { usePropertyForm } from './hooks/usePropertyForm'
 import CustomAvatar from '@core/components/mui/Avatar'
 
-import TextField from '@/components/form/TextField'
-import SelectField from '@/components/form/SelectField'
-import EditorField from '@/components/form/EditorField'
-import NumberField from '@/components/form/NumberField'
-import ImageField from '@/components/form/ImageField'
-import SelectFieldAsync from '@/components/form/SelectFieldAsync'
 import DirectionalIcon from '@components/DirectionalIcon'
 
 import StepperWrapper from '@core/styles/stepper'
-import type { ResponseAPI } from '@/api/repositories/BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 import type { IClient } from '@/types/apps/ClientesTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
@@ -382,19 +376,7 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   const PropertyImages = React.useMemo(() => {
     return () => (
       <Box sx={{ mt: 2, mb: 4 }}>
-        <ImageField
-          name='images'
-          label='Imagenes'
-          control={control}
-          multiple={true}
-          error={errors.images as any}
-          setValue={setValue}
-          value={images}
-          onChange={handleChangeImages}
-          deleteItem={id => deleteImage(id).then(() => {})}
-          refreshData={handleGetAllImages}
-          onReorder={handleUpdateImagesOrder}
-        />
+
       </Box>
     )
   }, [
@@ -452,203 +434,21 @@ return;
       case 0:
         return (
           <>
-            {/* Información básica */}
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                name='name'
-                label='Nombre de la Propiedad'
-                control={control}
-                error={errors.name}
-                setValue={setValue}
-                value={getValues('name')}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <SelectField
-                name='status_id'
-                label='Estatus'
-                control={control}
-                error={errors.status_id}
-                setValue={setValue}
-                value={getValues('status_id')}
-                response={statuses}
-                dataMap={{ value: 'id', label: 'name' }}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <SelectField
-                name='type_property_id'
-                label='Tipo de Propiedad'
-                control={control}
-                error={errors.type_property_id}
-                setValue={setValue}
-                value={getValues('type_property_id')}
-                response={propertyTypes}
-                dataMap={{ value: 'id', label: 'name' }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <SelectFieldAsync
-                name='state_id'
-                label='Estado'
-                control={control}
-                error={errors.state_id}
-                setValue={setValue}
-                value={getValues('state_id')}
-                response={states}
-                dataMap={{ value: 'id', label: 'name' }}
-                onChange={e => handleChangeState(e)}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <SelectFieldAsync
-                name='city_id'
-                label='Ciudad'
-                control={control}
-                error={errors.city_id}
-                setValue={setValue}
-                value={getValues('city_id')}
-                response={cities}
-                dataMap={{ value: 'id', label: 'name' }}
-                isDisabled={!getValues('state_id')}
-              />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                name='address'
-                label='Dirección'
-                control={control}
-                error={errors.address}
-                setValue={setValue}
-                value={getValues('address')}
-              />
-            </Grid>
           </>
         )
       case 1:
         return (
           <>
             {/* Datos de Negociacion */}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <SelectField
-                name='franchise_id'
-                label='Franquicia'
-                control={control}
-                error={errors.franchise_id}
-                setValue={setValue}
-                value={getValues('franchise_id')}
-                response={franchises}
-                dataMap={{ value: 'id', label: 'name' }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <SelectField
-                name='assigned_to_id'
-                label='Usuario Asignado'
-                control={control}
-                error={errors.assigned_to_id}
-                setValue={setValue}
-                value={getValues('assigned_to_id')}
-                response={users}
-                dataMap={{ value: 'id', label: 'email' }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <SelectField
-                name='type_negotiation_id'
-                label='Tipo de Negociación'
-                control={control}
-                error={errors.type_negotiation_id}
-                setValue={setValue}
-                value={getValues('type_negotiation_id')}
-                response={negotiations}
-                onChange={e => handleChangeTypeNegotiation(e)}
-                dataMap={{ value: 'id', label: 'name' }}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <NumberField
-                name='price'
-                label='Precio'
-                control={control}
-                error={errors.price}
-                setValue={setValue}
-                value={getValues('price')}
-                disabled={disabledPrice}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, sm: 3 }}>
-              <NumberField
-                name='rent_price'
-                label='Precio de Alquiler'
-                control={control}
-                error={errors.rent_price}
-                setValue={setValue}
-                value={getValues('rent_price')}
-                disabled={disabledRentPrice}
-              />
-            </Grid>
-            <ModalClient />
-            <Box sx={{ width: '100%', display: 'flex', gap: '1rem', alignItems: 'center', mt: 4 }}>
-              <Grid size={{ xs: 12, sm: 12 }}>
-                <SelectFieldAsync
-                  name='owner_id'
-                  label='Cliente'
-                  control={control}
-                  error={errors.owner_id}
-                  setValue={setValue}
-                  value={getValues('owner_id')}
-                  response={clients}
-                  dataMap={{ value: 'id', label: 'name' }}
-                  refreshData={refreshClients}
-                >
-                  <MenuItem onClick={handleButtonModal}>
-                    <i className='tabler-user-plus' /> Crear un nuevo cliente
-                  </MenuItem>
-                  <Divider />
-                </SelectFieldAsync>
-              </Grid>
-            </Box>
+
           </>
         )
       case 2:
         return (
           <>
             {/* Datos de Publicacion */}
-            <Grid size={{ xs: 12 }} container spacing={4}>
-              {/* Left column - Main content (Description and Images) */}
-              <Grid size={{ xs: 12, md: 8 }}>
-                <Grid container spacing={4}>
-                  <Grid size={{ xs: 12 }}>
-                    <Card sx={{ height: '100%', bgcolor: 'action.hover' }}>
-                      <CardContent>
-                        <EditorField
-                          name='description'
-                          label='Descripción'
-                          control={control}
-                          error={errors.description}
-                          setValue={setValue}
-                          value={getValues('description')}
-                        />
-                      </CardContent>
-                    </Card>
-                  </Grid>
 
-                  {/** Imagenes  */}
-                  <Grid size={{ xs: 12 }}>{activeStep === 2 && <PropertyImages />}</Grid>
-                </Grid>
-              </Grid>
-
-              {/* Right column - Sidebar (Characteristics) */}
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Card sx={{ height: '100%', bgcolor: 'action.hover' }}>
-                  <CardContent>{activeStep === 2 && <CharacteristicsWrapper />}</CardContent>
-                </Card>
-              </Grid>
-            </Grid>
           </>
         )
       default:

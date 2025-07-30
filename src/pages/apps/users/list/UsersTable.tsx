@@ -32,6 +32,8 @@ import {
 import useUsers from '@/hooks/api/users/useUsers';
 import type { IUser } from '@/types/apps/UserTypes';
 
+import { formatDate } from '@utils/date';
+
 const columns: ColumnDef<IUser>[] = [
   {
     accessorKey: 'name',
@@ -45,69 +47,14 @@ const columns: ColumnDef<IUser>[] = [
     header: 'Email',
     enableColumnFilter: true
   },
-  {
-    accessorKey: 'group_names',
-    header: 'Grupos',
-    enableColumnFilter: false,
-    cell: ({ getValue }) => {
-      const groups = getValue() as string[]
 
-
-return groups ? groups.join(', ') : ''
-    }
-  },
-  {
-    accessorKey: 'is_active',
-    header: 'Activo',
-    enableColumnFilter: true,
-    filterFn: 'arrIncludes',
-    cell: ({ getValue }) => {
-      const isActive = getValue()
-
-
-return (
-        <span style={{ color: isActive ? 'green' : 'red' }}>
-          {isActive ? 'Sí' : 'No'}
-        </span>
-      )
-    }
-  },
-  {
-    accessorKey: 'is_staff',
-    header: 'Staff',
-    enableColumnFilter: true,
-    filterFn: 'arrIncludes',
-    cell: ({ getValue }) => {
-      const isStaff = getValue()
-
-
-return (
-        <span style={{ color: isStaff ? 'blue' : 'gray' }}>
-          {isStaff ? 'Sí' : 'No'}
-        </span>
-      )
-    }
-  },
-  {
-    accessorKey: 'is_superuser',
-    header: 'Superusuario',
-    enableColumnFilter: true,
-    filterFn: 'arrIncludes',
-    cell: ({ getValue }) => {
-      const isSuperuser = getValue()
-
-
-return (
-        <span style={{ color: isSuperuser ? 'purple' : 'gray' }}>
-          {isSuperuser ? 'Sí' : 'No'}
-        </span>
-      )
-    }
-  },
   {
     accessorKey: 'date_joined',
     header: 'Fecha de Registro',
-    enableColumnFilter: false
+    enableColumnFilter: false,
+    cell: ({ row }) => {
+      return formatDate(row.original.date_joined || '')
+    }
   },
   {
     accessorKey: 'last_login',
@@ -183,7 +130,7 @@ const UsersTable = () => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => fetchData()}
+                onClick={() => tableStore.fetchData()}
               >
                 Actualizar
               </Button>

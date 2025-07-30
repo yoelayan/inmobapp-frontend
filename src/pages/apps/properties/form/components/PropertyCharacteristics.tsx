@@ -21,9 +21,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 // Form components
 import type { Control, UseFormGetValues, UseFormSetValue } from 'react-hook-form'
 
-import TextField from '@/components/form/TextField'
-import NumberField from '@/components/form/NumberField'
-import SwitchField from '@/components/form/SwitchField'
 
 // API hooks
 import { useNotification } from '@/hooks/useNotification'
@@ -244,32 +241,20 @@ const PropertyCharacteristics: React.FC<PropertyCharacteristicsProps> = ({ prope
     switch (type_value) {
       case 'boolean':
         return (
-          <SwitchField
-            key={id}
-            {...params}
-          />
+          <></>
         )
       case 'integer':
         return (
-          <NumberField
-            key={id}
-            {...params}
-          />
+          <></>
         )
       case 'decimal':
         return (
-          <NumberField
-            key={id}
-            {...params}
-          />
+          <></>
         )
       case 'text':
       default:
         return (
-          <TextField
-            key={id}
-            {...params}
-          />
+        <></>
         )
     }
   }
