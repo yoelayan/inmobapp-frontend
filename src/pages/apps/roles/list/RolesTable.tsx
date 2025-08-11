@@ -136,7 +136,7 @@ const RolesTable = () => {
               startIcon={<RefreshIcon />}
               variant='contained'
               color='primary'
-              onClick={() => useRolesTableStore.fetchData()}
+              onClick={() => useRolesTableStore.refresh()}
             >
               Actualizar
             </Button>
