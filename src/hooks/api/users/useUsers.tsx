@@ -10,12 +10,17 @@ export default function useUsers(defaultFilters?: FilterItem[]) {
     return await UsersRepository.getUsersByFranchise(franchiseId)
   }
 
+  const getGroups = async () => {
+    return await UsersRepository.getGroups()
+  }
+
 
   return {
     fetchData,
     refreshData,
     getData,
     getUsersByFranchise,
+    getGroups,
     data,
     loading,
     error,

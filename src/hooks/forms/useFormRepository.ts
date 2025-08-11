@@ -53,6 +53,8 @@ export const useFormRepository = <T>({
 
   const submitForm = (data: T) => {
     if (mode === 'edit') {
+
+      console.log('Updating user:', data)
       updateMutation.mutate(data)
     } else {
       createMutation.mutate(data)

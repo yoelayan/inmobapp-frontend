@@ -14,6 +14,7 @@ const routeLabels: Record<string, string> = {
   franquicias: 'Franquicias',
   propiedades: 'Propiedades',
   usuarios: 'Usuarios',
+  roles: 'Roles',
   ejemplos: 'Ejemplos',
 
   // Actions
@@ -54,6 +55,7 @@ const routeIcons: Record<string, string> = {
   franquicias: 'tabler-building-store',
   propiedades: 'tabler-home-2',
   usuarios: 'tabler-user',
+  roles: 'tabler-user',
   ejemplos: 'tabler-code',
 
   // Actions
@@ -121,6 +123,8 @@ const getSegmentLabel = (segment: string, index: number, segments: string[]): st
         return `Propiedad #${segment}`
       case 'usuarios':
         return `Usuario #${segment}`
+      case 'roles':
+        return `Rol #${segment}`
       case 'busquedas':
         return `Búsqueda #${segment}`
       default:
@@ -188,7 +192,7 @@ const isClickable = (segment: string, index: number, segments: string[], isLast:
   }
 
   // Make main sections clickable
-  const mainSections = ['clientes', 'franquicias', 'propiedades', 'usuarios', 'home', 'about']
+  const mainSections = ['clientes', 'franquicias', 'propiedades', 'usuarios', 'roles', 'home', 'about']
 
   return mainSections.includes(segment.toLowerCase())
 }
@@ -290,6 +294,11 @@ export const createCommonBreadcrumbs = {
   userDetail: (id: string) => createBreadcrumbItem(`Usuario #${id}`, undefined, 'tabler-user'),
   userEdit: (id: string) => createBreadcrumbItem('Editar', undefined, 'tabler-edit', 'Editar'),
   userView: (id: string) => createBreadcrumbItem('Ver', undefined, 'tabler-eye', 'Ver'),
+
+  roles: () => createBreadcrumbItem('Roles', '/roles', 'tabler-user'),
+  roleDetail: (id: string) => createBreadcrumbItem(`Rol #${id}`, undefined, 'tabler-user'),
+  roleEdit: (id: string) => createBreadcrumbItem('Editar', undefined, 'tabler-edit', 'Editar'),
+  roleView: (id: string) => createBreadcrumbItem('Ver', undefined, 'tabler-eye', 'Ver'),
 
   searches: () => createBreadcrumbItem('Búsquedas', '/busquedas', 'tabler-search'),
   searchDetail: (id: string) => createBreadcrumbItem(`Búsqueda #${id}`, undefined, 'tabler-search'),

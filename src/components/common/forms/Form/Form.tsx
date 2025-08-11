@@ -47,14 +47,16 @@ export const Form = <T extends FieldValues>({
     if (setFormData && initialData) {
       setFormData(initialData, methods)
     } else if (initialData && mode === 'edit') {
-      methods.reset(initialData as DefaultValues<T>)
+      Object.entries(initialData as DefaultValues<T>).forEach(([key, value]) => {
+        methods.setValue(key as Path<T>, value)
+      })
     }
   }, [initialData, mode, methods, setFormData])
 
   // Manejar errores de validación del backend
   useEffect(() => {
-    if (error && error.status === 400 && error.data) {
-      const validationErrors = error.data
+    if (error && error.status === 400 && error.response.data) {
+      const validationErrors = error.response.data
 
       // Limpiar errores previos
       methods.clearErrors()
@@ -78,6 +80,9 @@ export const Form = <T extends FieldValues>({
 
   const onSubmit = (data: T) => {
     if (repository) {
+      console.log('Submitting form:', data)
+      console.log('Form data keys:', Object.keys(data))
+      console.log('Form data values:', Object.values(data))
       submitForm(data)
     } else {
       // Si no hay repository, ejecutar onSuccess directamente

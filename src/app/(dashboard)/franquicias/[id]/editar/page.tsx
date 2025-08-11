@@ -5,8 +5,6 @@ import React from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import type { z } from 'zod'
-
 // Component Imports
 import FranchiseForm from '@/pages/apps/franchises/form/FranchiseForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
@@ -14,12 +12,10 @@ import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 import type { EditFranchiseFormData } from '@/validations/franchiseSchema'
 
 
-type params = {
-  id: string
-}
-
-interface EditFranchiseProps {
-  params: params
+type EditFranchiseProps = {
+  params: Promise<{
+    id: string
+  }>
 }
 
 

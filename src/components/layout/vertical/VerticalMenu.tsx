@@ -143,7 +143,12 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
         },
         {
           type: 'item',
-          title: 'Agregar',
+          title: 'Roles',
+          href: '/roles'
+        },
+        {
+          type: 'item',
+          title: 'Agregar Usuario',
           href: '/usuarios/agregar'
         }
       ]

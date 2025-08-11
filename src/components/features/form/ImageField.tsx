@@ -156,7 +156,7 @@ const ImageField = ({
   const onDropAccepted = useCallback(
     async (acceptedFiles: File[]) => {
       const newFiles = acceptedFiles.map((file, idx) => ({
-        id: `temp-${Date.now()}-${idx}`,
+        id: `temp-${idx}`,
         name: file.name,
         preview: URL.createObjectURL(file)
       }))

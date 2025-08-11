@@ -167,10 +167,10 @@ const TableHeader = React.memo<TableHeaderProps>(({ priorityColumns = 3 }) => {
                       isSorted={header.column.getIsSorted()}
                       handleClick={header.column.getToggleSortingHandler() as (event: unknown) => void}
                     />
-                  ) : null}
+                  ) : <Box/>}
                   {flexRender(header.column.columnDef.header, header.getContext())}
 
-                  {header.column.getCanFilter() && <Filter column={header.column} />}
+                  {header.column.getCanFilter() ? <Filter column={header.column} /> : <Box/>}
                 </Box>
               </TableCell>
             )

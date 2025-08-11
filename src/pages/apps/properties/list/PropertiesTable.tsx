@@ -15,6 +15,7 @@ import AddIcon from '@mui/icons-material/Add'
 import type { ColumnDef } from '@tanstack/react-table'
 
 import SectionHeader from '@/components/layout/horizontal/SectionHeader';
+import Can from '@/components/common/Can';
 
 import {
   Table,
@@ -83,7 +84,7 @@ const columns: ColumnDef<IRealProperty>[] = [
       const price = getValue()
 
 
-return price ? `$${Number(price).toLocaleString()}` : ''
+      return price ? `$${Number(price).toLocaleString()}` : ''
     }
   },
   {
@@ -165,16 +166,17 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
               >
                 Actualizar
               </Button>
-
-              <Button
-                key='add'
-                startIcon={<AddIcon />}
-                variant='contained'
-                color='primary'
-                onClick={() => router.push('/propiedades/agregar')}
-              >
-                Agregar
-              </Button>
+              <Can permission='add_property'>
+                <Button
+                  key='add'
+                  startIcon={<AddIcon />}
+                  variant='contained'
+                  color='primary'
+                  onClick={() => router.push('/propiedades/agregar')}
+                >
+                  Agregar
+                </Button>
+              </Can>
             </Box>
           </TableFilter>
 

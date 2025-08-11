@@ -71,5 +71,8 @@ export const ENDPOINTS = {
     BASE: '/users/',
     BY_ID: (id: number) => `/users/${id}/`,
     BY_FRANCHISE: (franchiseId: number) => `/users/franchise/${franchiseId}/`,
+    GROUPS: {
+      BASE: '/groups/',
+    }
   },
 };

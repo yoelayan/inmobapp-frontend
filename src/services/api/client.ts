@@ -88,7 +88,13 @@ class ApiClient {
     }
 
     if (this.notificationCallback) {
+      const errorMessage = error.response?.data?.detail || error.message || 'An error occurred'
+
       switch (error.response?.status) {
+        case 400:
+          this.notificationCallback(errorMessage, 'warning')
+
+          return
         case 401:
           this.notificationCallback('No autorizado: Por favor inicie sesión', 'error')
 
@@ -118,7 +124,7 @@ class ApiClient {
         return
       }
 
-      const errorMessage = error.response?.data?.detail || error.message || 'An error occurred'
+
 
       this.notificationCallback(errorMessage)
     }
@@ -148,7 +154,14 @@ class ApiClient {
 
       // Add data fields to FormData
       for (const [key, value] of Object.entries(data)) {
-        formData.append(key, JSON.stringify(value))
+        // Convert value to string properly for FormData
+        if (value === null || value === undefined) {
+          formData.append(key, '')
+        } else if (typeof value === 'object') {
+          formData.append(key, JSON.stringify(value))
+        } else {
+          formData.append(key, String(value))
+        }
       }
 
       // Add files to FormData
@@ -167,9 +180,44 @@ class ApiClient {
     return response.data
   }
 
-  public async put<T>(url: string, data: Record<string, any>): Promise<T> {
-    const putData = this.buildPostParams(data)
-    const response: AxiosResponse<T> = await this.axiosInstance.put(url, putData)
+  public async put<T>(url: string, data: Record<string, any>, files?: Record<string, File>): Promise<T> {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+
+    let requestData: any
+
+    // If there are files, use FormData and set proper content type
+    if (files) {
+      config.headers['Content-Type'] = 'multipart/form-data'
+      const formData = new FormData()
+
+      // Add data fields to FormData
+      for (const [key, value] of Object.entries(data)) {
+        // Convert value to string properly for FormData
+        if (value === null || value === undefined) {
+          formData.append(key, '')
+        } else if (typeof value === 'object') {
+          formData.append(key, JSON.stringify(value))
+        } else {
+          formData.append(key, String(value))
+        }
+      }
+
+      // Add files to FormData
+      for (const [key, file] of Object.entries(files)) {
+        formData.append(key, file)
+      }
+
+      requestData = formData
+    } else {
+      // Use regular JSON for requests without files
+      requestData = data
+    }
+
+    const response: AxiosResponse<T> = await this.axiosInstance.put(url, requestData, config)
 
     return response.data
   }

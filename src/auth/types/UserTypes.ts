@@ -3,6 +3,8 @@ export type User = {
   email: string
   url: string
   name: string
+  franchise: number
+  id: number
 }
 
 export type Session = {

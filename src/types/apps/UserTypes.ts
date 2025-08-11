@@ -1,10 +1,12 @@
+// Types Imports
 import type { IFranchise } from './FranquiciaTypes'
+
+
+
 
 export interface IUserPermission {
   id?: number
-  name: string
   codename: string
-  description?: string
 }
 
 export interface IUserGroup {
@@ -25,14 +27,4 @@ export interface IUser {
   group_names?: string[]
   user_permissions?: IUserPermission[]
   franchise?: IFranchise
-}
-
-export interface IUserFormData {
-  name: string
-  email: string
-  password?: string
-  password_confirm?: string
-  franchise?: number
-  role?: number[]
-  permissions?: string[]
 }

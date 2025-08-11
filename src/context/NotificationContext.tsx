@@ -11,6 +11,10 @@ import Alert from '@mui/material/Alert'
 // Tipos para las notificaciones
 import type { AlertColor } from '@mui/material/Alert'
 
+
+// API Imports
+import ApiClient from '@/services/api/client'
+
 interface NotificationContextType {
   notify: (message: string, severity?: AlertColor) => void
 }
@@ -38,7 +42,10 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
 
 // Wrapper para usar el contexto de Notistack
 const NotificationContextWrapper = ({ children }: { children: ReactNode }) => {
+
+
   const { enqueueSnackbar } = useSnackbar()
+  const apiClient = ApiClient.getInstance()
 
   const notify = useCallback(
     (message: string, severity: AlertColor = 'info') => {
@@ -49,6 +56,8 @@ const NotificationContextWrapper = ({ children }: { children: ReactNode }) => {
     },
     [enqueueSnackbar]
   )
+
+  apiClient.setNotificationCallback(notify)
 
   return <NotificationContext.Provider value={{ notify }}>{children}</NotificationContext.Provider>
 }

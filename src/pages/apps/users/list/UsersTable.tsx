@@ -32,9 +32,19 @@ import {
 import useUsers from '@/hooks/api/users/useUsers';
 import type { IUser } from '@/types/apps/UserTypes';
 
-import { formatDate } from '@utils/date';
+import { formatDate, formatDateTime } from '@utils/date';
 
 const columns: ColumnDef<IUser>[] = [
+  {
+    accessorKey: 'franchise',
+    header: 'Franquicia',
+    enableColumnFilter: true,
+    enableSorting: true,
+    sortingFn: 'alphanumeric',
+    cell: ({ row }) => {
+      return row.original.franchise?.name
+    }
+  },
   {
     accessorKey: 'name',
     header: 'Nombre',
@@ -59,7 +69,21 @@ const columns: ColumnDef<IUser>[] = [
   {
     accessorKey: 'last_login',
     header: 'Último Acceso',
-    enableColumnFilter: false
+    enableColumnFilter: false,
+    cell: ({ row }) => {
+      if (!row.original.last_login) return 'Nunca'
+
+      return formatDateTime(row.original.last_login)
+    }
+  },
+  {
+    accessorKey: 'user_permissions',
+    header: 'Permisos',
+    enableColumnFilter: false,
+    cell: ({ row }) => {
+      // Length of user_permissions
+      return row.original.user_permissions?.length || 0
+    }
   }
 ]
 
