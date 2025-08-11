@@ -1,21 +1,22 @@
 "use client"
-import React, { useMemo } from 'react'
+import React, { useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material'
+import { Button, Chip, Box } from '@mui/material'
 import Grid from '@mui/material/Grid2'
-import Box from '@mui/material/Box'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
+import SecurityIcon from '@mui/icons-material/Security'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
 import SectionHeader from '@/components/layout/horizontal/SectionHeader'
+import DetailRoleModal from '@/pages/apps/roles/modals/DetailRole'
 
 import {
   Table,
@@ -28,7 +29,8 @@ import {
   type TableAction,
 } from '@/components/common/Table'
 
-import useUsers from '@/hooks/api/users/useUsers'
+import useRoles from '@/hooks/api/roles/useRoles'
+import useConfirmDialog from '@/hooks/useConfirmDialog'
 import type { IUserGroup } from '@/types/apps/UserTypes'
 
 const columns: ColumnDef<IUserGroup>[] = [
@@ -41,124 +43,127 @@ const columns: ColumnDef<IUserGroup>[] = [
   },
   {
     accessorKey: 'permissions',
-    header: 'Permisos',
+    header: 'Cantidad de Permisos',
     enableColumnFilter: false,
-    cell: ({ row }) => {
-      // Show number of permissions
-      return row.original.permissions?.length || 0
+    enableSorting: true,
+    sortingFn: 'basic',
+    cell: ({ getValue }) => {
+      const permissions = getValue() as IUserGroup['permissions']
+      const count = permissions?.length || 0
+
+      return (
+        <Chip
+          label={`${count} permiso${count !== 1 ? 's' : ''}`}
+          color={count > 0 ? 'primary' : 'default'}
+          size="small"
+          icon={<SecurityIcon />}
+        />
+      )
     }
   }
 ]
 
 const RolesTable = () => {
   const router = useRouter()
-  const { getGroups, loading, data, refreshData } = useUsers()
+  const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
+  const { data, loading, fetchData, deleteData: deleteRole } = useRoles()
+  const [open, setOpen] = useState(false)
+  const [selectedRole, setSelectedRole] = useState<IUserGroup | null>(null)
 
-  // Fetch groups (roles) on mount
-  const [groups, setGroups] = React.useState<IUserGroup[]>([])
-  const [groupsLoading, setGroupsLoading] = React.useState<boolean>(true)
-
-  React.useEffect(() => {
-    setGroupsLoading(true)
-    getGroups()
-      .then(res => {
-        setGroups(res?.results || [])
-      })
-      .finally(() => setGroupsLoading(false))
-  }, [])
+  const handleOpenDetail = (role: IUserGroup) => {
+    setSelectedRole(role)
+    setOpen(true)
+  }
 
   const useRolesTableStore = useMemo(
     () =>
       createTableStore<IUserGroup>({
-        data: groups,
-        loading: groupsLoading,
-        refresh: async () => {
-          setGroupsLoading(true)
-          const res = await getGroups()
-          setGroups(res?.results || [])
-          setGroupsLoading(false)
-        }
+        data: data,
+        loading: loading,
+        refresh: fetchData
       }),
-    [groups, groupsLoading, getGroups]
+    []
   )
+
+  const rolesTableStore = useRolesTableStore()
 
   const actions: TableAction[] = [
     {
-      label: 'Ver',
+      label: 'Ver Permisos',
       onClick: (row: Record<string, any>) => {
-        router.push(`/roles/${row.id}/ver/`)
+        handleOpenDetail(row as IUserGroup)
       },
-      icon: <VisibilityIcon fontSize="small" />
+      icon: <VisibilityIcon fontSize='small' />
     },
     {
       label: 'Editar',
       onClick: (row: Record<string, any>) => {
         router.push(`/roles/${row.id}/editar/`)
       },
-      icon: <EditIcon fontSize="small" />
+      icon: <EditIcon fontSize='small' />
     },
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        // Implement delete logic here
-        // For now, just alert
-        alert(`Eliminar rol: ${row.name}`)
+        showConfirmDialog({
+          title: 'Confirmar eliminación',
+          message: `¿Estás seguro que deseas eliminar el rol "${row.name}"? Esta acción no se puede deshacer.`,
+          onConfirm: async () => {
+            await deleteRole(row.id)
+            rolesTableStore.fetchData()
+          }
+        })
       },
-      icon: <DeleteIcon fontSize="small" />
+      icon: <DeleteIcon fontSize='small' />
     }
   ]
 
   return (
-    <div className="p-4">
-      <SectionHeader
-        title="Roles"
-        actions={
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<AddIcon />}
-            onClick={() => router.push('/roles/crear/')}
-            className="!bg-blue-600 hover:!bg-blue-700 text-white"
-          >
-            Crear Rol
-          </Button>
-        }
-        className="mb-4"
+    <>
+      <Grid container spacing={2}>
+        <SectionHeader title='Roles' subtitle='Gestión de Roles del Sistema' />
+        <Table columns={columns} state={rolesTableStore} actions={actions}>
+          <TableFilter placeholder='Buscar roles...'>
+            <Box className='flex gap-4 w-full'>
+              <Button variant='outlined' size='small' onClick={() => rolesTableStore.setFilters([])}>
+                Limpiar filtros
+              </Button>
+              <Button
+                key='update'
+                startIcon={<RefreshIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => rolesTableStore.fetchData()}
+              >
+                Actualizar
+              </Button>
+              <Button
+                key='add'
+                startIcon={<AddIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => router.push('/roles/crear/')}
+              >
+                Crear Rol
+              </Button>
+            </Box>
+          </TableFilter>
+          <TableContainer>
+            <TableHeader />
+            <TableBody />
+          </TableContainer>
+
+          <TablePagination />
+        </Table>
+      </Grid>
+      <ConfirmDialog />
+      <DetailRoleModal
+        open={open}
+        onClose={() => setOpen(false)}
+        role={selectedRole}
       />
-      <Table columns={columns} state={useRolesTableStore} actions={actions}>
-        <TableFilter placeholder='Buscar roles...'>
-          <Box className='flex gap-4 w-full'>
-            <Button variant='outlined' size='small' onClick={() => useRolesTableStore.setFilters([])}>
-              Limpiar filtros
-            </Button>
-            <Button
-              key='update'
-              startIcon={<RefreshIcon />}
-              variant='contained'
-              color='primary'
-              onClick={() => useRolesTableStore.refresh()}
-            >
-              Actualizar
-            </Button>
-            <Button
-              key='add'
-              startIcon={<AddIcon />}
-              variant='contained'
-              color='primary'
-              onClick={() => router.push('/roles/crear/')}
-            >
-              Crear Rol
-            </Button>
-          </Box>
-        </TableFilter>
-        <TableContainer>
-          <TableHeader />
-          <TableBody />
-        </TableContainer>
-        <TablePagination />
-      </Table>
-    </div>
+    </>
   )
 }
 
-export default RolesTable
+export default React.memo(RolesTable)
