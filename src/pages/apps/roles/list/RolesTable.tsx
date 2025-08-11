@@ -125,11 +125,38 @@ const RolesTable = () => {
         }
         className="mb-4"
       />
-      <TableContainer>
-        <TableHeader store={useRolesTableStore} columns={columns} actions={actions} />
-        <TableBody store={useRolesTableStore} columns={columns} actions={actions} />
-        <TablePagination store={useRolesTableStore} />
-      </TableContainer>
+      <Table columns={columns} state={useRolesTableStore} actions={actions}>
+        <TableFilter placeholder='Buscar roles...'>
+          <Box className='flex gap-4 w-full'>
+            <Button variant='outlined' size='small' onClick={() => useRolesTableStore.setFilters([])}>
+              Limpiar filtros
+            </Button>
+            <Button
+              key='update'
+              startIcon={<RefreshIcon />}
+              variant='contained'
+              color='primary'
+              onClick={() => useRolesTableStore.fetchData()}
+            >
+              Actualizar
+            </Button>
+            <Button
+              key='add'
+              startIcon={<AddIcon />}
+              variant='contained'
+              color='primary'
+              onClick={() => router.push('/roles/crear/')}
+            >
+              Crear Rol
+            </Button>
+          </Box>
+        </TableFilter>
+        <TableContainer>
+          <TableHeader />
+          <TableBody />
+        </TableContainer>
+        <TablePagination />
+      </Table>
     </div>
   )
 }
