@@ -3,19 +3,8 @@ import useBaseHookApi from '@/hooks/api/useBaseHookApi'
 import type { FilterItem } from '@/types/api/response.ts'
 
 export default function useRoles(defaultFilters?: FilterItem[]) {
-  const {
-    fetchData,
-    refreshData,
-    getData,
-    data,
-    loading,
-    error,
-    errors,
-    item,
-    createData,
-    updateData,
-    deleteData
-  } = useBaseHookApi(RolesRepository, defaultFilters)
+  const { fetchData, refreshData, getData, data, loading, error, errors, item } =
+    useBaseHookApi(RolesRepository, defaultFilters)
 
   return {
     fetchData,
@@ -26,8 +15,5 @@ export default function useRoles(defaultFilters?: FilterItem[]) {
     error,
     errors,
     item,
-    createData,
-    updateData,
-    deleteData
   }
 }

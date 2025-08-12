@@ -81,7 +81,11 @@ const RolesTable = () => {
         data: data,
         loading: loading,
         refresh: fetchData
+        data: data,
+        loading: loading,
+        refresh: fetchData
       }),
+    []
     []
   )
 
