@@ -19,6 +19,7 @@ import { userSchema, editUserSchema, type CreateUserFormData, type EditUserFormD
 import { useAuth } from '@auth/hooks/useAuth'
 
 import useFranchises from '@hooks/api/realstate/useFranchises'
+import useRoles from '@hooks/api/roles/useRoles'
 
 
 interface UserFormProps {
@@ -32,10 +33,16 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
 
   const { user: currentUser } = useAuth()
   const { fetchData: fetchFranchises } = useFranchises()
+  const { fetchData: fetchRoles } = useRoles()
 
   const franchises = useQuery({
     queryKey: ['franchises'],
     queryFn: () => fetchFranchises(),
+  })
+
+  const roles = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => fetchRoles(),
   })
 
   // Check if the user being edited is the same as the logged-in user
@@ -64,6 +71,10 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
 
         // Value must be an array of codenames -> ['add_user', 'change_user', 'delete_user', 'view_user']
         methods.setValue(key, rawPermissions)
+      } else if (key === 'groups' && Array.isArray(value)) {
+        // Extract group IDs from backend group objects
+        const groupIds = value.map((group: any) => group.id)
+        methods.setValue(key, groupIds)
       } else {
         methods.setValue(key, value)
       }
@@ -90,6 +101,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
     image: null,
     email: '',
     franchise_id: franchises?.data?.results?.find(franchise => franchise.franchise_type === 'COMMERCIAL')?.id,
+    groups: [] as number[],
     user_permissions: [] as string[]
   }
 
@@ -150,6 +162,33 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
               }
               required
               fullWidth
+            />
+            <FormField
+              name='groups'
+              type='select'
+              multiple
+              label='Roles'
+              placeholder='Selecciona roles...'
+              options={
+                roles?.data?.results?.map(role => ({
+                  value: role.id,
+                  label: role.name
+                })) || []
+              }
+              fullWidth
+              helperText="Selecciona uno o más roles para el usuario"
+              SelectProps={{
+                multiple: true,
+                renderValue: (selected: any) => {
+                  if (!selected || selected.length === 0) {
+                    return 'Selecciona roles...'
+                  }
+                  const selectedRoles = roles?.data?.results?.filter(role =>
+                    selected.includes(role.id)
+                  ) || []
+                  return selectedRoles.map(role => role.name).join(', ')
+                }
+              }}
             />
             <FormField name='image' type='image' label='Imagen' required fullWidth currentImageUrl={currentImageUrl} />
           </Grid2>

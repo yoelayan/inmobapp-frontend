@@ -157,6 +157,11 @@ class ApiClient {
         // Convert value to string properly for FormData
         if (value === null || value === undefined) {
           formData.append(key, '')
+        } else if (Array.isArray(value)) {
+          // Handle arrays specially - append each item separately
+          value.forEach(item => {
+            formData.append(key, String(item))
+          })
         } else if (typeof value === 'object') {
           formData.append(key, JSON.stringify(value))
         } else {
@@ -199,6 +204,11 @@ class ApiClient {
         // Convert value to string properly for FormData
         if (value === null || value === undefined) {
           formData.append(key, '')
+        } else if (Array.isArray(value)) {
+          // Handle arrays specially - append each item separately
+          value.forEach(item => {
+            formData.append(key, String(item))
+          })
         } else if (typeof value === 'object') {
           formData.append(key, JSON.stringify(value))
         } else {

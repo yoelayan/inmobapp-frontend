@@ -6,7 +6,7 @@ class RolesRepository extends BaseRepository<IUserGroup> {
   private static instance: RolesRepository
 
   private constructor() {
-    super(ENDPOINTS.USERS.GROUPS.BASE)
+    super(ENDPOINTS.USERS.ROLES.BASE)
   }
 
   public static getInstance(): RolesRepository {
