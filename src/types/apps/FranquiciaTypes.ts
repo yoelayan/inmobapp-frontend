@@ -1,4 +1,10 @@
 
+export interface IFranchiseUser {
+  id: number
+  name: string
+  email: string
+}
+
 export interface IFranchise {
   id: number | undefined
   name: string
@@ -7,4 +13,6 @@ export interface IFranchise {
   group?: number
   parent?: IFranchise | undefined
   children?: IFranchise[]
+  users?: IFranchiseUser[]
+  users_count?: number
 }

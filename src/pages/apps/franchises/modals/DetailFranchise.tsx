@@ -8,8 +8,10 @@ import Typography from '@mui/material/Typography'
 import List from '@mui/material/List'
 import ListItem from '@mui/material/ListItem'
 import ListItemText from '@mui/material/ListItemText'
+import ListItemIcon from '@mui/material/ListItemIcon'
 import Divider from '@mui/material/Divider'
 import Box from '@mui/material/Box'
+import Chip from '@mui/material/Chip'
 
 import {
   Card, CardHeader, CardContent, CardActions,
@@ -19,6 +21,8 @@ import {
 
 // icons
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import PersonIcon from '@mui/icons-material/Person'
+import EmailIcon from '@mui/icons-material/Email'
 
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import { mappedFranchiseTypes } from '@/validations/franchiseSchema'
@@ -74,6 +78,53 @@ const DetailFranchiseModal: React.FC<DetailFranchiseModalProps> = ({ open, onClo
                   <Typography variant='body1' fontWeight={400}>
                     {franchise.parent ? franchise.parent.name : 'Ninguna'}
                   </Typography>
+                </AccordionDetails>
+              </Accordion>
+            </Box>
+
+            {/* Usuarios - Collapse */}
+            <Box width='100%' mt={2}>
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />} aria-controls='users-content' id='users-header'>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Typography variant='subtitle1' fontWeight={600}>
+                      Usuarios
+                    </Typography>
+                    <Chip
+                      label={franchise.users?.length || 0}
+                      color={franchise.users && franchise.users.length > 0 ? 'primary' : 'default'}
+                      size="small"
+                      variant="outlined"
+                    />
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  {franchise.users && franchise.users.length > 0 ? (
+                    <List dense>
+                      {franchise.users.map(user => (
+                        <ListItem key={user.id} disablePadding>
+                          <ListItemIcon>
+                            <PersonIcon color="action" />
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={user.name}
+                            secondary={
+                              <Box display="flex" alignItems="center" gap={1}>
+                                <EmailIcon fontSize="small" color="action" />
+                                <Typography variant='caption' color='text.secondary'>
+                                  {user.email}
+                                </Typography>
+                              </Box>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  ) : (
+                    <Typography variant='body2' color='text.secondary'>
+                      Sin usuarios asignados
+                    </Typography>
+                  )}
                 </AccordionDetails>
               </Accordion>
             </Box>

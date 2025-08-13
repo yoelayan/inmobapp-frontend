@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material'
+import { Button, Chip, Typography } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -12,11 +12,13 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
+import GroupIcon from '@mui/icons-material/Group'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
 import SectionHeader from '@/components/layout/horizontal/SectionHeader'
 import DetailFranchiseModal from '@/pages/apps/franchises/modals/DetailFranchise'
+import EditParentFranchiseModal from '@/pages/apps/franchises/modals/EditParentFranchise'
 
 import {
   Table,
@@ -43,10 +45,21 @@ const FranchisesTable = () => {
   const { data, loading, fetchData, deleteData: deleteFranchise } = useFranchises()
   const [open, setOpen] = useState(false)
   const [selectedFranchise, setSelectedFranchise] = useState<IFranchise | null>(null)
+  const [editParentOpen, setEditParentOpen] = useState(false)
+  const [editParentFranchise, setEditParentFranchise] = useState<IFranchise | null>(null)
 
   const handleOpenDetail = (franchise: IFranchise) => {
     setSelectedFranchise(franchise)
     setOpen(true)
+  }
+
+  const handleOpenEditParent = (franchise: IFranchise) => {
+    setEditParentFranchise(franchise)
+    setEditParentOpen(true)
+  }
+
+  const handleEditParentSuccess = () => {
+    tableStore.fetchData() // Refresh the table
   }
 
   const useFranchisesTableStore = useMemo(
@@ -82,37 +95,86 @@ const columns: ColumnDef<IFranchise>[] = [
     }
   },
   {
+    accessorKey: 'users_count',
+    header: 'Usuarios',
+    enableColumnFilter: false,
+    enableSorting: true,
+    sortingFn: (rowA, rowB) => {
+      const usersA = rowA.original.users_count || 0
+      const usersB = rowB.original.users_count || 0
+      return usersA - usersB
+    },
+    cell: ({ row }) => {
+      const usersCount = row.original.users_count || 0
+
+      return (
+        <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+          <GroupIcon fontSize="small" color="action" />
+          <Chip
+            label={usersCount}
+            color={usersCount > 0 ? 'primary' : 'default'}
+            size="small"
+            variant="outlined"
+          />
+        </Box>
+      )
+    }
+  },
+  {
     accessorKey: 'parent',
     header: 'Franquicia Padre',
     enableColumnFilter: true,
-    cell: ({ getValue }) => {
+    cell: ({ getValue, row }) => {
       const parent = getValue() as IFranchise
+      const franchise = row.original as IFranchise
 
-      if (parent) {
-        return (
-          <Button
-            variant="text"
-            color="primary"
-            onClick={e => {
-              e.stopPropagation()
-              handleOpenDetail(parent)
-            }}
-            tabIndex={0}
-            role="button"
-            onKeyDown={e => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault()
+      return (
+        <Box display="flex" alignItems="center" gap={1}>
+          {parent ? (
+            <Button
+              variant="text"
+              color="primary"
+              onClick={e => {
                 e.stopPropagation()
-                handleOpenDetail(parent)
-              }
-            }}
-          >
-            {parent.name}
-          </Button>
-        )
-      }
-
-      return '-'
+                handleOpenEditParent(franchise)
+              }}
+              tabIndex={0}
+              role="button"
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleOpenEditParent(franchise)
+                }
+              }}
+              sx={{ textAlign: 'left', justifyContent: 'flex-start', p: 0 }}
+            >
+              {parent.name}
+            </Button>
+          ) : (
+            <Button
+              variant="text"
+              color="primary"
+              onClick={e => {
+                e.stopPropagation()
+                handleOpenEditParent(franchise)
+              }}
+              tabIndex={0}
+              role="button"
+              onKeyDown={e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleOpenEditParent(franchise)
+                }
+              }}
+              sx={{ textAlign: 'left', justifyContent: 'flex-start', p: 0, color: 'text.secondary' }}
+            >
+              Sin padre
+            </Button>
+          )}
+        </Box>
+      )
     }
   }
 ]
@@ -189,7 +251,15 @@ const columns: ColumnDef<IFranchise>[] = [
         </Table>
       </Grid>
       <ConfirmDialog />
-      <DetailFranchiseModal open={open} onClose={() => setOpen(false)} franchise={selectedFranchise} />
+      {selectedFranchise && (
+        <DetailFranchiseModal open={open} onClose={() => setOpen(false)} franchise={selectedFranchise} />
+      )}
+      <EditParentFranchiseModal
+        open={editParentOpen}
+        onClose={() => setEditParentOpen(false)}
+        franchise={editParentFranchise}
+        onSuccess={handleEditParentSuccess}
+      />
     </>
   )
 }
