@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { Button, Chip, Typography } from '@mui/material'
+import { Button, Chip } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -36,6 +36,7 @@ import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 
 import { type FranchiseTypes, mappedFranchiseTypes } from '@/validations/franchiseSchema'
 import useConfirmDialog from '@/hooks/useConfirmDialog'
+import type { IUser } from '@/types/apps/UserTypes'
 
 
 
@@ -95,24 +96,25 @@ const columns: ColumnDef<IFranchise>[] = [
     }
   },
   {
-    accessorKey: 'users_count',
+    accessorKey: 'users',
     header: 'Usuarios',
     enableColumnFilter: false,
     enableSorting: true,
     sortingFn: (rowA, rowB) => {
-      const usersA = rowA.original.users_count || 0
-      const usersB = rowB.original.users_count || 0
+      const usersA = rowA.original.users?.length || 0
+      const usersB = rowB.original.users?.length || 0
+
       return usersA - usersB
     },
-    cell: ({ row }) => {
-      const usersCount = row.original.users_count || 0
+    cell: ({ getValue }) => {
+      const users = getValue() as IUser[]
 
       return (
         <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
           <GroupIcon fontSize="small" color="action" />
           <Chip
-            label={usersCount}
-            color={usersCount > 0 ? 'primary' : 'default'}
+            label={users.length}
+            color={users.length > 0 ? 'primary' : 'default'}
             size="small"
             variant="outlined"
           />
@@ -128,51 +130,34 @@ const columns: ColumnDef<IFranchise>[] = [
       const parent = getValue() as IFranchise
       const franchise = row.original as IFranchise
 
+
+      if (franchise.franchise_type === 'MASTER') {
+        return (
+          <Chip label="Master" color="primary" size="small" variant="outlined" />
+        )
+      }
+
       return (
-        <Box display="flex" alignItems="center" gap={1}>
-          {parent ? (
-            <Button
-              variant="text"
-              color="primary"
-              onClick={e => {
+        <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
+          <Button
+            variant="text"
+            color="primary"
+            onClick={e => {
+              e.stopPropagation()
+              handleOpenEditParent(franchise)
+            }}
+            tabIndex={0}
+            role="button"
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
                 e.stopPropagation()
                 handleOpenEditParent(franchise)
-              }}
-              tabIndex={0}
-              role="button"
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleOpenEditParent(franchise)
-                }
-              }}
-              sx={{ textAlign: 'left', justifyContent: 'flex-start', p: 0 }}
-            >
-              {parent.name}
-            </Button>
-          ) : (
-            <Button
-              variant="text"
-              color="primary"
-              onClick={e => {
-                e.stopPropagation()
-                handleOpenEditParent(franchise)
-              }}
-              tabIndex={0}
-              role="button"
-              onKeyDown={e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleOpenEditParent(franchise)
-                }
-              }}
-              sx={{ textAlign: 'left', justifyContent: 'flex-start', p: 0, color: 'text.secondary' }}
-            >
-              Sin padre
-            </Button>
-          )}
+              }
+            }}
+          >
+            {parent?.name || 'Sin padre'}
+          </Button>
         </Box>
       )
     }

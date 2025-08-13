@@ -62,6 +62,7 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
     }
   }, [open, franchise])
 
+  // TODO: Deuda Tecnica: Enviar logica al hook useFranchises
   const loadValidParents = async () => {
     if (!franchise?.id) return
 
@@ -70,6 +71,7 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
 
     try {
       const response = await fetchValidParents(franchise.id)
+
       setValidParents(response.results || [])
     } catch (err: any) {
       setError('Error al cargar las franquicias válidas')
@@ -79,6 +81,9 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
     }
   }
 
+  // TODO: Fin Deuda Tecnica
+
+  // TODO: Deuda Tecnica: Usar el updateData del hook useBaseHookApi
   const handleSave = async () => {
     if (!franchise?.id) return
 
@@ -108,6 +113,7 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
         // Handle specific validation errors
         if (typeof err.response.data === 'object') {
           const errorMessages = Object.values(err.response.data).flat()
+
           setError(errorMessages.join('. '))
         } else {
           setError(err.response.data.toString())
@@ -121,6 +127,8 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
       setSaving(false)
     }
   }
+
+  // TODO: Fin Deuda Tecnica
 
   const handleClose = () => {
     if (!saving) {
@@ -206,11 +214,10 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
                     <strong>Reglas de Jerarquía:</strong>
                   </Typography>
                   <Typography variant='caption' component="ul" sx={{ margin: 0, paddingLeft: 2 }}>
-                    <li>Las franquicias Master no pueden tener padre</li>
+                    <li>La franquicia Master no puede tener padre</li>
                     <li>Una franquicia no puede ser padre de sí misma</li>
                     <li>No se permiten ciclos en la jerarquía</li>
-                    <li>Máximo 2 niveles de profundidad</li>
-                  </Typography>
+                    </Typography>
                 </Alert>
 
                 {/* Show children if any */}
