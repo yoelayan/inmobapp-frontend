@@ -5,6 +5,7 @@ import { useNotification } from '@/hooks/useNotification'
 import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
 import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
+import { createPropertySchema, editPropertySchema } from '@/validations/propertySchema'
 
 // Define los valores iniciales del formulario
 const defaultPropertyValues: Partial<IRealProperty> = {
@@ -59,85 +60,102 @@ export const usePropertyForm = (propertyId?: string) => {
 
   const validateFirstStep = () => {
     const { setError, clearErrors, getValues } = baseForm
-    const name = getValues('name')
-    const status_id = getValues('status_id')
-    const type_property_id = getValues('type_property_id')
-    const state_id = getValues('state_id')
-    const city_id = getValues('city_id')
-    const address = getValues('address')
-    const characteristics = getValues('characteristics')
 
-    const fields = {
-      name,
-      status_id,
-      type_property_id,
-      state_id,
-      city_id,
-      address,
-      characteristics
-    }
+    try {
+      clearErrors()
 
-    let isValid = true
-
-    clearErrors()
-
-    for (const field in fields) {
-      if (!fields[field as keyof typeof fields]) {
-        setError(field as keyof typeof fields, {
-          type: 'required',
-          message: 'Este campo es requerido'
-        })
-        isValid = false
+      // Get first step fields
+      const firstStepData = {
+        name: getValues('name'),
+        status_id: getValues('status_id'),
+        type_property_id: getValues('type_property_id'),
+        state_id: getValues('state_id'),
+        city_id: getValues('city_id'),
+        address: getValues('address')
       }
-    }
 
-    return isValid
+      // Use Zod schema for validation (partial validation for first step)
+      const schema = propertyId ? editPropertySchema : createPropertySchema
+      const partialSchema = schema.pick({
+        name: true,
+        status_id: true,
+        type_property_id: true,
+        state_id: true,
+        city_id: true,
+        address: true
+      })
+
+      partialSchema.parse(firstStepData)
+      return true
+
+    } catch (error: any) {
+      if (error.errors) {
+        error.errors.forEach((err: any) => {
+          setError(err.path[0], {
+            type: 'validation',
+            message: err.message
+          })
+        })
+      }
+      return false
+    }
   }
 
   const validateSecondStep = () => {
     const { setError, clearErrors, getValues } = baseForm
-    const franchise_id = getValues('franchise_id')
 
-    const assigned_to_id = getValues('assigned_to_id')
-    const type_negotiation_id = getValues('type_negotiation_id')
-    const owner_id = getValues('owner_id')
-    const price = getValues('price')
-    const rent_price = getValues('rent_price')
+    try {
+      clearErrors()
 
-    const fields = {
-      assigned_to_id,
-      franchise_id,
-      type_negotiation_id,
-      owner_id
-    }
-
-    let isValid = true
-
-    clearErrors()
-
-    for (const field in fields) {
-      if (!fields[field as keyof typeof fields]) {
-        setError(field as keyof typeof fields, {
-          type: 'required',
-          message: 'Este campo es requerido'
-        })
-        isValid = false
+      // Get second step fields
+      const secondStepData = {
+        franchise_id: getValues('franchise_id'),
+        assigned_to_id: getValues('assigned_to_id'),
+        type_negotiation_id: getValues('type_negotiation_id'),
+        initial_price: getValues('initial_price'),
+        price: getValues('price') || 0,
+        rent_price: getValues('rent_price') || 0
       }
-    }
 
-    if (!price && !rent_price) {
-      setError('price', {
-        type: 'required',
-        message: 'Debe ingresar un precio de venta o alquiler'
+      // Use Zod schema for validation (partial validation for second step)
+      const schema = propertyId ? editPropertySchema : createPropertySchema
+      const partialSchema = schema.pick({
+        franchise_id: true,
+        assigned_to_id: true,
+        type_negotiation_id: true,
+        initial_price: true,
+        price: true,
+        rent_price: true
       })
-      setError('rent_price', {
-        type: 'required',
-        message: 'Debe ingresar un precio de venta o alquiler'
-      })
-      isValid = false
-    }
 
-    return isValid
+      partialSchema.parse(secondStepData)
+
+      // Additional validation: at least one price must be set
+      if (!secondStepData.price && !secondStepData.rent_price) {
+        setError('price', {
+          type: 'validation',
+          message: 'Debe ingresar un precio de venta o alquiler'
+        })
+        setError('rent_price', {
+          type: 'validation',
+          message: 'Debe ingresar un precio de venta o alquiler'
+        })
+        return false
+      }
+
+      return true
+
+    } catch (error: any) {
+      if (error.errors) {
+        error.errors.forEach((err: any) => {
+          setError(err.path[0], {
+            type: 'validation',
+            message: err.message
+          })
+        })
+      }
+      return false
+    }
   }
 
   const handleChangeImages = async (value: any) => {

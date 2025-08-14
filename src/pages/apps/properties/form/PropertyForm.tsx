@@ -30,10 +30,18 @@ import classnames from 'classnames'
 import type { StepProps } from '@mui/material/Step'
 
 import { ClientForm } from '../../clients/form/ClientForm'
-import { usePropertyForm } from './hooks/usePropertyForm'
 import CustomAvatar from '@core/components/mui/Avatar'
 
 import DirectionalIcon from '@components/DirectionalIcon'
+import { Form, FormField } from '@components/common/forms/Form'
+import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
+import {
+  createPropertySchema,
+  editPropertySchema,
+  defaultPropertyValues,
+  type CreatePropertyFormData,
+  type EditPropertyFormData
+} from '@/validations/propertySchema'
 
 import StepperWrapper from '@core/styles/stepper'
 import type { ResponseAPI } from '@/types/api/response'
@@ -87,16 +95,13 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 }))
 
 const steps = [
-  // 4 steps title and description
   {
     icon: 'tabler-home',
-
     title: 'Información General',
     description: 'Información básica de la propiedad'
   },
   {
     icon: 'tabler-currency-dollar',
-
     title: 'Datos Negociación',
     description: 'Precios y Datos del propietario'
   },
@@ -120,18 +125,32 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   refreshClients,
   refreshCities,
 }) => {
-  console.log('render')
-  const { baseForm, validateFirstStep, validateSecondStep, handleChangeImages } = usePropertyForm(propertyId)
-  const { control, handleSubmit, errors, isSubmitting, setValue, watch, getValues } = baseForm
   const { notify } = useNotification()
   const [images, setImages] = useState<IImage[]>([])
 
-  // Obtenemos las funciones de API para las imágenes
-  const {deleteImage, updateImagesOrder, getAllImages, updateCharacteristic } = useProperties()
+  const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
+    console.log(`Propiedad ${propertyId ? 'actualizada' : 'creada'}:`, property)
+    notify(`Propiedad ${propertyId ? 'actualizada' : 'creada'} correctamente`, 'success')
+  }
 
-  // disabled de inputs, useState
-  const [disabledPrice, setDisabledPrice] = useState(false)
-  const [disabledRentPrice, setDisabledRentPrice] = useState(false)
+  const handleError = (error: any) => {
+    console.error('Error en el formulario de propiedad:', error)
+  }
+
+  const setFormData = (data: any, methods: any) => {
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === 'characteristics' && Array.isArray(value)) {
+        methods.setValue(key, value)
+      } else if (key === 'images' && Array.isArray(value)) {
+        methods.setValue(key, value)
+        setImages(value as IImage[])
+      } else {
+        methods.setValue(key, value)
+      }
+    })
+  }
+
+  const schema = propertyId ? editPropertySchema : createPropertySchema
 
   const theme = useTheme()
   const [activeStep, setActiveStep] = useState(propertyId ? 2 : 0)
@@ -143,69 +162,9 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     setOpen(!open)
   }
 
-
-  const handleGetAllImages = useCallback(async () => {
-    if (!propertyId) {
-      return
-    }
-
-    console.log('handleGetAllImages', propertyId)
-
-    try {
-      const response = await getAllImages(propertyId)
-
-      // Check if response has results property (ResponseAPI format)
-      if (response && typeof response === 'object' && 'results' in response) {
-        // Handle ResponseAPI format
-        setValue('images', response.results as IImage[])
-      } else if (Array.isArray(response)) {
-        // Handle array format
-        setValue('images', response as IImage[])
-      } else {
-        // Handle other formats - empty array as fallback
-        setValue('images', [])
-      }
-
-      console.log('PropertyForm: All images:', response)
-    } catch (error) {
-      console.error('Error fetching images:', error)
-      notify('Error al cargar las imágenes', 'error')
-    }
-  }, [propertyId, notify, getAllImages, setValue])
-
-  // useEffect para procesar imágenes cuando se carga el componente
-  useEffect(() => {
-    if (propertyId) {
-      console.log('PropertyForm: Fetching property data with images')
-    }
-  }, [propertyId])
-
-  // Opcional: Log para depurar qué datos de imágenes están siendo usados
-  const imagesValue = watch('images')
-
-  useEffect(() => {
-    if (imagesValue) {
-      setImages(Array.isArray(imagesValue) ? (imagesValue as IImage[]) : [])
-    }
-  }, [imagesValue])
-
-  // Now we need to add an effect to load characteristics when reaching step 3
-  useEffect(() => {
-    // Only load characteristics when at step 3 (index 2) and we have a propertyId
-    if (activeStep === 2 && propertyId) {
-      // If this property already exists, let's load its characteristics
-      console.log('Loading characteristics for property:', propertyId)
-
-      // This will be handled by the PropertyCharacteristics component
-    }
-  }, [activeStep, propertyId])
-
   const ModalClient = () => {
     const handleSuccess = (response: IClient) => {
-      setValue('owner_id', response.id)
-
       refreshClients()
-
       handleButtonModal()
     }
 
@@ -258,175 +217,23 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
   }
 
   const handleReset = () => {
-    // reset()
     setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
   const handleNext = async () => {
-    switch (activeStep) {
-      case 0:
-        if (!validateFirstStep()) {
-          notify('Por favor, complete todos los campos requeridos', 'error')
-
-          return
-        }
-
-        if (propertyId) {
-          await handleSubmit()
-        }
-
-        break
-      case 1:
-        if (!validateSecondStep()) {
-          notify('Por favor, complete todos los campos requeridos', 'error')
-
-          return
-        }
-
-        await handleSubmit()
-
-        break
-      case 2:
-        // On the last step, we ensure all data is saved together (including characteristics)
-        handleSubmit().then(() => {
-          // Save characteristics only if there's a propertyId
-          if (propertyId) {
-            const characteristics = getValues('characteristics')
-
-            if (characteristics && characteristics.length > 0) {
-              // Make sure the characteristics array matches the expected type
-
-              // Save characteristics using updateCharacteristic
-              updateCharacteristic(propertyId, characteristics)
-                .then(() => {
-                  notify('Características guardadas correctamente', 'success')
-                })
-                .catch(error => {
-                  console.error('Error saving characteristics:', error)
-                  notify('Error al guardar características', 'error')
-                })
-            }
-          }
-        })
-
-        // Don't advance past the last step
-        return
-      default:
-        break
+    if (activeStep < steps.length - 1) {
+      setActiveStep(prevActiveStep => prevActiveStep + 1)
     }
-
-    setActiveStep(prevActiveStep => prevActiveStep + 1)
   }
 
   const handleBack = () => {
     setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
-  const handleUpdateImagesOrder = useCallback(async (images: any[]) => {
-    if (!propertyId) {
-      notify('Debe guardar la propiedad antes de reordenar imágenes', 'warning')
-
-      return
-    }
-
-    try {
-      await updateImagesOrder(propertyId, images)
-      notify('Orden de imágenes actualizado correctamente', 'success')
-    } catch (error) {
-      console.error('Error al actualizar el orden de las imágenes:', error)
-      notify('Error al actualizar el orden de las imágenes', 'error')
-    }
-  }, [propertyId, notify, updateImagesOrder])
-
-  // Handler for characteristic changes
-
-  // Try/catch to avoid any potential issues with characteristics
-  const CharacteristicsWrapper = React.useMemo(() => {
-    const handleCharacteristicsChange = (characteristics: any[]) => {
-      console.log('handleCharacteristicsChange', characteristics)
-
-      // Only update if necessary to prevent render loops
-      const currentChars = getValues('characteristics')
-
-      // Deep comparison instead of reference comparison
-      if (JSON.stringify(currentChars) === JSON.stringify(characteristics)) {
-        return
-      }
-
-
-      setValue('characteristics', characteristics)
-    }
-
-    console.log('CharacteristicsWrapper', propertyId)
-
-    return () => {
-      try {
-        return (
-          <PropertyCharacteristics propertyId={propertyId} control={control} getValues={getValues} setValue={setValue} onChange={handleCharacteristicsChange} />
-        )
-      } catch (error) {
-        console.error('Error rendering PropertyCharacteristics:', error)
-
-        return <Typography color='error'>Error loading characteristics</Typography>
-      }
-    }
-  }, [propertyId, control, setValue, getValues])
-
-  // Create a separate component for images to avoid interference with characteristics
-  const PropertyImages = React.useMemo(() => {
-    return () => (
-      <Box sx={{ mt: 2, mb: 4 }}>
-
-      </Box>
-    )
-  }, [
-    control,
-    errors.images,
-    images,
-    setValue,
-    deleteImage,
-    handleChangeImages,
-    handleGetAllImages,
-    handleUpdateImagesOrder
-  ])
-
   const handleChangeState = (e: any) => {
-    setValue('city_id', undefined)
-
     if (e.value) {
       refreshCities({ state: e.value })
     }
-  }
-
-  const handleChangeTypeNegotiation = (e: any) => {
-    if (!e) {
-      setValue('price', 0)
-      setValue('rent_price', 0)
-      setDisabledPrice(true)
-      setDisabledRentPrice(true)
-
-return;
-    }
-
-    const typeNegotiationValue = e.value
-
-      // 1: Venta, 2: Alquiler, 3: Venta y Alquiler
-      if (typeNegotiationValue) {
-        if (typeNegotiationValue === 1) {
-          setValue('rent_price', 0)
-          setDisabledPrice(false)
-          setDisabledRentPrice(true)
-        } else if (typeNegotiationValue === 2) {
-          setValue('price', 0)
-
-          setDisabledPrice(true)
-          setDisabledRentPrice(false)
-        } else if (typeNegotiationValue === 3) {
-          setDisabledPrice(false)
-          setDisabledRentPrice(false)
-        }
-      }
-
   }
 
   const renderStepContent = (activeStep: number) => {
@@ -434,21 +241,169 @@ return;
       case 0:
         return (
           <>
+            {/* Información General */}
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField name='name' label='Nombre de la Propiedad' required fullWidth />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField name='code' label='Código' fullWidth />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                name='status_id'
+                type='select'
+                label='Estatus'
+                required
+                fullWidth
+                options={
+                  statuses?.results?.map(status => ({
+                    value: status.id,
+                    label: status.name
+                  })) || []
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                name='type_property_id'
+                type='select'
+                label='Tipo de Propiedad'
+                required
+                fullWidth
+                options={
+                  propertyTypes?.results?.map(type => ({
+                    value: type.id,
+                    label: type.name
+                  })) || []
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                name='state_id'
+                type='select'
+                label='Estado'
+                required
+                fullWidth
+                options={
+                  states?.results?.map(state => ({
+                    value: state.id,
+                    label: state.name
+                  })) || []
+                }
+                onChange={e => {
+                  const value = typeof e === 'object' && e?.target ? e.target.value : e
+                  handleChangeState({ value: Number(value) })
+                }}
+              />
+            </Grid>
 
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                name='city_id'
+                type='select'
+                label='Ciudad'
+                required
+                fullWidth
+                options={
+                  cities?.results?.map(city => ({
+                    value: city.id,
+                    label: city.name
+                  })) || []
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <FormField name='address' label='Dirección' required fullWidth />
+            </Grid>
           </>
         )
       case 1:
         return (
           <>
             {/* Datos de Negociacion */}
-
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                name='franchise_id'
+                type='select'
+                label='Franquicia'
+                required
+                fullWidth
+                options={
+                  franchises?.results?.map(franchise => ({
+                    value: franchise.id,
+                    label: franchise.name
+                  })) || []
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                name='assigned_to_id'
+                type='select'
+                label='Usuario Asignado'
+                required
+                fullWidth
+                options={
+                  users?.results?.map(user => ({
+                    value: user.id,
+                    label: user.name
+                  })) || []
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                name='type_negotiation_id'
+                type='select'
+                label='Tipo de Negociación'
+                required
+                fullWidth
+                options={
+                  negotiations?.results?.map(negotiation => ({
+                    value: negotiation.id,
+                    label: negotiation.name
+                  })) || []
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <FormField name='initial_price' type='number' label='Precio Inicial' required fullWidth />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <FormField name='price' type='number' label='Precio de Venta' fullWidth />
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <FormField name='rent_price' type='number' label='Precio de Alquiler' fullWidth />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <FormField
+                name='owner_id'
+                type='select'
+                label='Cliente'
+                fullWidth
+                options={
+                  clients?.results?.map(client => ({
+                    value: client.id,
+                    label: client.name
+                  })) || []
+                }
+              />
+            </Grid>
           </>
         )
       case 2:
         return (
           <>
             {/* Datos de Publicacion */}
-
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="h6" gutterBottom>
+                Características y Presentación
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Esta sección será implementada próximamente con características dinámicas e imágenes.
+              </Typography>
+            </Grid>
           </>
         )
       default:
@@ -456,10 +411,7 @@ return;
     }
   }
 
-  // Render condicional para carga inicial
-
   const handleStep = (index: number) => {
-    // solo se puede mover el paso si es actualizacion
     if (propertyId) {
       setActiveStep(index)
     } else {
@@ -521,48 +473,49 @@ return;
               </div>
             </>
           ) : (
-            <>
-              <form onSubmit={e => e.preventDefault()}>
-                <Grid container spacing={6}>
-                  {renderStepContent(activeStep)}
-                  <Grid size={{ xs: 12 }} className='flex justify-between'>
-                    <Button
-                      variant='tonal'
-                      disabled={activeStep === 0}
-                      onClick={handleBack}
-                      color='secondary'
-                      startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
-                    >
-                      Anterior
-                    </Button>
-                    {/* Botón de envío */}
-
-                    <Button
-                      type='submit'
-                      variant='contained'
-                      disabled={isSubmitting}
-                      onClick={handleNext}
-                      endIcon={
-                        activeStep === steps.length - 1 ? (
-                          <i className='tabler-check' />
-                        ) : (
-                          <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
-                        )
-                      }
-                    >
-                      {isSubmitting ? <CircularProgress size={24} /> : null}
-                      {/** Si es crear y es el primer paso == "Crear"
-                       * El resto de pasos == "Guardar"
-                       */}
-                      {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
-                    </Button>
-                  </Grid>
+            <Form
+              schema={schema}
+              defaultValues={defaultPropertyValues}
+              repository={PropertiesRepository}
+              mode={propertyId ? 'edit' : 'create'}
+              entityId={propertyId ? Number(propertyId) : undefined}
+              onSuccess={handleSuccess}
+              onError={handleError}
+              setFormData={setFormData}
+            >
+              <Grid container spacing={6}>
+                {renderStepContent(activeStep)}
+                <Grid size={{ xs: 12 }} className='flex justify-between'>
+                  <Button
+                    variant='tonal'
+                    disabled={activeStep === 0}
+                    onClick={handleBack}
+                    color='secondary'
+                    startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
+                  >
+                    Anterior
+                  </Button>
+                  <Button
+                    type='submit'
+                    variant='contained'
+                    onClick={handleNext}
+                    endIcon={
+                      activeStep === steps.length - 1 ? (
+                        <i className='tabler-check' />
+                      ) : (
+                        <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
+                      )
+                    }
+                  >
+                    {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
+                  </Button>
                 </Grid>
-              </form>
-            </>
+              </Grid>
+            </Form>
           )}
         </CardContent>
       </Card>
+      <ModalClient />
     </>
   )
 }
