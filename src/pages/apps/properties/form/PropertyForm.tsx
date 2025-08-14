@@ -1,40 +1,51 @@
-'use client'
+import { useEffect, useState } from 'react'
 
-import React, { useState, useEffect, useCallback } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
-import { styled, useTheme } from '@mui/material/styles'
+import classnames from 'classnames'
+
 import {
-  Button,
   Card,
-  CardContent,
   CardHeader,
-  CircularProgress,
-  Grid2 as Grid,
-  Box,
-  IconButton,
-  Stepper,
+  CardContent,
   Divider,
-  StepLabel,
+  Button,
   Typography,
-  MenuItem,
-  Modal
+  Grid2 as Grid,
+  Stepper,
+  Step as MuiStep,
+  StepLabel,
+  useMediaQuery
 } from '@mui/material'
 
-import MuiStep from '@mui/material/Step'
-import CloseIcon from '@mui/icons-material/Close'
-
-// Formulario de cliente
-import useMediaQuery from '@mui/material/useMediaQuery'
-import classnames from 'classnames'
+import { styled } from '@mui/material/styles'
 
 import type { StepProps } from '@mui/material/Step'
 
-import { ClientForm } from '../../clients/form/ClientForm'
-import CustomAvatar from '@core/components/mui/Avatar'
+import usePropertyStatus from '@hooks/api/realstate/usePropertyStatus'
 
-import DirectionalIcon from '@components/DirectionalIcon'
+import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
+
+import useStates from '@hooks/api/locations/useStates'
+
+import useCities from '@hooks/api/locations/useCities'
+
+import useFranchises from '@hooks/api/realstate/useFranchises'
+
+import useUsers from '@hooks/api/users/useUsers'
+
+import usePropertyNegotiation from '@hooks/api/realstate/usePropertyNegotiation'
+
+import useClients from '@hooks/api/crm/useClients'
+
 import { Form, FormField } from '@components/common/forms/Form'
+import CustomAvatar from '@core/components/mui/Avatar'
+import DirectionalIcon from '@components/DirectionalIcon'
+import StepperWrapper from '@core/styles/stepper'
+
 import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
+import { useNotification } from '@hooks/useNotification'
+
 import {
   createPropertySchema,
   editPropertySchema,
@@ -43,33 +54,29 @@ import {
   type EditPropertyFormData
 } from '@/validations/propertySchema'
 
-import StepperWrapper from '@core/styles/stepper'
-import type { ResponseAPI } from '@/types/api/response'
-import type { IClient } from '@/types/apps/ClientesTypes'
-import type { IFranchise } from '@/types/apps/FranquiciaTypes'
-import type { IUser } from '@/types/apps/UserTypes'
-import type { IGeoItem } from '@/types/apps/LocationsTypes'
-import type { IStatus } from '@/types/apps/CatalogTypes'
-import type { IImage } from '@/types/apps/RealtstateTypes'
-import { useNotification } from '@/hooks/useNotification'
-import useProperties from '@/hooks/api/realstate/useProperties'
-
-// Import the new PropertyCharacteristics component
-import PropertyCharacteristics from './components/PropertyCharacteristics'
-
 interface PropertyFormProps {
-  propertyId?: string // ID opcional para modo edición
-  franchises: ResponseAPI<IFranchise> | null // Lista de franquicias
-  users: ResponseAPI<IUser> | null // Lista de usuarios
-  statuses: ResponseAPI<IStatus> | null // Lista de estados
-  negotiations: ResponseAPI<IStatus> | null // Tipos de negociación
-  propertyTypes: ResponseAPI<IStatus> | null // Tipos de propiedad
-  states: ResponseAPI<IGeoItem> | null // Lista de estados
-  cities: ResponseAPI<IGeoItem> | null // Lista de ciudades
-  refreshCities: (filters?: Record<string, any>) => Promise<void>
-  clients: ResponseAPI<IClient> | null // Lista de clientes
-  refreshClients: (filters?: Record<string, any>) => Promise<void>
+  mode?: 'create' | 'edit'
+  propertyId?: number
+  onSuccess?: (property: CreatePropertyFormData | EditPropertyFormData) => void
 }
+
+const steps = [
+  {
+    icon: 'tabler-home',
+    title: 'Información General',
+    description: 'Información básica de la propiedad'
+  },
+  {
+    icon: 'tabler-currency-dollar',
+    title: 'Datos Negociación',
+    description: 'Precios y Datos del propietario'
+  },
+  {
+    icon: 'tabler-file-description',
+    title: 'Datos de publicación',
+    description: 'Caracteristicas y Presentación de la propiedad'
+  }
+]
 
 const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
   paddingInline: theme.spacing(7),
@@ -94,135 +101,49 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
   }
 }))
 
-const steps = [
-  {
-    icon: 'tabler-home',
-    title: 'Información General',
-    description: 'Información básica de la propiedad'
-  },
-  {
-    icon: 'tabler-currency-dollar',
-    title: 'Datos Negociación',
-    description: 'Precios y Datos del propietario'
-  },
-  {
-    icon: 'tabler-file-description',
-    title: 'Datos de publicación',
-    description: 'Caracteristicas y Presentación de la propiedad'
-  }
-]
-
-export const PropertyForm: React.FC<PropertyFormProps> = ({
-  propertyId,
-  franchises,
-  users,
-  statuses,
-  negotiations,
-  propertyTypes,
-  states,
-  cities,
-  clients,
-  refreshClients,
-  refreshCities,
-}) => {
+const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormProps) => {
   const { notify } = useNotification()
-  const [images, setImages] = useState<IImage[]>([])
+  const [activeStep, setActiveStep] = useState(0)
+  const isSmallScreen = useMediaQuery('(max-width: 600px)')
 
-  const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
-    console.log(`Propiedad ${propertyId ? 'actualizada' : 'creada'}:`, property)
-    notify(`Propiedad ${propertyId ? 'actualizada' : 'creada'} correctamente`, 'success')
-  }
+  /* Data */
 
-  const handleError = (error: any) => {
-    console.error('Error en el formulario de propiedad:', error)
-  }
+  const { loading: statusesLoading, data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
+  const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
+  const { loading: propertyTypesLoading, data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
+  const { loading: statesLoading, data: states, fetchData: fetchStates } = useStates()
+  const { loading: citiesLoading, data: cities, fetchData: fetchCities } = useCities()
+  const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
+  const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsers()
+  const { loading: clientsLoading, data: clients, fetchData: fetchClients } = useClients()
 
-  const setFormData = (data: any, methods: any) => {
-    Object.entries(data).forEach(([key, value]) => {
-      if (key === 'characteristics' && Array.isArray(value)) {
-        methods.setValue(key, value)
-      } else if (key === 'images' && Array.isArray(value)) {
-        methods.setValue(key, value)
-        setImages(value as IImage[])
-      } else {
-        methods.setValue(key, value)
-      }
-    })
-  }
+  useEffect(() => {
+    fetchStatuses()
+    fetchNegotiations()
+    fetchPropertyTypes()
+    fetchStates()
+    fetchCities()
+    fetchFranchises()
+    fetchUsers()
+    fetchClients()
+  }, [
+    fetchStatuses,
+    fetchNegotiations,
+    fetchPropertyTypes,
+    fetchStates,
+    fetchCities,
+    fetchFranchises,
+    fetchUsers,
+    fetchClients
+  ])
 
-  const schema = propertyId ? editPropertySchema : createPropertySchema
+  /* Steps Control */
 
-  const theme = useTheme()
-  const [activeStep, setActiveStep] = useState(propertyId ? 2 : 0)
-  const isSmallScreen = useMediaQuery(theme.breakpoints.down('md'))
-
-  const [open, setOpen] = useState(false)
-
-  const handleButtonModal = () => {
-    setOpen(!open)
-  }
-
-  const ModalClient = () => {
-    const handleSuccess = (response: IClient) => {
-      refreshClients()
-      handleButtonModal()
-    }
-
-    return (
-      <Modal
-        key='modal-client'
-        open={open}
-        onClose={handleButtonModal}
-        aria-labelledby='modal-modal-title'
-        aria-describedby='modal-modal-description'
-      >
-        <Card
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '90%',
-            maxWidth: '800px',
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2
-          }}
-        >
-          <CardContent>
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <Typography id='modal-modal-title' variant='h5' component='h2'>
-                  Crear Cliente
-                </Typography>
-                <IconButton onClick={handleButtonModal}>
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-
-              <ClientForm
-                statuses={statuses}
-                franchises={franchises}
-                users={users}
-                onSuccess={(response: IClient) => {
-                  handleSuccess(response)
-                }}
-              />
-            </Box>
-          </CardContent>
-        </Card>
-      </Modal>
-    )
-  }
-
-  const handleReset = () => {
-    setActiveStep(prevActiveStep => prevActiveStep - 1)
-  }
-
-  const handleNext = async () => {
-    if (activeStep < steps.length - 1) {
-      setActiveStep(prevActiveStep => prevActiveStep + 1)
+  const handleStep = (index: number) => {
+    if (propertyId) {
+      setActiveStep(index)
+    } else {
+      notify('Complete el paso 1 y 2 para poder escoger entre pasos', 'warning')
     }
   }
 
@@ -230,10 +151,29 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
-  const handleChangeState = (e: any) => {
-    if (e.value) {
-      refreshCities({ state: e.value })
-    }
+  const handleNext = async () => {
+    setActiveStep(prevActiveStep => prevActiveStep + 1)
+  }
+
+  const handleReset = () => {
+    setActiveStep(0)
+  }
+
+  const schema = propertyId ? editPropertySchema : createPropertySchema
+
+  const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
+    console.log(`Propiedad ${mode === 'edit' ? 'actualizada' : 'creada'}:`, property)
+    onSuccess?.(property)
+  }
+
+  const handleError = (error: any) => {
+    console.error('Error en el formulario:', error)
+  }
+
+  const setFormData = (data: any, methods: any) => {
+    Object.entries(data).forEach(([key, value]) => {
+      methods.setValue(key, value)
+    })
   }
 
   const renderStepContent = (activeStep: number) => {
@@ -291,10 +231,6 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
                     label: state.name
                   })) || []
                 }
-                onChange={e => {
-                  const value = typeof e === 'object' && e?.target ? e.target.value : e
-                  handleChangeState({ value: Number(value) })
-                }}
               />
             </Grid>
 
@@ -397,10 +333,10 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
           <>
             {/* Datos de Publicacion */}
             <Grid size={{ xs: 12 }}>
-              <Typography variant="h6" gutterBottom>
+              <Typography variant='h6' gutterBottom>
                 Características y Presentación
               </Typography>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant='body2' color='text.secondary'>
                 Esta sección será implementada próximamente con características dinámicas e imágenes.
               </Typography>
             </Grid>
@@ -411,112 +347,101 @@ export const PropertyForm: React.FC<PropertyFormProps> = ({
     }
   }
 
-  const handleStep = (index: number) => {
-    if (propertyId) {
-      setActiveStep(index)
-    } else {
-      notify('Complete el paso 1 y 2 para poder escoger entre pasos', 'warning')
-    }
-  }
-
   return (
-    <>
-      <Card>
-        <CardHeader title={propertyId ? 'Actualizar Propiedad' : 'Crear Propiedad'} />
-        <StepperWrapper className='m-4'>
-          <Stepper
-            activeStep={activeStep}
-            connector={
-              !isSmallScreen ? (
-                <DirectionalIcon
-                  ltrIconClass='tabler-chevron-right'
-                  rtlIconClass='tabler-chevron-left'
-                  className='text-xl'
-                />
-              ) : null
-            }
-          >
-            {steps.map((step, index) => {
-              return (
-                <Step key={index} onClick={() => handleStep(index)}>
-                  <StepLabel>
-                    <div className='step-label'>
-                      <CustomAvatar
-                        variant='rounded'
-                        skin={activeStep === index ? 'filled' : 'light'}
-                        {...(activeStep >= index && { color: 'primary' })}
-                        {...(activeStep === index && { className: 'shadow-primarySm' })}
-                        size={38}
-                      >
-                        <i className={classnames(step.icon)} />
-                      </CustomAvatar>
-                      <div>
-                        <Typography className='step-title'>{step.title}</Typography>
-                        <Typography className='step-subtitle'>{step.description}</Typography>
-                      </div>
+    <Card>
+      <CardHeader title={propertyId ? 'Actualizar Propiedad' : 'Crear Propiedad'} />
+      <StepperWrapper className='m-4'>
+        <Stepper
+          activeStep={activeStep}
+          connector={
+            !isSmallScreen ? (
+              <DirectionalIcon
+                ltrIconClass='tabler-chevron-right'
+                rtlIconClass='tabler-chevron-left'
+                className='text-xl'
+              />
+            ) : null
+          }
+        >
+          {steps.map((step, index) => {
+            return (
+              <Step key={index} onClick={() => handleStep(index)}>
+                <StepLabel>
+                  <div className='step-label'>
+                    <CustomAvatar
+                      variant='rounded'
+                      skin={activeStep === index ? 'filled' : 'light'}
+                      {...(activeStep >= index && { color: 'primary' })}
+                      {...(activeStep === index && { className: 'shadow-primarySm' })}
+                      size={38}
+                    >
+                      <i className={classnames(step.icon)} />
+                    </CustomAvatar>
+                    <div>
+                      <Typography className='step-title'>{step.title}</Typography>
+                      <Typography className='step-subtitle'>{step.description}</Typography>
                     </div>
-                  </StepLabel>
-                </Step>
-              )
-            })}
-          </Stepper>
-        </StepperWrapper>
-        <Divider sx={{ m: '0 !important' }} />
-        <CardContent>
-          {activeStep === steps.length ? (
-            <>
-              <Typography className='mlb-2 mli-1'>All steps are completed!</Typography>
-              <div className='flex justify-end mt-4'>
-                <Button variant='contained' onClick={handleReset}>
-                  Reset
+                  </div>
+                </StepLabel>
+              </Step>
+            )
+          })}
+        </Stepper>
+      </StepperWrapper>
+      <Divider sx={{ m: '0 !important' }} />
+      <CardContent>
+        {activeStep === steps.length ? (
+          <>
+            <Typography className='mlb-2 mli-1'>All steps are completed!</Typography>
+            <div className='flex justify-end mt-4'>
+              <Button variant='contained' onClick={handleReset}>
+                Reset
+              </Button>
+            </div>
+          </>
+        ) : (
+          <Form
+            schema={schema}
+            defaultValues={defaultPropertyValues}
+            repository={PropertiesRepository}
+            mode={propertyId ? 'edit' : 'create'}
+            entityId={propertyId ? Number(propertyId) : undefined}
+            onSuccess={handleSuccess}
+            onError={handleError}
+            setFormData={setFormData}
+          >
+            <Grid container spacing={6}>
+              {renderStepContent(activeStep)}
+              <Grid size={{ xs: 12 }} className='flex justify-between'>
+                <Button
+                  variant='tonal'
+                  disabled={activeStep === 0}
+                  onClick={handleBack}
+                  color='secondary'
+                  startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
+                >
+                  Anterior
                 </Button>
-              </div>
-            </>
-          ) : (
-            <Form
-              schema={schema}
-              defaultValues={defaultPropertyValues}
-              repository={PropertiesRepository}
-              mode={propertyId ? 'edit' : 'create'}
-              entityId={propertyId ? Number(propertyId) : undefined}
-              onSuccess={handleSuccess}
-              onError={handleError}
-              setFormData={setFormData}
-            >
-              <Grid container spacing={6}>
-                {renderStepContent(activeStep)}
-                <Grid size={{ xs: 12 }} className='flex justify-between'>
-                  <Button
-                    variant='tonal'
-                    disabled={activeStep === 0}
-                    onClick={handleBack}
-                    color='secondary'
-                    startIcon={<DirectionalIcon ltrIconClass='tabler-arrow-left' rtlIconClass='tabler-arrow-right' />}
-                  >
-                    Anterior
-                  </Button>
-                  <Button
-                    type='submit'
-                    variant='contained'
-                    onClick={handleNext}
-                    endIcon={
-                      activeStep === steps.length - 1 ? (
-                        <i className='tabler-check' />
-                      ) : (
-                        <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
-                      )
-                    }
-                  >
-                    {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
-                  </Button>
-                </Grid>
+                <Button
+                  type='submit'
+                  variant='contained'
+                  onClick={handleNext}
+                  endIcon={
+                    activeStep === steps.length - 1 ? (
+                      <i className='tabler-check' />
+                    ) : (
+                      <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
+                    )
+                  }
+                >
+                  {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
+                </Button>
               </Grid>
-            </Form>
-          )}
-        </CardContent>
-      </Card>
-      <ModalClient />
-    </>
+            </Grid>
+          </Form>
+        )}
+      </CardContent>
+    </Card>
   )
 }
 
