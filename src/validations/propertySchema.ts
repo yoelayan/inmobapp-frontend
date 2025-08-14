@@ -38,16 +38,16 @@ const basePropertySchema = z.object({
     .min(1, { message: 'Debe seleccionar un tipo de propiedad' }),
 
   price: z
-    .number()
+    .coerce.number()
     .min(0, { message: 'El precio debe ser mayor o igual a 0' })
     .default(0),
 
   initial_price: z
-    .number()
+    .coerce.number()
     .min(0, { message: 'El precio inicial debe ser mayor o igual a 0' }),
 
   rent_price: z
-    .number()
+    .coerce.number()
     .min(0, { message: 'El precio de alquiler debe ser mayor o igual a 0' })
     .default(0),
 
@@ -93,6 +93,32 @@ export const createPropertySchema = basePropertySchema
 // Schema for editing properties
 export const editPropertySchema = basePropertySchema.partial().extend({
   id: z.number().optional()
+})
+
+// Step-specific schemas for validation
+export const step1Schema = z.object({
+  name: basePropertySchema.shape.name,
+  code: basePropertySchema.shape.code,
+  status_id: basePropertySchema.shape.status_id,
+  type_property_id: basePropertySchema.shape.type_property_id,
+  state_id: basePropertySchema.shape.state_id,
+  city_id: basePropertySchema.shape.city_id,
+  address: basePropertySchema.shape.address
+})
+
+export const step2Schema = z.object({
+  franchise_id: basePropertySchema.shape.franchise_id,
+  assigned_to_id: basePropertySchema.shape.assigned_to_id,
+  type_negotiation_id: basePropertySchema.shape.type_negotiation_id,
+  initial_price: basePropertySchema.shape.initial_price,
+  price: basePropertySchema.shape.price,
+  rent_price: basePropertySchema.shape.rent_price,
+  owner_id: basePropertySchema.shape.owner_id
+})
+
+export const step3Schema = z.object({
+  characteristics: basePropertySchema.shape.characteristics,
+  images: basePropertySchema.shape.images
 })
 
 // Default values for form

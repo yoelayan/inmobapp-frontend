@@ -50,6 +50,9 @@ import {
   createPropertySchema,
   editPropertySchema,
   defaultPropertyValues,
+  step1Schema,
+  step2Schema,
+  step3Schema,
   type CreatePropertyFormData,
   type EditPropertyFormData
 } from '@/validations/propertySchema'
@@ -151,8 +154,37 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
+  const getCurrentStepSchema = () => {
+    switch (activeStep) {
+      case 0:
+        return step1Schema
+      case 1:
+        return step2Schema
+      case 2:
+        return step3Schema
+      default:
+        return step1Schema
+    }
+  }
+
   const handleNext = async () => {
-    setActiveStep(prevActiveStep => prevActiveStep + 1)
+    // Si estamos en el paso 2 (último paso antes de la publicación),
+    // necesitamos crear la propiedad antes de avanzar
+    if (activeStep === 1) {
+      // En el paso 2, el botón será de tipo submit para crear la propiedad
+      // No necesitamos hacer nada aquí, el formulario se enviará automáticamente
+      return
+    }
+
+    // Para los otros pasos, simplemente avanzar
+    if (activeStep < steps.length - 1) {
+      setActiveStep(prevActiveStep => prevActiveStep + 1)
+    }
+  }
+
+  const getFormData = () => {
+    // Esta función ya no es necesaria
+    return {}
   }
 
   const handleReset = () => {
@@ -163,7 +195,15 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
     console.log(`Propiedad ${mode === 'edit' ? 'actualizada' : 'creada'}:`, property)
-    onSuccess?.(property)
+
+    // Si estamos en modo creación y acabamos de crear la propiedad, avanzar al paso 3
+    if (mode === 'create' && activeStep === 1) {
+      setActiveStep(2)
+      notify('Propiedad creada exitosamente. Ahora puedes agregar características e imágenes.', 'success')
+    } else {
+      // Para otros casos, llamar al callback onSuccess
+      onSuccess?.(property)
+    }
   }
 
   const handleError = (error: any) => {
@@ -423,9 +463,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                   Anterior
                 </Button>
                 <Button
-                  type='submit'
+                  type={activeStep === 1 || activeStep === steps.length - 1 ? 'submit' : 'button'}
                   variant='contained'
-                  onClick={handleNext}
+                  onClick={activeStep === 1 || activeStep === steps.length - 1 ? undefined : handleNext}
                   endIcon={
                     activeStep === steps.length - 1 ? (
                       <i className='tabler-check' />
@@ -434,7 +474,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                     )
                   }
                 >
-                  {activeStep === steps.length - 1 ? 'Guardar' : 'Siguiente'}
+                  {activeStep === steps.length - 1 ? 'Guardar' : activeStep === 1 ? 'Crear Propiedad' : 'Siguiente'}
                 </Button>
               </Grid>
             </Grid>

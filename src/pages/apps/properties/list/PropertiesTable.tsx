@@ -15,7 +15,6 @@ import AddIcon from '@mui/icons-material/Add'
 import type { ColumnDef } from '@tanstack/react-table'
 
 import SectionHeader from '@/components/layout/horizontal/SectionHeader';
-import Can from '@/components/common/Can';
 
 import {
   Table,
@@ -166,7 +165,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
               >
                 Actualizar
               </Button>
-              <Can permission='add_property'>
+              {/* <Can permission='add_property'> */}
                 <Button
                   key='add'
                   startIcon={<AddIcon />}
@@ -176,7 +175,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
                 >
                   Agregar
                 </Button>
-              </Can>
+              {/* </Can> */}
             </Box>
           </TableFilter>
 
