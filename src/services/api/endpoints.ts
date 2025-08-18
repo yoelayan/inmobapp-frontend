@@ -41,6 +41,12 @@ export const ENDPOINTS = {
     STATES: {
       BASE: '/states/',
     },
+    MUNICIPALITIES: {
+      BASE: '/municipalities/',
+    },
+    PARISHES: {
+      BASE: '/parishes/',
+    },
   },
   CRM: {
     CLIENTS: {

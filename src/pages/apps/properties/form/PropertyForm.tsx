@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
+import { useWatch } from 'react-hook-form'
+
+import { useFormContext } from 'react-hook-form'
+
 import classnames from 'classnames'
 
 import {
@@ -29,6 +33,10 @@ import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
 import useStates from '@hooks/api/locations/useStates'
 
 import useCities from '@hooks/api/locations/useCities'
+
+import useMunicipalities from '@hooks/api/locations/useMunicipalities'
+
+import useParishes from '@hooks/api/locations/useParishes'
 
 import useFranchises from '@hooks/api/realstate/useFranchises'
 
@@ -107,6 +115,8 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormProps) => {
   const { notify } = useNotification()
   const [activeStep, setActiveStep] = useState(0)
+  const [selectedState, setSelectedState] = useState<number | null>(null)
+  const [selectedMunicipality, setSelectedMunicipality] = useState<number | null>(null)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
 
   /* Data */
@@ -116,9 +126,135 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const { loading: propertyTypesLoading, data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
   const { loading: statesLoading, data: states, fetchData: fetchStates } = useStates()
   const { loading: citiesLoading, data: cities, fetchData: fetchCities } = useCities()
+  const { loading: municipalitiesLoading, data: municipalities, fetchData: fetchMunicipalities } = useMunicipalities(
+    selectedState ? { state: selectedState } : undefined
+  )
+  const { loading: parishesLoading, data: parishes, fetchData: fetchParishes } = useParishes(
+    selectedMunicipality ? { municipality: selectedMunicipality } : undefined
+  )
   const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
   const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsers()
   const { loading: clientsLoading, data: clients, fetchData: fetchClients } = useClients()
+
+  // Componente interno para el paso 1 que puede usar useFormContext
+  const Step1Content = () => {
+    const { watch, setValue } = useFormContext()
+    const stateId = watch('state_id')
+    const municipalityId = watch('municipality_id')
+
+    // Escuchar cambios en state_id
+    useEffect(() => {
+      if (stateId && stateId !== selectedState) {
+        setSelectedState(Number(stateId))
+        // Reset municipality and parish when state changes
+        setSelectedMunicipality(null)
+        setValue('municipality_id', '')
+        setValue('parish_id', '')
+      }
+    }, [stateId, setValue])
+
+    // Escuchar cambios en municipality_id
+    useEffect(() => {
+      if (municipalityId && municipalityId !== selectedMunicipality) {
+        setSelectedMunicipality(Number(municipalityId))
+        // Reset parish when municipality changes
+        setValue('parish_id', '')
+      }
+    }, [municipalityId, setValue])
+
+    return (
+      <>
+        {/* Información General */}
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormField name='name' label='Nombre de la Propiedad' required fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <FormField
+            name='status_id'
+            type='select'
+            label='Estatus'
+            required
+            fullWidth
+            options={
+              statuses?.results?.map(status => ({
+                value: status.id,
+                label: status.name
+              })) || []
+            }
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <FormField
+            name='type_property_id'
+            type='select'
+            label='Tipo de Propiedad'
+            required
+            fullWidth
+            options={
+              propertyTypes?.results?.map(type => ({
+                value: type.id,
+                label: type.name
+              })) || []
+            }
+          />
+        </Grid>
+
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormField
+            name='state_id'
+            type='select'
+            label='Estado'
+            required
+            fullWidth
+            options={
+              states?.results?.map(state => ({
+                value: state.id,
+                label: state.name
+              })) || []
+            }
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <FormField
+            name='municipality_id'
+            type='select'
+            label='Municipio'
+            required
+            fullWidth
+            disabled={!selectedState}
+            options={
+              municipalities?.results?.map(municipality => ({
+                value: municipality.id,
+                label: municipality.name
+              })) || []
+            }
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 3 }}>
+          <FormField
+            name='parish_id'
+            type='select'
+            label='Parroquia'
+            required
+            fullWidth
+            disabled={!selectedMunicipality}
+            options={
+              parishes?.results?.map(parish => ({
+                value: parish.id,
+                label: parish.name
+              })) || []
+            }
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormField name='code' label='Código' fullWidth />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormField name='address' label='Dirección' required fullWidth />
+        </Grid>
+      </>
+    )
+  }
 
   useEffect(() => {
     fetchStatuses()
@@ -126,6 +262,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchPropertyTypes()
     fetchStates()
     fetchCities()
+    fetchMunicipalities()
+    fetchParishes()
     fetchFranchises()
     fetchUsers()
     fetchClients()
@@ -135,6 +273,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchPropertyTypes,
     fetchStates,
     fetchCities,
+    fetchMunicipalities,
+    fetchParishes,
     fetchFranchises,
     fetchUsers,
     fetchClients
@@ -219,81 +359,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const renderStepContent = (activeStep: number) => {
     switch (activeStep) {
       case 0:
-        return (
-          <>
-            {/* Información General */}
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField name='name' label='Nombre de la Propiedad' required fullWidth />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField name='code' label='Código' fullWidth />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField
-                name='status_id'
-                type='select'
-                label='Estatus'
-                required
-                fullWidth
-                options={
-                  statuses?.results?.map(status => ({
-                    value: status.id,
-                    label: status.name
-                  })) || []
-                }
-              />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField
-                name='type_property_id'
-                type='select'
-                label='Tipo de Propiedad'
-                required
-                fullWidth
-                options={
-                  propertyTypes?.results?.map(type => ({
-                    value: type.id,
-                    label: type.name
-                  })) || []
-                }
-              />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField
-                name='state_id'
-                type='select'
-                label='Estado'
-                required
-                fullWidth
-                options={
-                  states?.results?.map(state => ({
-                    value: state.id,
-                    label: state.name
-                  })) || []
-                }
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField
-                name='city_id'
-                type='select'
-                label='Ciudad'
-                required
-                fullWidth
-                options={
-                  cities?.results?.map(city => ({
-                    value: city.id,
-                    label: city.name
-                  })) || []
-                }
-              />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <FormField name='address' label='Dirección' required fullWidth />
-            </Grid>
-          </>
-        )
+        return <Step1Content />
       case 1:
         return (
           <>

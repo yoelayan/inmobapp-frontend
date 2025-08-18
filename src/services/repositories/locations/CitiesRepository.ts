@@ -6,7 +6,7 @@ class CitiesRepository extends BaseRepository<IGeoItem> {
   private static instance: CitiesRepository
 
   private constructor() {
-    super(ENDPOINTS.LOCATIONS.CITIES.BASE, true)
+    super(ENDPOINTS.LOCATIONS.CITIES.BASE)
   }
 
   public static getInstance(): CitiesRepository {
