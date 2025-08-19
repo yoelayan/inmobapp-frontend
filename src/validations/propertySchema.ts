@@ -17,7 +17,7 @@ const basePropertySchema = z.object({
     .optional()
     .or(z.literal('')),
 
-    franchise_id: z
+  franchise_id: z
     .number({ message: 'La franquicia es requerida' })
     .min(1, { message: 'Debe seleccionar una franquicia' }),
 
@@ -40,24 +40,24 @@ const basePropertySchema = z.object({
   price: z
     .coerce.number()
     .min(0, { message: 'El precio debe ser mayor o igual a 0' })
-    .default(0),
-
-  initial_price: z
-    .coerce.number()
-    .min(0, { message: 'El precio inicial debe ser mayor o igual a 0' }),
+    .optional(),
 
   rent_price: z
     .coerce.number()
     .min(0, { message: 'El precio de alquiler debe ser mayor o igual a 0' })
-    .default(0),
+    .optional(),
 
-    state_id: z
+  state_id: z
     .number({ message: 'El estado es requerido' })
     .min(1, { message: 'Debe seleccionar un estado' }),
 
-  city_id: z
-    .number({ message: 'La ciudad es requerida' })
-    .min(1, { message: 'Debe seleccionar una ciudad' }),
+  municipality_id: z
+    .number({ message: 'El municipio es requerido' })
+    .min(1, { message: 'Debe seleccionar un municipio' }),
+
+  parish_id: z
+    .number({ message: 'La parroquia es requerida' })
+    .min(1, { message: 'Debe seleccionar una parroquia' }),
 
   address: z
     .string()
@@ -65,10 +65,8 @@ const basePropertySchema = z.object({
     .max(255, { message: 'La dirección debe tener menos de 255 caracteres' }),
 
   owner_id: z
-    .number({ message: 'El propietario es requerido' })
-    .optional()
-    .nullable()
-    .or(z.literal(0)),
+    .number({ message: 'El cliente es requerido' })
+    .min(1, { message: 'Debe seleccionar un cliente' }),
 
   characteristics: z
     .array(z.object({
@@ -87,13 +85,37 @@ const basePropertySchema = z.object({
     .optional()
 })
 
-// Schema for creating properties
-export const createPropertySchema = basePropertySchema
+// Schema for creating properties - Solo se usa al completar paso 2
+export const createPropertySchema = basePropertySchema.omit({
+  characteristics: true,
+  images: true
+})
 
 // Schema for editing properties
 export const editPropertySchema = basePropertySchema.partial().extend({
   id: z.number().optional()
 })
+
+// Partial schemas for step validation - NO bloquean el avance, solo muestran errores
+export const step1PartialSchema = basePropertySchema.pick({
+  name: true,
+  code: true,
+  status_id: true,
+  type_property_id: true,
+  state_id: true,
+  municipality_id: true,
+  parish_id: true,
+  address: true
+}).partial()
+
+export const step2PartialSchema = basePropertySchema.pick({
+  franchise_id: true,
+  assigned_to_id: true,
+  type_negotiation_id: true,
+  price: true,
+  rent_price: true,
+  owner_id: true
+}).partial()
 
 // Step-specific schemas for validation
 export const step1Schema = z.object({
@@ -102,7 +124,8 @@ export const step1Schema = z.object({
   status_id: basePropertySchema.shape.status_id,
   type_property_id: basePropertySchema.shape.type_property_id,
   state_id: basePropertySchema.shape.state_id,
-  city_id: basePropertySchema.shape.city_id,
+  municipality_id: basePropertySchema.shape.municipality_id,
+  parish_id: basePropertySchema.shape.parish_id,
   address: basePropertySchema.shape.address
 })
 
@@ -110,10 +133,37 @@ export const step2Schema = z.object({
   franchise_id: basePropertySchema.shape.franchise_id,
   assigned_to_id: basePropertySchema.shape.assigned_to_id,
   type_negotiation_id: basePropertySchema.shape.type_negotiation_id,
-  initial_price: basePropertySchema.shape.initial_price,
   price: basePropertySchema.shape.price,
   rent_price: basePropertySchema.shape.rent_price,
   owner_id: basePropertySchema.shape.owner_id
+}).superRefine((data, ctx) => {
+  // Validación condicional basada en el tipo de negociación
+  if (data.type_negotiation_id === 1) { // Solo Venta
+    if (!data.price || data.price <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El precio de venta es requerido',
+        path: ['price']
+      })
+    }
+  } else if (data.type_negotiation_id === 2) { // Solo Alquiler
+    if (!data.rent_price || data.rent_price <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'El precio de alquiler es requerido',
+        path: ['rent_price']
+      })
+    }
+  } else if (data.type_negotiation_id === 3) { // Venta y Alquiler
+    // Para venta y alquiler, al menos uno debe estar presente
+    if ((!data.price || data.price <= 0) && (!data.rent_price || data.rent_price <= 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Debe especificar al menos un precio (venta o alquiler)',
+        path: ['price']
+      })
+    }
+  }
 })
 
 export const step3Schema = z.object({
@@ -132,10 +182,10 @@ export const defaultPropertyValues = {
   type_negotiation_id: undefined,
   type_property_id: undefined,
   price: 0,
-  initial_price: 0,
   rent_price: 0,
   state_id: undefined,
-  city_id: undefined,
+  municipality_id: undefined,
+  parish_id: undefined,
   address: '',
   owner_id: undefined,
   characteristics: [],
