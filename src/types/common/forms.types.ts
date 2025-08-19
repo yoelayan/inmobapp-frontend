@@ -2,6 +2,8 @@ import type { ReactNode } from 'react'
 
 import type { Control, FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
 
+import type { FilterItem, SortingItem } from '@/types/api/response.ts'
+
 import type {
   TextFieldProps as MuiTextFieldProps,
 } from '@mui/material'
@@ -73,6 +75,31 @@ export type ImageFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & Mui
   currentImageUrl?: string
 }
 
+export type AsyncSelectOption = {
+  value: string | number | undefined
+  label: string
+}
+
+export type AsyncLoadFunction = (params?: {
+  page: number
+  pageSize: number
+  filters: FilterItem[]
+  sorting: SortingItem[]
+}) => Promise<AsyncSelectOption[]>
+
+export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
+  loadOptions: AsyncLoadFunction
+  placeholder?: string
+  noOptionsText?: string
+  loadingText?: string
+  minSearchLength?: number
+  debounceTime?: number
+  multiple?: boolean
+  freeSolo?: boolean
+  options?: AsyncSelectOption[]
+  loading?: boolean
+}
+
 export type PermissionsFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & {
   showGroups?: boolean
   showSearch?: boolean
@@ -86,6 +113,7 @@ export type FormContainerProps = {
   children: ReactNode
   loading?: boolean
 }
+
 
 export type FormMode = 'create' | 'edit'
 export type ContainerType = 'page' | 'modal' | 'stepper'

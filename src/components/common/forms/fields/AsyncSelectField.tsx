@@ -1,36 +1,19 @@
-// components/forms/fields/AsyncSelectField.tsx
+
 import React, { useState, useCallback, useMemo, useEffect } from 'react'
+
 import { Controller, useFormContext } from 'react-hook-form'
+
+import type { FieldValues } from 'react-hook-form'
+
 import {
   Autocomplete,
   TextField as MUITextField,
   CircularProgress,
   type TextFieldProps as MUITextFieldProps,
-  type AutocompleteProps
 } from '@mui/material'
-import type { FieldValues } from 'react-hook-form'
-import type { FormFieldBaseProps } from '@/types/common/forms.types'
 
-// Tipo para las opciones del AsyncSelectField
-export type AsyncSelectOption = {
-  value: string | number | undefined
-  label: string
-}
+import type { AsyncSelectFieldProps, } from '@/types/common/forms.types'
 
-// Función tipo para cargar datos de forma asíncrona
-export type AsyncLoadFunction = (searchTerm: string) => Promise<AsyncSelectOption[]>
-
-// Props específicas para AsyncSelectField
-export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
-  loadOptions: AsyncLoadFunction // Función que carga las opciones basada en el término de búsqueda
-  placeholder?: string
-  noOptionsText?: string // Texto cuando no hay opciones
-  loadingText?: string // Texto mientras carga
-  minSearchLength?: number // Mínimo de caracteres para iniciar búsqueda
-  debounceTime?: number // Tiempo de espera antes de hacer la búsqueda (en ms)
-  multiple?: boolean // Si permite selección múltiple
-  freeSolo?: boolean // Si permite escribir valores libres
-}
 
 export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
   name,
@@ -45,36 +28,39 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
   freeSolo = false,
   disabled = false,
   required = false,
+  loading = false,
+  options = [],
   ...props
 }: AsyncSelectFieldProps<T> & V) => {
   const { control } = useFormContext()
 
-  // Estados para manejar las opciones y carga
-  const [options, setOptions] = useState<AsyncSelectOption[]>([])
-  const [loading, setLoading] = useState(false)
+  // Estados para manejar las opciones y carga\
   const [inputValue, setInputValue] = useState('')
 
   // Función debounced para realizar búsquedas
   const debouncedLoadOptions = useCallback(
     useMemo(() => {
       let timeoutId: NodeJS.Timeout
+
       return (searchTerm: string) => {
         clearTimeout(timeoutId)
         timeoutId = setTimeout(async () => {
           if (searchTerm.length >= minSearchLength || minSearchLength === 0) {
-            setLoading(true)
+
             try {
-              const newOptions = await loadOptions(searchTerm)
-              setOptions(newOptions)
+              await loadOptions({
+                page: 1,
+                pageSize: 50,
+                filters: [{
+                  field: 'search',
+                  value: searchTerm
+                }],
+                sorting: []
+              })
+
             } catch (error) {
               console.error('Error cargando opciones:', error)
-              setOptions([])
-            } finally {
-              setLoading(false)
             }
-          } else {
-            setOptions([])
-            setLoading(false)
           }
         }, debounceTime)
       }
@@ -101,19 +87,23 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
       name={name}
                   render={({ field, fieldState: { error } }) => {
         // Convertir el valor del formulario (ID) a objeto para Autocomplete
-        let fieldValue
+                    let fieldValue
+
         if (field.value === null || field.value === undefined || field.value === '') {
           fieldValue = multiple ? [] : null
         } else if (multiple) {
+
           // Para múltiples valores, buscar cada uno en las opciones
           fieldValue = Array.isArray(field.value) ? field.value.map(val => {
             const foundOption = options.find(opt => opt.value === val)
-            return foundOption || { value: val, label: `Valor: ${val}` }
+
+            return foundOption || val
           }) : []
         } else {
           // Para valor único, buscar en las opciones
           const foundOption = options.find(opt => opt.value === field.value)
-          fieldValue = foundOption || { value: field.value, label: `Valor: ${field.value}` }
+
+          fieldValue = foundOption ?? field.value
         }
 
         return (
@@ -133,30 +123,46 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
                 const values = Array.isArray(newValue) ? newValue.map(option =>
                   typeof option === 'object' && option && 'value' in option ? option.value : option
                 ) : []
+
                 field.onChange(values)
               } else {
                 const value = newValue && typeof newValue === 'object' && 'value' in newValue
                   ? newValue.value
                   : newValue
+
                 field.onChange(value)
               }
             }}
             getOptionLabel={(option) => {
               // Manejar diferentes tipos de opciones
               if (typeof option === 'string') return option
+
               if (typeof option === 'object' && option && 'label' in option) {
                 return option.label
               }
+
               return ''
             }}
             isOptionEqualToValue={(option, value) => {
+              // Comparaciones cruzadas para string/objeto
               if (typeof option === 'string' && typeof value === 'string') {
                 return option === value
               }
-              if (typeof option === 'object' && typeof value === 'object' &&
-                  option && value && 'value' in option && 'value' in value) {
-                return option.value === value.value
+
+              if (typeof option === 'object' && option && 'value' in option) {
+                if (typeof value === 'object' && value && 'value' in value) {
+                  return option.value === value.value
+                }
+
+                if (typeof value === 'string') {
+                  return option.value === value
+                }
               }
+
+              if (typeof value === 'object' && value && 'value' in value && typeof option === 'string') {
+                return value.value === option
+              }
+
               return false
             }}
             noOptionsText={

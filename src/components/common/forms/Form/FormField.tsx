@@ -6,7 +6,7 @@ import type { FieldValues } from 'react-hook-form'
 
 import type {
   TextFieldProps, SelectFieldProps, DateFieldProps,
-  CheckboxFieldProps, FileFieldProps, ImageFieldProps
+  CheckboxFieldProps, FileFieldProps, ImageFieldProps, AsyncSelectFieldProps
 } from '@/types/common/forms.types'
 
 import { TextField } from '@components/common/forms/fields/TextField'
@@ -15,6 +15,7 @@ import { DateField } from '@components/common/forms/fields/DateField'
 import { CheckboxField } from '@components/common/forms/fields/CheckboxField'
 import { FileField } from '@components/common/forms/fields/FileField'
 import { ImageField } from '@components/common/forms/fields/ImageField'
+import { AsyncSelectField } from '@components/common/forms/fields/AsyncSelectField'
 
 type FormFieldProps<T extends FieldValues> =
   | ({ type?: 'text' | 'email' | 'password' | 'number' | 'tel' } & TextFieldProps<T>)
@@ -23,6 +24,8 @@ type FormFieldProps<T extends FieldValues> =
   | ({ type: 'checkbox' } & CheckboxFieldProps<T>)
   | ({ type: 'file' } & FileFieldProps<T>)
   | ({ type: 'image' } & ImageFieldProps<T>)
+  | ({ type: 'async-select' } & AsyncSelectFieldProps<T>)
+
 
 export const FormField = <T extends FieldValues>(props: FormFieldProps<T>) => {
 
@@ -39,6 +42,8 @@ export const FormField = <T extends FieldValues>(props: FormFieldProps<T>) => {
         return <FileField {...props} />
       case 'image':
         return <ImageField {...props} />
+      case 'async-select':
+        return <AsyncSelectField {...props} />
       default:
         return <TextField {...props} />
     }

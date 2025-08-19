@@ -2,8 +2,6 @@ import { useEffect, useState, useCallback } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
 
-import { useWatch } from 'react-hook-form'
-
 import { useFormContext } from 'react-hook-form'
 
 import classnames from 'classnames'
@@ -23,8 +21,8 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
-  IconButton
+  IconButton,
+  Box
 } from '@mui/material'
 
 import { styled } from '@mui/material/styles'
@@ -36,7 +34,6 @@ import usePropertyStatus from '@hooks/api/realstate/usePropertyStatus'
 import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
 
 import useStates from '@hooks/api/locations/useStates'
-import useCities from '@hooks/api/locations/useCities'
 import useMunicipalities from '@hooks/api/locations/useMunicipalities'
 import useParishes from '@hooks/api/locations/useParishes'
 
@@ -48,18 +45,13 @@ import useUsers from '@hooks/api/users/useUsers'
 import useFranchises from '@hooks/api/realstate/useFranchises'
 
 import { Form, FormField } from '@components/common/forms/Form'
-import { AsyncSelectField, type AsyncSelectOption } from '@components/common/forms/fields/AsyncSelectField'
+import {type AsyncSelectOption } from '@components/common/forms/fields/AsyncSelectField'
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import CustomAvatar from '@core/components/mui/Avatar'
 import DirectionalIcon from '@components/DirectionalIcon'
 import StepperWrapper from '@core/styles/stepper'
 
 import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
-import StatesRepository from '@services/repositories/locations/StatesRepository'
-import MunicipalitiesRepository from '@services/repositories/locations/MunicipalitiesRepository'
-import ParishesRepository from '@services/repositories/locations/ParishesRepository'
-import ClientsRepository from '@services/repositories/crm/ClientsRepository'
-import FranchisesRepository from '@services/repositories/realstate/FranchisesRepository'
 import UsersRepository from '@services/repositories/users/UsersRepository'
 import { useNotification } from '@hooks/useNotification'
 
@@ -133,100 +125,21 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
 
   // Funciones de búsqueda asíncrona para los AsyncSelectField
-  const searchStates = useCallback(async (searchTerm: string): Promise<AsyncSelectOption[]> => {
-    try {
-      // Si no hay término de búsqueda, devolver todos los estados
-      const params = searchTerm ? { search: searchTerm, per_page: 50 } : { per_page: 50 }
-      const response = await StatesRepository.getAll(params)
-      return response.results?.map(state => ({
-        value: state.id,
-        label: state.name
-      })) || []
-    } catch (error) {
-      console.error('Error searching states:', error)
-      return []
-    }
-  }, [])
 
-  const searchMunicipalities = useCallback(async (searchTerm: string): Promise<AsyncSelectOption[]> => {
-    try {
-      if (!selectedState) {
-        return []
-      }
-      const params = searchTerm
-        ? { search: searchTerm, state: selectedState, per_page: 50 }
-        : { state: selectedState, per_page: 50 }
-      const response = await MunicipalitiesRepository.getAll(params)
-      return response.results?.map(municipality => ({
-        value: municipality.id,
-        label: municipality.name
-      })) || []
-    } catch (error) {
-      console.error('Error searching municipalities:', error)
-      return []
-    }
-  }, [selectedState])
-
-  const searchParishes = useCallback(async (searchTerm: string): Promise<AsyncSelectOption[]> => {
-    try {
-      if (!selectedMunicipality) {
-        return []
-      }
-      const params = searchTerm
-        ? { search: searchTerm, municipality: selectedMunicipality, per_page: 50 }
-        : { municipality: selectedMunicipality, per_page: 50 }
-      const response = await ParishesRepository.getAll(params)
-      return response.results?.map(parish => ({
-        value: parish.id,
-        label: parish.name
-      })) || []
-    } catch (error) {
-      console.error('Error searching parishes:', error)
-      return []
-    }
-  }, [selectedMunicipality])
-
-  const searchClients = useCallback(async (searchTerm: string): Promise<AsyncSelectOption[]> => {
-    try {
-      // Si no hay término de búsqueda, devolver todos los clientes
-      const params = searchTerm ? { search: searchTerm, per_page: 50 } : { per_page: 50 }
-      const response = await ClientsRepository.getAll(params)
-      return response.results?.map(client => ({
-        value: client.id,
-        label: client.name
-      })) || []
-    } catch (error) {
-      console.error('Error searching clients:', error)
-      return []
-    }
-  }, [])
-
-  const searchFranchises = useCallback(async (searchTerm: string): Promise<AsyncSelectOption[]> => {
-    try {
-      // Si no hay término de búsqueda, devolver todas las franquicias
-      const params = searchTerm ? { search: searchTerm, per_page: 50 } : { per_page: 50 }
-      const response = await FranchisesRepository.getAll(params)
-      return response.results?.map(franchise => ({
-        value: franchise.id,
-        label: franchise.name
-      })) || []
-    } catch (error) {
-      console.error('Error searching franchises:', error)
-      return []
-    }
-  }, [])
 
   const searchUsers = useCallback(async (searchTerm: string): Promise<AsyncSelectOption[]> => {
     try {
       // Si no hay término de búsqueda, devolver todos los usuarios
       const params = searchTerm ? { search: searchTerm, per_page: 50 } : { per_page: 50 }
       const response = await UsersRepository.getAll(params)
+
       return response.results?.map(user => ({
         value: user.id,
         label: user.name
       })) || []
     } catch (error) {
       console.error('Error searching users:', error)
+
       return []
     }
   }, [])
@@ -239,6 +152,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
       fetchFranchises()
       fetchClientStatuses()
     }
+
     setIsClientModalOpen(true)
   }
 
@@ -264,11 +178,17 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const { loading: statusesLoading, data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
   const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
   const { loading: propertyTypesLoading, data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
-  const { loading: citiesLoading, data: cities, fetchData: fetchCities } = useCities()
   const { loading: clientsLoading, data: clients, fetchData: fetchClients } = useClients()
   const { loading: clientStatusLoading, data: clientStatuses, fetchData: fetchClientStatuses } = useClientStatus()
   const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsers()
   const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
+
+
+  const { loading: statesLoading, data: states, fetchData: fetchStates } = useStates()
+  const { loading: municipalitiesLoading, data: municipalities, fetchData: fetchMunicipalities } = useMunicipalities()
+  const { loading: parishesLoading, data: parishes, fetchData: fetchParishes } = useParishes()
+
+
 
   // Componente para manejar los campos de precio según el tipo de negociación
   const NegotiationPriceFields = () => {
@@ -392,18 +312,25 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <AsyncSelectField
+          <FormField
+            type='async-select'
             name='state_id'
             label='Estado'
             required
             fullWidth
-            loadOptions={searchStates}
+            loading={statesLoading}
+            loadOptions={fetchStates}
+            options={states?.results?.map(state => ({
+              value: state.id,
+              label: state.name
+            })) || []}
             placeholder='Seleccionar estado...'
             minSearchLength={0}
           />
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
-          <AsyncSelectField
+          {/* <FormField
+            type='async-select'
             name='municipality_id'
             label='Municipio'
             required
@@ -413,10 +340,11 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
             placeholder='Seleccionar municipio...'
             minSearchLength={0}
             noOptionsText={!selectedState ? 'Selecciona un estado primero' : 'No se encontraron municipios'}
-          />
+          /> */}
         </Grid>
         <Grid size={{ xs: 12, md: 3 }}>
-          <AsyncSelectField
+          {/* <FormField
+            type='async-select'
             name='parish_id'
             label='Parroquia'
             required
@@ -426,7 +354,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
             placeholder='Seleccionar parroquia...'
             minSearchLength={0}
             noOptionsText={!selectedMunicipality ? 'Selecciona un municipio primero' : 'No se encontraron parroquias'}
-          />
+          /> */}
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
           <FormField name='code' label='Código' fullWidth />
@@ -442,7 +370,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchStatuses()
     fetchNegotiations()
     fetchPropertyTypes()
-    fetchCities()
     fetchClients()
     fetchClientStatuses()
     fetchUsers()
@@ -451,7 +378,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchStatuses,
     fetchNegotiations,
     fetchPropertyTypes,
-    fetchCities,
     fetchClients,
     fetchClientStatuses,
     fetchUsers,
@@ -543,10 +469,12 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     if (propertyId) {
       return editPropertySchema
     }
+
     // Para creación, usar esquema de creación solo en paso 2 (cuando se crea la propiedad)
     if (activeStep === 1) {
       return createPropertySchema
     }
+
     // Para otros pasos, usar esquemas parciales
     return getCurrentStepSchema()
   }
@@ -591,9 +519,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
     return (
       <Grid size={{ xs: 12, md: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: '8px' }}>
-          <div style={{ flex: 1 }}>
-            <AsyncSelectField
+        <Box className="flex items-end gap-2">
+          <Box className="flex-1">
+            {/* <FormField
+              type='async-select'
               name='owner_id'
               label='Cliente'
               required
@@ -601,8 +530,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               loadOptions={searchClients}
               placeholder='Buscar cliente...'
               minSearchLength={0}
-            />
-          </div>
+            /> */}
+          </Box>
           <Button
             variant='outlined'
             onClick={handleOpenClientModal}
@@ -612,9 +541,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               px: 2
             }}
           >
-            <i className='tabler-plus' style={{ fontSize: '18px' }} />
+            <i className="tabler-plus text-[18px]" />
           </Button>
-        </div>
+        </Box>
       </Grid>
     )
   }
@@ -661,7 +590,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           <>
             {/* Datos de Negociacion */}
             <Grid size={{ xs: 12, md: 6 }}>
-              <AsyncSelectField
+              {/* <FormField
+                type='async-select'
                 name='franchise_id'
                 label='Franquicia'
                 required
@@ -669,10 +599,11 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                 loadOptions={searchFranchises}
                 placeholder='Buscar franquicia...'
                 minSearchLength={0}
-              />
+              /> */}
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
-              <AsyncSelectField
+              {/* <FormField
+                type='async-select'
                 name='assigned_to_id'
                 label='Usuario Asignado'
                 required
@@ -680,7 +611,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                 loadOptions={searchUsers}
                 placeholder='Buscar usuario...'
                 minSearchLength={0}
-              />
+              /> */}
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <FormField
@@ -724,112 +655,112 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     <>
       <Card>
         <CardHeader title={propertyId ? 'Actualizar Propiedad' : 'Crear Propiedad'} />
-      <StepperWrapper className='m-4'>
-        <Stepper
-          activeStep={activeStep}
-          connector={
-            !isSmallScreen ? (
-              <DirectionalIcon
-                ltrIconClass='tabler-chevron-right'
-                rtlIconClass='tabler-chevron-left'
-                className='text-xl'
-              />
-            ) : null
-          }
-        >
-          {steps.map((step, index) => {
-            return (
-              <Step key={index} onClick={() => handleStep(index)}>
-                <StepLabel>
-                  <div className='step-label'>
-                    <CustomAvatar
-                      variant='rounded'
-                      skin={activeStep === index ? 'filled' : 'light'}
-                      {...(activeStep >= index && { color: 'primary' })}
-                      {...(activeStep === index && { className: 'shadow-primarySm' })}
-                      size={38}
-                    >
-                      <i className={classnames(step.icon)} />
-                    </CustomAvatar>
-                    <div>
-                      <Typography className='step-title'>{step.title}</Typography>
-                      <Typography className='step-subtitle'>{step.description}</Typography>
-                    </div>
-                  </div>
-                </StepLabel>
-              </Step>
-            )
-          })}
-        </Stepper>
-      </StepperWrapper>
-      <Divider sx={{ m: '0 !important' }} />
-      <CardContent>
-        {activeStep === steps.length ? (
-          <>
-            <Typography className='mlb-2 mli-1'>All steps are completed!</Typography>
-            <div className='flex justify-end mt-4'>
-              <Button variant='contained' onClick={handleReset}>
-                Reset
-              </Button>
-            </div>
-          </>
-        ) : (
-          <Form
-            schema={schema}
-            defaultValues={defaultPropertyValues}
-            repository={PropertiesRepository}
-            mode={propertyId ? 'edit' : 'create'}
-            entityId={propertyId ? Number(propertyId) : undefined}
-            onSuccess={handleSuccess}
-            onError={handleError}
-            setFormData={setFormData}
+        <StepperWrapper className='m-4'>
+          <Stepper
+            activeStep={activeStep}
+            connector={
+              !isSmallScreen ? (
+                <DirectionalIcon
+                  ltrIconClass='tabler-chevron-right'
+                  rtlIconClass='tabler-chevron-left'
+                  className='text-xl'
+                />
+              ) : null
+            }
           >
-            <Grid container spacing={6}>
-              {renderStepContent(activeStep)}
-              <FormNavigationButtons />
-            </Grid>
-          </Form>
-        )}
-      </CardContent>
-    </Card>
+            {steps.map((step, index) => {
+              return (
+                <Step key={index} onClick={() => handleStep(index)}>
+                  <StepLabel>
+                    <Box className='step-label'>
+                      <CustomAvatar
+                        variant='rounded'
+                        skin={activeStep === index ? 'filled' : 'light'}
+                        {...(activeStep >= index && { color: 'primary' })}
+                        {...(activeStep === index && { className: 'shadow-primarySm' })}
+                        size={38}
+                      >
+                        <i className={classnames(step.icon)} />
+                      </CustomAvatar>
+                      <Box>
+                        <Typography className='step-title'>{step.title}</Typography>
+                        <Typography className='step-subtitle'>{step.description}</Typography>
+                      </Box>
+                    </Box>
+                  </StepLabel>
+                </Step>
+              )
+            })}
+          </Stepper>
+        </StepperWrapper>
+        <Divider sx={{ m: '0 !important' }} />
+        <CardContent>
+          {activeStep === steps.length ? (
+            <>
+              <Typography className='mlb-2 mli-1'>All steps are completed!</Typography>
+              <Box className='flex justify-end mt-4'>
+                <Button variant='contained' onClick={handleReset}>
+                  Reset
+                </Button>
+              </Box>
+            </>
+          ) : (
+            <Form
+              schema={schema}
+              defaultValues={defaultPropertyValues}
+              repository={PropertiesRepository}
+              mode={propertyId ? 'edit' : 'create'}
+              entityId={propertyId ? Number(propertyId) : undefined}
+              onSuccess={handleSuccess}
+              onError={handleError}
+              setFormData={setFormData}
+            >
+              <Grid container spacing={6}>
+                {renderStepContent(activeStep)}
+                <FormNavigationButtons />
+              </Grid>
+            </Form>
+          )}
+        </CardContent>
+      </Card>
 
-    {/* Modal para crear cliente */}
-    <Dialog
-      open={isClientModalOpen}
-      onClose={handleCloseClientModal}
-      maxWidth="md"
-      fullWidth
-      PaperProps={{
-        sx: { minHeight: '600px' }
-      }}
-    >
-      <DialogTitle>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6">Crear Nuevo Cliente</Typography>
-          <IconButton onClick={handleCloseClientModal} size="small">
-            <i className="tabler-x" />
-          </IconButton>
-        </div>
-      </DialogTitle>
-      <DialogContent>
-        {isClientModalOpen && (
-          <div>
-            {!users || !franchises || !clientStatuses ? (
-              <div style={{ display: 'flex', justifyContent: 'center', padding: '20px' }}>
-                <Typography>Cargando datos...</Typography>
-              </div>
-            ) : (
-              <ClientForm
-                statuses={clientStatuses}
-                users={users}
-                franchises={franchises}
-                onSuccess={handleClientCreated}
-              />
-            )}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
+      {/* Modal para crear cliente */}
+      <Dialog
+        open={isClientModalOpen}
+        onClose={handleCloseClientModal}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: { minHeight: '600px' }
+        }}
+      >
+        <DialogTitle>
+          <Box className="flex justify-between items-center">
+            <Typography variant="h6">Crear Nuevo Cliente</Typography>
+            <IconButton onClick={handleCloseClientModal} size="small">
+              <i className="tabler-x" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          {isClientModalOpen && (
+            <Box>
+              {!users || !franchises || !clientStatuses ? (
+                <Box className="flex justify-center p-5">
+                  <Typography>Cargando datos...</Typography>
+                </Box>
+              ) : (
+                <ClientForm
+                  statuses={clientStatuses}
+                  users={users}
+                  franchises={franchises}
+                  onSuccess={handleClientCreated}
+                />
+              )}
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
