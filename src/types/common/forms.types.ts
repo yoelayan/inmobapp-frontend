@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 import type { Control, FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
 
-import type { FilterItem, SortingItem } from '@/types/api/response.ts'
+import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response.ts'
 
 import type {
   TextFieldProps as MuiTextFieldProps,
@@ -80,12 +80,12 @@ export type AsyncSelectOption = {
   label: string
 }
 
-export type AsyncLoadFunction = (params?: {
+export type AsyncLoadFunction<T = any> = (params?: {
   page: number
   pageSize: number
   filters: FilterItem[]
   sorting: SortingItem[]
-}) => Promise<AsyncSelectOption[]>
+}) => Promise<ResponseAPI<T>>
 
 export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
   loadOptions: AsyncLoadFunction

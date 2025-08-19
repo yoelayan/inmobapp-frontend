@@ -317,7 +317,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
             name='state_id'
             label='Estado'
             required
-            fullWidth
             loading={statesLoading}
             loadOptions={fetchStates}
             options={states?.results?.map(state => ({
