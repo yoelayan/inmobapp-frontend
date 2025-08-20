@@ -29,6 +29,7 @@ export interface BaseFormProps<T extends FieldValues> {
   mode?: 'create' | 'edit'
   entityId?: number
   setFormData?: (data: any, methods: UseFormReturn<T>) => void
+  actionsComponent?: ReactNode
 }
 
 export interface FormFieldBaseProps<T extends FieldValues> {
@@ -89,16 +90,14 @@ export type AsyncLoadFunction<T = any> = (params?: {
 
 export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
   refreshData: AsyncLoadFunction
-  placeholder?: string
-  noOptionsText?: string
-  loadingText?: string
   minSearchLength?: number
   debounceTime?: number
   multiple?: boolean
-  freeSolo?: boolean
   options?: AsyncSelectOption[]
   loading?: boolean
   fullWidth?: boolean
+  placeholder?: string
+  searchPlaceholder?: string
 }
 
 export type PermissionsFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & {

@@ -23,7 +23,8 @@ export const Form = <T extends FieldValues>({
   children,
   mode = 'create',
   entityId,
-  setFormData
+  setFormData,
+  actionsComponent
 }: BaseFormProps<T>) => {
 
   const schemaToUse = typeof schema === 'function' ? schema() : schema
@@ -107,13 +108,14 @@ export const Form = <T extends FieldValues>({
         </Box>
 
         <FormError error={error} />
-
-        <FormActions
-          loading={isLoading}
-          mode={mode}
-          onReset={() => methods.reset()}
-          disabled={false}
-        />
+        {actionsComponent || (
+          <FormActions
+            loading={isLoading}
+            mode={mode}
+            onReset={() => methods.reset()}
+            disabled={false}
+          />
+        )}
       </Box>
     </FormProvider>
   )
