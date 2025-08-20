@@ -11,6 +11,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
+import Tooltip from '@mui/material/Tooltip'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -77,7 +78,7 @@ const columns: ColumnDef<IRealProperty>[] = [
   },
   {
     accessorKey: 'type_negotiation.name',
-    header: 'Tipo de Inmueble',
+    header: 'Tipo de Negociación',
     enableColumnFilter: false
   },
   {
@@ -95,15 +96,17 @@ const columns: ColumnDef<IRealProperty>[] = [
       // Si es "Venta y Alquiler", mostrar ambos precios
       if (negotiationType === 'Venta y Alquiler' && price && rentPrice) {
         return (
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-            <Box sx={{ fontSize: '0.8rem' }}>
-              <Box component="span" sx={{ color: 'success.main', fontWeight: 'bold' }}>V: </Box>
-              ${Number(price).toLocaleString()}
-            </Box>
-            <Box sx={{ fontSize: '0.8rem' }}>
-              <Box component="span" sx={{ color: 'info.main', fontWeight: 'bold' }}>A: </Box>
-              ${Number(rentPrice).toLocaleString()}
-            </Box>
+          <Box className='flex flex-col gap-1'>
+            <Tooltip title='Precio de Venta' placement='top'>
+              <Box className='text-sm'>
+                <span className='text-green-600 font-bold'>V: </span>${Number(price).toLocaleString()}
+              </Box>
+            </Tooltip>
+            <Tooltip title='Precio de Alquiler' placement='top'>
+              <Box className='text-sm'>
+                <span className='text-blue-600 font-bold'>A: </span>${Number(rentPrice).toLocaleString()}
+              </Box>
+            </Tooltip>
           </Box>
         )
       }
@@ -124,12 +127,11 @@ const columns: ColumnDef<IRealProperty>[] = [
 
       return (
         <Box>
-          <Box sx={{ fontWeight: 'bold' }}>
-            ${Number(displayPrice).toLocaleString()}
-          </Box>
-          <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-            {priceType}
-          </Box>
+          <Tooltip title={priceType}>
+            <Box className="font-bold">
+              ${Number(displayPrice).toLocaleString()}
+            </Box>
+          </Tooltip>
         </Box>
       )
     }
