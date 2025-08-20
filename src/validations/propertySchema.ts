@@ -7,15 +7,9 @@ const basePropertySchema = z.object({
     .min(3, { message: 'El nombre debe tener al menos 3 caracteres' })
     .max(255, { message: 'El nombre debe tener menos de 255 caracteres' }),
 
-  description: z
-    .string()
-    .optional()
-    .or(z.literal('')),
+  description: z.string().optional().or(z.literal('')),
 
-  code: z
-    .string()
-    .optional()
-    .or(z.literal('')),
+  code: z.string().optional().or(z.literal('')),
 
   franchise_id: z
     .number({ message: 'La franquicia es requerida' })
@@ -25,9 +19,7 @@ const basePropertySchema = z.object({
     .number({ message: 'El usuario asignado es requerido' })
     .min(1, { message: 'Debe seleccionar un usuario' }),
 
-  status_id: z
-    .number({ message: 'El estado es requerido' })
-    .min(1, { message: 'Debe seleccionar un estado' }),
+  status_id: z.number({ message: 'El estado es requerido' }).min(1, { message: 'Debe seleccionar un estado' }),
 
   type_negotiation_id: z
     .number({ message: 'El tipo de negociación es requerido' })
@@ -37,27 +29,25 @@ const basePropertySchema = z.object({
     .number({ message: 'El tipo de propiedad es requerido' })
     .min(1, { message: 'Debe seleccionar un tipo de propiedad' }),
 
-  price: z
-    .coerce.number()
-    .min(0, { message: 'El precio debe ser mayor o igual a 0' })
+  price: z.coerce.number().min(0, { message: 'El precio debe ser mayor o igual a 0' }).optional(),
+
+  rent_price: z.coerce.number().min(0, { message: 'El precio de alquiler debe ser mayor o igual a 0' }).optional(),
+
+  state: z
+    .object({
+      label: z.string(),
+      value: z.number()
+    })
     .optional(),
 
-  rent_price: z
-    .coerce.number()
-    .min(0, { message: 'El precio de alquiler debe ser mayor o igual a 0' })
+  municipality: z
+    .object({
+      label: z.string(),
+      value: z.number()
+    })
     .optional(),
 
-  state_id: z
-    .number({ message: 'El estado es requerido' })
-    .min(1, { message: 'Debe seleccionar un estado' }),
-
-  municipality_id: z
-    .number({ message: 'El municipio es requerido' })
-    .min(1, { message: 'Debe seleccionar un municipio' }),
-
-  parish_id: z
-    .number({ message: 'La parroquia es requerida' })
-    .min(1, { message: 'Debe seleccionar una parroquia' }),
+  parish_id: z.number({ message: 'La parroquia es requerida' }).min(1, { message: 'Debe seleccionar una parroquia' }),
 
   address: z
     .string()
@@ -66,24 +56,26 @@ const basePropertySchema = z.object({
     .optional()
     .or(z.literal('')),
 
-  owner_id: z
-    .number({ message: 'El cliente es requerido' })
-    .min(1, { message: 'Debe seleccionar un cliente' }),
+  owner_id: z.number({ message: 'El cliente es requerido' }).min(1, { message: 'Debe seleccionar un cliente' }),
 
   characteristics: z
-    .array(z.object({
-      characteristic_id: z.number(),
-      value: z.union([z.string(), z.number(), z.boolean()])
-    }))
+    .array(
+      z.object({
+        characteristic_id: z.number(),
+        value: z.union([z.string(), z.number(), z.boolean()])
+      })
+    )
     .optional(),
 
   images: z
-    .array(z.object({
-      id: z.number().optional(),
-      image: z.string().optional(),
-      order: z.number().optional(),
-      preview: z.any().optional()
-    }))
+    .array(
+      z.object({
+        id: z.number().optional(),
+        image: z.string().optional(),
+        order: z.number().optional(),
+        preview: z.any().optional()
+      })
+    )
     .optional()
 })
 

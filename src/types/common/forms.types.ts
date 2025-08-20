@@ -81,20 +81,12 @@ export type ImageFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & Mui
   currentImageUrl?: string
 }
 
-export type AsyncSelectOption = {
-  value: string | number | undefined
-  label: string
-}
-
-export type AsyncLoadFunction<T = any> = (params?: {
-  page: number
-  pageSize: number
-  filters: FilterItem[]
-  sorting: SortingItem[]
-}) => Promise<ResponseAPI<T>>
 
 export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
   repository: InterfaceRepositoryAPI<any>
+  onChange?: (option: { label: string, value: string | number | undefined }) => void
+  filters?: FilterItem[]
+  disabled?: boolean
 }
 
 export type PermissionsFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & {

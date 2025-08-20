@@ -15,21 +15,37 @@ import type { AsyncSelectFieldProps } from '@/types/common/forms.types'
 const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
   name,
   repository,
+  onChange,
+  filters,
+  disabled
 }: AsyncSelectFieldProps<T> & V) => {
   const { control } = useFormContext()
   const theme = useTheme()
+
+  const buildFilters = () => {
+    // convertir la lista de filters en un objeto
+    const filtersObject = filters?.reduce((acc: any, filter: any) => {
+      acc[filter.field] = filter.value
+
+      return acc as any
+    }, {})
+
+    return filtersObject
+  }
 
   const loadOptions = debounce(async (inputValue: string, callback: (options: any[]) => void) => {
     const response = await repository.getAll({
       page: 1,
       pageSize: 10,
       search: inputValue,
+      ...buildFilters()
     })
 
     const options = response.results?.map(state => ({ value: state.id, label: state.name })) || []
 
     callback(options)
   }, 500)
+
 
   // Custom styles for react-select that follow MUI theme
   const customSelectStyles = {
@@ -145,15 +161,22 @@ const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
       <Controller
         control={control}
         name={name}
-        render={({ field: { onChange, value }, fieldState: { error } }) => (
+        render={({ field: { onChange: onChangeField, value }, fieldState: { error } }) => (
           <>
             <AsyncSelect
+              isDisabled={disabled}
               className='react-select-container'
               classNamePrefix='react-select'
               cacheOptions
               defaultOptions
               loadOptions={loadOptions}
-              onChange={onChange}
+              onChange={(option: any) => {
+                onChangeField(option)
+
+                if (onChange) {
+                  onChange({ label: option?.label, value: option?.value })
+                }
+              }}
               value={value}
               styles={customSelectStyles}
               placeholder='Seleccionar...'

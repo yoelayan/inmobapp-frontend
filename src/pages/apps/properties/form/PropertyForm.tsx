@@ -1,5 +1,7 @@
 import { useEffect, useState, useRef, memo } from 'react'
 
+import type { FilterItem } from '@/types/api/response'
+
 
 import { useFormContext } from 'react-hook-form'
 
@@ -31,9 +33,6 @@ import type { StepProps } from '@mui/material/Step'
 import usePropertyStatus from '@hooks/api/realstate/usePropertyStatus'
 import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
 
-import useStates from '@hooks/api/locations/useStates'
-import useMunicipalities from '@hooks/api/locations/useMunicipalities'
-import useParishes from '@hooks/api/locations/useParishes'
 
 import usePropertyNegotiation from '@hooks/api/realstate/usePropertyNegotiation'
 
@@ -62,7 +61,9 @@ import {
   type CreatePropertyFormData,
   type EditPropertyFormData
 } from '@/validations/propertySchema'
+
 import StatesRepository from '@/services/repositories/locations/StatesRepository'
+import MunicipalitiesRepository from '@/services/repositories/locations/MunicipalitiesRepository'
 
 interface PropertyFormProps {
   mode?: 'create' | 'edit'
@@ -99,62 +100,18 @@ const Step1Content = memo(() => {
   console.log('re-render')
   const { data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
   const { data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
-
-  const { loading: statesLoading, data: states, fetchData: fetchStatesData } = useStates()
-  const { loading: municipalitiesLoading, data: municipalities, fetchData: fetchMunicipalities } = useMunicipalities()
-  const { loading: parishesLoading, data: parishes, fetchData: fetchParishes } = useParishes()
+  const [ municipalitiesFilters, setMunicipalitiesFilters ] = useState<FilterItem[]>([])
 
   useEffect(() => {
     fetchStatuses()
     fetchPropertyTypes()
-    fetchStatesData()
-  }, [fetchStatuses, fetchPropertyTypes, fetchStatesData])
+  }, [fetchStatuses, fetchPropertyTypes])
 
 
   // watch
   const { watch } = useFormContext()
-  const state = watch('state_id')
+  const state = watch('state')
 
-  const municipalityId = watch('municipality_id')
-
-  useEffect(() => {
-    console.log('state', state)
-
-    if (state) {
-      fetchMunicipalities(
-        {
-          page: 1,
-          pageSize: 1000,
-          sorting: [],
-          filters: [
-            {
-              field: 'state',
-              value: state.value
-            }
-          ]
-        }
-      )
-    }
-  }, [state, fetchMunicipalities])
-
-  useEffect(() => {
-
-    if (municipalityId) {
-      fetchParishes(
-        {
-          page: 1,
-          pageSize: 1000,
-          sorting: [],
-          filters: [
-            {
-              field: 'municipality',
-              value: municipalityId
-            }
-          ]
-        }
-      )
-    }
-  }, [municipalityId, fetchParishes])
 
   return (
     <>
@@ -185,7 +142,7 @@ const Step1Content = memo(() => {
       <Grid size={{ xs: 12, md: 6 }}>
         <FormField
           type='async-select'
-          name='state_id'
+          name='state'
           label='Estado'
           required
           repository={StatesRepository}
@@ -193,19 +150,15 @@ const Step1Content = memo(() => {
       </Grid>
 
       <Grid size={{ xs: 12, md: 3 }}>
-        {/* <FormField
+        <FormField
           type='async-select'
           name='municipality_id'
           label='Municipio'
           required
-          fullWidth
-          loading={municipalitiesLoading}
-          refreshData={fetchMunicipalities}
-          options={municipalities.results?.map(municipality => ({ value: municipality.id, label: municipality.name })) || []}
-
-          minSearchLength={0}
-          disabled={!stateId}
-        /> */}
+          repository={MunicipalitiesRepository}
+          filters={state ? [{ field: 'state', value: state?.value }] : []}
+          disabled={!state}
+        />
       </Grid>
       <Grid size={{ xs: 12, md: 3 }}>
         {/* <FormField
