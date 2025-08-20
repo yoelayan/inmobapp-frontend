@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useCallback } from 'react'
 
 // Types
 import { MenuItem } from '@mui/material'
@@ -7,12 +7,13 @@ import Autocomplete from '@mui/material/Autocomplete'
 
 import { Controller } from 'react-hook-form'
 
-import type { ResponseAPI } from '@/services/repositories/BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 import type FieldProps from '@/components/features/form/BaseField'
 
 // MUI Imports
 
 import CustomTextField from '@core/components/mui/TextField'
+import { SearchMenuItem } from '@/components/common/forms/fields/SearchMenuItem'
 
 // React Hook Form Imports
 
@@ -31,6 +32,8 @@ interface SelectFieldAsyncProps extends FieldProps {
   defaultFilter?: Record<string, any>
   isDisabled?: boolean
   children?: React.ReactNode
+  minSearchLength?: number
+  debounceTime?: number
 }
 
 const SelectFieldAsync = ({
@@ -46,10 +49,13 @@ const SelectFieldAsync = ({
   isDisabled,
   error,
   setValue,
-  children
+  children,
+  minSearchLength = 2,
+  debounceTime = 300
 }: SelectFieldAsyncProps) => {
-  // Estado solo para el valor de entrada (búsqueda)
-  const [inputValue, setInputValue] = useState<string>('')
+  // Estado para las opciones de búsqueda (separadas de las opciones seleccionadas)
+  const [searchOptions, setSearchOptions] = useState<OptionType[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
   // Calcular items directamente desde la respuesta
   const items = useMemo(() => {
@@ -63,22 +69,68 @@ const SelectFieldAsync = ({
     }))
   }, [response, dataMap])
 
+  // Combinar items originales con opciones de búsqueda
+  const allItems = useMemo(() => {
+    const itemsMap = new Map()
+
+    // Agregar items originales
+    items.forEach(item => {
+      itemsMap.set(item.value, item)
+    })
+
+    // Agregar opciones de búsqueda (sin sobrescribir las originales)
+    searchOptions.forEach(option => {
+      if (!itemsMap.has(option.value)) {
+        itemsMap.set(option.value, option)
+      }
+    })
+
+    return Array.from(itemsMap.values())
+  }, [items, searchOptions])
+
   // Encontrar el item seleccionado directamente
   const selectedItem = useMemo(() => {
     if (value === undefined || value === null) {
       return null
     }
 
-    return items.find(item => item.value === value) || null
-  }, [value, items])
+    return allItems.find((item: OptionType) => item.value === value) || null
+  }, [value, allItems])
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Callback para manejar resultados de búsqueda
+  const handleSearchResults = useCallback((results: any[]) => {
+    const mappedResults = results.map((item: any) => ({
+      value: item[dataMap?.value] || item.value,
+      label: item[dataMap?.label] || item.label
+    }))
+    setSearchOptions(mappedResults)
+    setIsSearching(false)
+  }, [dataMap])
+
+  // Callback para manejar el inicio de búsqueda
+  const handleSearchStart = useCallback(() => {
+    setIsSearching(true)
+  }, [])
+
+  // Adaptar refreshData para el SearchMenuItem
+  const adaptedRefreshData = useCallback(async (params: any) => {
     if (refreshData) {
-      refreshData({ [filter_name ?? 'search']: e.target.value })
+      const response = await refreshData({ [filter_name ?? 'search']: params.filters[0]?.value })
+
+      if (response) {
+        return response
+      }
     }
 
-    setInputValue(e.target.value)
-  }
+    return {
+      count: 0,
+      page_number: 1,
+      num_pages: 1,
+      next: null,
+      previous: null,
+      results: []
+    }
+  }, [refreshData, filter_name])
 
   const handleSelectChange = (event: React.SyntheticEvent<Element, Event>, item: OptionType | null) => {
     // Handle the change event
@@ -95,8 +147,8 @@ const SelectFieldAsync = ({
 
   // Combinar items con elementos hijos personalizados
   const combinedItems = useMemo(() => {
-    return [...(children ? [{ value: 'custom-children', label: '', custom: true }] : []), ...items]
-  }, [children, items])
+    return [...(children ? [{ value: 'custom-children', label: '', custom: true }] : []), ...allItems]
+  }, [children, allItems])
 
   return (
     <Controller
@@ -112,14 +164,13 @@ const SelectFieldAsync = ({
           options={combinedItems ?? []}
           getOptionLabel={(option: OptionType) => option.label ?? ''}
           disabled={isDisabled}
+          loading={isSearching}
           renderInput={params => (
             <CustomTextField
               {...params}
               fullWidth
-              placeholder='Buscar...'
+              placeholder='Seleccionar opción...'
               label={label}
-              onChange={handleSearchChange}
-              value={inputValue}
               error={!!error}
               helperText={error?.message}
               sx={{ minWidth: 100 }}
@@ -136,6 +187,22 @@ const SelectFieldAsync = ({
               </MenuItem>
             )
           }}
+          PaperComponent={({ children: menuChildren, ...paperProps }) => (
+            <div {...paperProps}>
+              {refreshData && (
+                <SearchMenuItem
+                  refreshData={adaptedRefreshData}
+                  minSearchLength={minSearchLength}
+                  debounceTime={debounceTime}
+                  onSearchResults={handleSearchResults}
+                  onSearchStart={handleSearchStart}
+                  loading={isSearching}
+                  searchPlaceholder="Buscar opciones..."
+                />
+              )}
+              {menuChildren}
+            </div>
+          )}
         />
       )}
     />

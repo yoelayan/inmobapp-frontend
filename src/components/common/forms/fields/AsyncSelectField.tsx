@@ -1,5 +1,4 @@
-
-import React, { useState, useCallback, useMemo, useEffect } from 'react'
+import React, { useState, useCallback } from 'react'
 
 import { Controller, useFormContext } from 'react-hook-form'
 
@@ -10,130 +9,121 @@ import {
   TextField as MUITextField,
   CircularProgress,
   type TextFieldProps as MUITextFieldProps,
+  MenuItem
 } from '@mui/material'
 
-import type { AsyncSelectFieldProps, } from '@/types/common/forms.types'
-
+import { SearchMenuItem } from './SearchMenuItem'
+import type { AsyncSelectFieldProps, AsyncSelectOption } from '@/types/common/forms.types'
 
 export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
   name,
   label,
-  loadOptions,
-  placeholder = 'Buscar y seleccionar...',
+  refreshData,
+  placeholder = 'Seleccionar opción...',
   noOptionsText = 'No se encontraron opciones',
   loadingText = 'Cargando...',
   minSearchLength = 2,
-  debounceTime = 300,
   multiple = false,
   freeSolo = false,
   disabled = false,
   required = false,
   loading = false,
   options = [],
+  debounceTime = 300,
   ...props
 }: AsyncSelectFieldProps<T> & V) => {
+  console.log('render AsyncSelectField')
   const { control } = useFormContext()
 
-  // Estados para manejar las opciones y carga\
-  const [inputValue, setInputValue] = useState('')
+  // Estado para las opciones de búsqueda (separadas de las opciones seleccionadas)
+  const [searchOptions, setSearchOptions] = useState<AsyncSelectOption[]>([])
+  const [isSearching, setIsSearching] = useState(false)
 
-  // Función debounced para realizar búsquedas
-  const debouncedLoadOptions = useCallback(
-    useMemo(() => {
-      let timeoutId: NodeJS.Timeout
+  // Combinar opciones originales con opciones de búsqueda
+  const allOptions = React.useMemo(() => {
+    const optionsMap = new Map()
 
-      return (searchTerm: string) => {
-        clearTimeout(timeoutId)
-        timeoutId = setTimeout(async () => {
-          if (searchTerm.length >= minSearchLength || minSearchLength === 0) {
+    // Agregar opciones originales
+    options.forEach(option => {
+      optionsMap.set(option.value, option)
+    })
 
-            try {
-              await loadOptions({
-                page: 1,
-                pageSize: 50,
-                filters: [{
-                  field: 'search',
-                  value: searchTerm
-                }],
-                sorting: []
-              })
-
-            } catch (error) {
-              console.error('Error cargando opciones:', error)
-            }
-          }
-        }, debounceTime)
+    // Agregar opciones de búsqueda (sin sobrescribir las originales)
+    searchOptions.forEach(option => {
+      if (!optionsMap.has(option.value)) {
+        optionsMap.set(option.value, option)
       }
-    }, [loadOptions, minSearchLength, debounceTime]),
-    [loadOptions, minSearchLength, debounceTime]
-  )
+    })
 
-  // Cargar opciones iniciales cuando el componente se monta
-  useEffect(() => {
-    if (minSearchLength === 0) {
-      debouncedLoadOptions('')
-    }
-  }, [debouncedLoadOptions, minSearchLength])
+    return Array.from(optionsMap.values())
+  }, [options, searchOptions])
 
-  // Manejar cambios en el input de búsqueda
-  const handleInputChange = useCallback((event: React.SyntheticEvent, newInputValue: string) => {
-    setInputValue(newInputValue)
-    debouncedLoadOptions(newInputValue)
-  }, [debouncedLoadOptions])
+  // Callback para manejar resultados de búsqueda
+  const handleSearchResults = useCallback((results: AsyncSelectOption[]) => {
+    setSearchOptions(results)
+    setIsSearching(false)
+  }, [])
+
+  // Callback para manejar el inicio de búsqueda
+  const handleSearchStart = useCallback(() => {
+    setIsSearching(true)
+  }, [])
+
 
   return (
     <Controller
       control={control}
       name={name}
-                  render={({ field, fieldState: { error } }) => {
+      render={({ field, fieldState: { error } }) => {
         // Convertir el valor del formulario (ID) a objeto para Autocomplete
-                    let fieldValue
+        let fieldValue
 
         if (field.value === null || field.value === undefined || field.value === '') {
           fieldValue = multiple ? [] : null
         } else if (multiple) {
+          // Para múltiples valores, buscar cada uno en todas las opciones (incluyendo búsqueda)
+          fieldValue = Array.isArray(field.value)
+            ? field.value.map((val: any) => {
+                const foundOption = allOptions.find(opt => opt.value === val)
 
-          // Para múltiples valores, buscar cada uno en las opciones
-          fieldValue = Array.isArray(field.value) ? field.value.map(val => {
-            const foundOption = options.find(opt => opt.value === val)
-
-            return foundOption || val
-          }) : []
+                return foundOption || val
+              })
+            : []
         } else {
-          // Para valor único, buscar en las opciones
-          const foundOption = options.find(opt => opt.value === field.value)
+          // Para valor único, buscar en todas las opciones (incluyendo búsqueda)
+          const foundOption = allOptions.find(opt => opt.value === field.value)
 
           fieldValue = foundOption ?? field.value
         }
 
         return (
           <Autocomplete
-            {...field}
             value={fieldValue}
             multiple={multiple}
             freeSolo={freeSolo}
-            options={options}
-            loading={loading}
+            options={allOptions}
+            loading={loading || isSearching}
             disabled={disabled}
-            inputValue={inputValue}
-            onInputChange={handleInputChange}
+            open={undefined} // Permitir que el Autocomplete maneje su propio estado
             onChange={(event, newValue) => {
               // Extraer solo el valor (ID) para enviarlo al formulario
               if (multiple) {
-                const values = Array.isArray(newValue) ? newValue.map(option =>
-                  typeof option === 'object' && option && 'value' in option ? option.value : option
-                ) : []
+                const values = Array.isArray(newValue)
+                  ? newValue.map(option =>
+                      typeof option === 'object' && option && 'value' in option ? option.value : option
+                    )
+                  : []
 
                 field.onChange(values)
               } else {
-                const value = newValue && typeof newValue === 'object' && 'value' in newValue
-                  ? newValue.value
-                  : newValue
+                const value =
+                  newValue && typeof newValue === 'object' && 'value' in newValue ? newValue.value : newValue
 
                 field.onChange(value)
               }
             }}
-            getOptionLabel={(option) => {
+            onBlur={field.onBlur}
+            getOptionLabel={option => {
               // Manejar diferentes tipos de opciones
               if (typeof option === 'string') return option
 
@@ -165,13 +155,9 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
 
               return false
             }}
-            noOptionsText={
-              inputValue.length < minSearchLength
-                ? `Escribe al menos ${minSearchLength} caracteres para buscar`
-                : noOptionsText
-            }
+            noOptionsText={noOptionsText}
             loadingText={loadingText}
-            renderInput={(params) => (
+            renderInput={params => (
               <MUITextField
                 {...params}
                 label={label}
@@ -183,20 +169,46 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
                 slotProps={{
                   inputLabel: {
                     shrink: true
-                  },
+                  }
                 }}
-                InputProps={{
-                  ...params.InputProps,
-                  endAdornment: (
+                slots={{
+                  endAdornment: () => (
                     <>
-                      {loading ? <CircularProgress color="inherit" size={20} /> : null}
-                      {params.InputProps.endAdornment}
+                      {(loading || isSearching) ? <CircularProgress color='inherit' size={20} /> : null}
+                      {params.InputProps?.endAdornment}
                     </>
-                  ),
+                  )
                 }}
                 {...props}
               />
             )}
+            renderOption={(props, option) => (
+              <MenuItem {...props} key={option.value} className="!py-2 !px-4">
+                {option.label}
+              </MenuItem>
+            )}
+            slotProps={{
+              ...props.slotProps,
+              paper: {
+                ...((props.slotProps && props.slotProps.paper) || {}),
+                className: 'overflow-visible', // optional: ensure dropdown isn't clipped
+                children: (
+                  <>
+                    {refreshData && (
+                      <SearchMenuItem
+                        refreshData={refreshData}
+                        minSearchLength={minSearchLength}
+                        debounceTime={debounceTime}
+                        onSearchResults={handleSearchResults}
+                        onSearchStart={handleSearchStart}
+                        loading={isSearching}
+                        searchPlaceholder="Buscar opciones..."
+                      />
+                    )}
+                  </>
+                ),
+              },
+            }}
           />
         )
       }}

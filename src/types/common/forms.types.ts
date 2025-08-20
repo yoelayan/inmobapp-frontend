@@ -88,7 +88,7 @@ export type AsyncLoadFunction<T = any> = (params?: {
 }) => Promise<ResponseAPI<T>>
 
 export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
-  loadOptions: AsyncLoadFunction
+  refreshData: AsyncLoadFunction
   placeholder?: string
   noOptionsText?: string
   loadingText?: string
@@ -98,6 +98,7 @@ export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldB
   freeSolo?: boolean
   options?: AsyncSelectOption[]
   loading?: boolean
+  fullWidth?: boolean
 }
 
 export type PermissionsFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & {
