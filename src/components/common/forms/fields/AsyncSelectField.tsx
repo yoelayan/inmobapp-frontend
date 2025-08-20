@@ -9,7 +9,8 @@ import {
   TextField as MUITextField,
   CircularProgress,
   type TextFieldProps as MUITextFieldProps,
-  MenuItem
+  MenuItem,
+  paperClasses
 } from '@mui/material'
 
 import { SearchMenuItem } from './SearchMenuItem'
@@ -174,7 +175,7 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
                 slots={{
                   endAdornment: () => (
                     <>
-                      {(loading || isSearching) ? <CircularProgress color='inherit' size={20} /> : null}
+                      {loading || isSearching ? <CircularProgress color='inherit' size={20} /> : null}
                       {params.InputProps?.endAdornment}
                     </>
                   )
@@ -183,35 +184,33 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
               />
             )}
             renderOption={(props, option) => (
-              <MenuItem {...props} key={option.value} className="!py-2 !px-4">
-                {option.label}
-              </MenuItem>
+                <MenuItem {...props} key={option.value} className='!py-2 !px-4'>
+                  {option.label}
+                </MenuItem>
             )}
-            slotProps={{
-              ...props.slotProps,
-              paper: {
-                ...((props.slotProps && props.slotProps.paper) || {}),
-                className: 'overflow-visible', // optional: ensure dropdown isn't clipped
-                children: (
-                  <>
-                    {refreshData && (
-                      <SearchMenuItem
-                        refreshData={refreshData}
-                        minSearchLength={minSearchLength}
-                        debounceTime={debounceTime}
-                        onSearchResults={handleSearchResults}
-                        onSearchStart={handleSearchStart}
-                        loading={isSearching}
-                        searchPlaceholder="Buscar opciones..."
-                      />
-                    )}
-                  </>
-                ),
-              },
-            }}
           />
         )
       }}
+      slotProps={{
+          paper: {
+            children: (
+              <>
+                {refreshData && (
+                  <SearchMenuItem
+                    refreshData={refreshData}
+                    minSearchLength={minSearchLength}
+                    debounceTime={debounceTime}
+                    onSearchResults={handleSearchResults}
+                    onSearchStart={handleSearchStart}
+                    loading={isSearching}
+                    searchPlaceholder='Buscar opciones...'
+                  />
+                )}
+              </>
+            )
+        }
+      }
+    }
     />
   )
 }

@@ -100,6 +100,7 @@ const Step1Content = () => {
 
   const { loading: statesLoading, data: states, fetchData: fetchStatesData } = useStates()
   const { loading: municipalitiesLoading, data: municipalities, fetchData: fetchMunicipalities } = useMunicipalities()
+  const { loading: parishesLoading, data: parishes, fetchData: fetchParishes } = useParishes()
 
   useEffect(() => {
     fetchStatuses()
@@ -111,6 +112,8 @@ const Step1Content = () => {
   // watch
   const { watch } = useFormContext()
   const stateId = watch('state_id')
+
+  const municipalityId = watch('municipality_id')
 
   useEffect(() => {
     if (stateId) {
@@ -129,6 +132,25 @@ const Step1Content = () => {
       )
     }
   }, [stateId, fetchMunicipalities])
+
+  useEffect(() => {
+
+    if (municipalityId) {
+      fetchParishes(
+        {
+          page: 1,
+          pageSize: 1000,
+          sorting: [],
+          filters: [
+            {
+              field: 'municipality',
+              value: municipalityId
+            }
+          ]
+        }
+      )
+    }
+  }, [municipalityId, fetchParishes])
 
   return (
     <>
@@ -183,9 +205,24 @@ const Step1Content = () => {
           options={municipalities.results?.map(municipality => ({ value: municipality.id, label: municipality.name })) || []}
           placeholder='Seleccionar municipio...'
           minSearchLength={0}
+          disabled={!stateId}
         />
       </Grid>
-      <Grid size={{ xs: 12, md: 3 }}>{/* Parroquia */}</Grid>
+      <Grid size={{ xs: 12, md: 3 }}>
+        <FormField
+          type='async-select'
+          name='parish_id'
+          label='Parroquia'
+          required
+          fullWidth
+          loading={parishesLoading}
+          refreshData={fetchParishes}
+          options={parishes.results?.map(parish => ({ value: parish.id, label: parish.name })) || []}
+          placeholder='Seleccionar parroquia...'
+          minSearchLength={0}
+          disabled={!municipalityId}
+        />
+      </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
         <FormField name='code' label='Código' fullWidth />
       </Grid>

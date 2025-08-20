@@ -5,6 +5,7 @@ import { MenuItem, CircularProgress, Typography } from '@mui/material'
 import debounce from '@/utils/debounce'
 
 import type { AsyncLoadFunction, AsyncSelectOption } from '@/types/common/forms.types'
+import CustomTextField from '@/@core/components/mui/TextField'
 
 interface SearchMenuItemProps {
   refreshData: AsyncLoadFunction
@@ -89,15 +90,30 @@ export const SearchMenuItem: React.FC<SearchMenuItemProps> = ({
     event.stopPropagation()
   }
 
+
+
   return (
     <MenuItem
       className="border-b border-gray-200 hover:bg-transparent cursor-default"
       disableRipple
     >
       <div className="w-full relative">
+        <CustomTextField
+          value={searchTerm}
+          onChange={handleSearchChange}
+          placeholder={searchPlaceholder}
+          loading={loading}
+          isSearching={isSearching}
+          fullWidth
+          size='small'
+          slotProps={{
+            input: {
+              className: '!p-0'
+            }
+          }}
+        />
 
-
-        {(isSearching || loading) && (
+    {(isSearching || loading) && (
           <CircularProgress
             size={16}
             className="absolute right-3 top-1/2 transform -translate-y-1/2"
@@ -112,7 +128,13 @@ export const SearchMenuItem: React.FC<SearchMenuItemProps> = ({
             Escribe al menos {minSearchLength} caracteres para buscar
           </Typography>
         )}
-      </div>
+        </div>
+
     </MenuItem>
+
   )
 }
+
+
+
+
