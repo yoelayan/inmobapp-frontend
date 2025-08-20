@@ -1,216 +1,197 @@
-import React, { useState, useCallback } from 'react'
+import React from 'react';
 
-import { Controller, useFormContext } from 'react-hook-form'
+import AsyncSelect from 'react-select/async';
+import { useTheme } from '@mui/material/styles';
+
+import { Controller, useFormContext } from 'react-hook-form';
+import { type TextFieldProps as MUITextFieldProps, FormHelperText } from '@mui/material'
 
 import type { FieldValues } from 'react-hook-form'
 
-import {
-  Autocomplete,
-  TextField as MUITextField,
-  CircularProgress,
-  type TextFieldProps as MUITextFieldProps,
-  MenuItem,
-  paperClasses
-} from '@mui/material'
+import debounce from '@/utils/debounce'
 
-import { SearchMenuItem } from './SearchMenuItem'
-import type { AsyncSelectFieldProps, AsyncSelectOption } from '@/types/common/forms.types'
+import type { AsyncSelectFieldProps } from '@/types/common/forms.types'
 
-export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
+const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
   name,
-  label,
-  refreshData,
-  placeholder = 'Seleccionar opción...',
-  noOptionsText = 'No se encontraron opciones',
-  loadingText = 'Cargando...',
-  minSearchLength = 2,
-  multiple = false,
-  freeSolo = false,
-  disabled = false,
-  required = false,
-  loading = false,
-  options = [],
-  debounceTime = 300,
-  ...props
+  repository,
 }: AsyncSelectFieldProps<T> & V) => {
-  console.log('render AsyncSelectField')
   const { control } = useFormContext()
+  const theme = useTheme()
 
-  // Estado para las opciones de búsqueda (separadas de las opciones seleccionadas)
-  const [searchOptions, setSearchOptions] = useState<AsyncSelectOption[]>([])
-  const [isSearching, setIsSearching] = useState(false)
-
-  // Combinar opciones originales con opciones de búsqueda
-  const allOptions = React.useMemo(() => {
-    const optionsMap = new Map()
-
-    // Agregar opciones originales
-    options.forEach(option => {
-      optionsMap.set(option.value, option)
+  const loadOptions = debounce(async (inputValue: string, callback: (options: any[]) => void) => {
+    const response = await repository.getAll({
+      page: 1,
+      pageSize: 10,
+      search: inputValue,
     })
 
-    // Agregar opciones de búsqueda (sin sobrescribir las originales)
-    searchOptions.forEach(option => {
-      if (!optionsMap.has(option.value)) {
-        optionsMap.set(option.value, option)
-      }
-    })
+    const options = response.results?.map(state => ({ value: state.id, label: state.name })) || []
 
-    return Array.from(optionsMap.values())
-  }, [options, searchOptions])
+    callback(options)
+  }, 500)
 
-  // Callback para manejar resultados de búsqueda
-  const handleSearchResults = useCallback((results: AsyncSelectOption[]) => {
-    setSearchOptions(results)
-    setIsSearching(false)
-  }, [])
-
-  // Callback para manejar el inicio de búsqueda
-  const handleSearchStart = useCallback(() => {
-    setIsSearching(true)
-  }, [])
-
+  // Custom styles for react-select that follow MUI theme
+  const customSelectStyles = {
+    control: (provided: any, state: any) => ({
+      ...provided,
+      borderColor: state.isFocused
+        ? theme.palette.primary.main
+        : theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.22)'
+          : 'rgba(47, 43, 61, 0.22)',
+      borderRadius: theme.shape.borderRadius,
+      borderWidth: '1px',
+      minHeight: '56px',
+      fontSize: '1rem',
+      fontFamily: theme.typography.fontFamily,
+      backgroundColor: theme.palette.mode === 'dark'
+        ? theme.palette.background.paper
+        : theme.palette.background.paper,
+      color: theme.palette.text.primary,
+      boxShadow: state.isFocused
+        ? `0 0 0 2px ${theme.palette.primary.main}25`
+        : 'none',
+      '&:hover': {
+        borderColor: state.isFocused
+          ? theme.palette.primary.main
+          : theme.palette.action.active,
+      },
+    }),
+    input: (provided: any) => ({
+      ...provided,
+      color: theme.palette.text.primary,
+      fontSize: '1rem',
+    }),
+    placeholder: (provided: any) => ({
+      ...provided,
+      color: theme.palette.text.secondary,
+      fontSize: '1rem',
+    }),
+    singleValue: (provided: any) => ({
+      ...provided,
+      color: theme.palette.text.primary,
+      fontSize: '1rem',
+    }),
+    menu: (provided: any) => ({
+      ...provided,
+      backgroundColor: theme.palette.background.paper,
+      border: `1px solid ${theme.palette.divider}`,
+      borderRadius: theme.shape.borderRadius,
+      boxShadow: theme.shadows[8],
+      zIndex: 9999,
+    }),
+    menuList: (provided: any) => ({
+      ...provided,
+      padding: '8px 0',
+    }),
+    option: (provided: any, state: any) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? theme.palette.primary.main
+        : state.isFocused
+          ? theme.palette.action.hover
+          : 'transparent',
+      color: state.isSelected
+        ? theme.palette.primary.contrastText
+        : theme.palette.text.primary,
+      padding: '12px 16px',
+      fontSize: '1rem',
+      cursor: 'pointer',
+      '&:hover': {
+        backgroundColor: state.isSelected
+          ? theme.palette.primary.main
+          : theme.palette.action.hover,
+      },
+    }),
+    noOptionsMessage: (provided: any) => ({
+      ...provided,
+      color: theme.palette.text.secondary,
+      fontSize: '1rem',
+      padding: '12px 16px',
+    }),
+    loadingMessage: (provided: any) => ({
+      ...provided,
+      color: theme.palette.text.secondary,
+      fontSize: '1rem',
+      padding: '12px 16px',
+    }),
+    indicatorSeparator: (provided: any) => ({
+      ...provided,
+      backgroundColor: theme.palette.divider,
+    }),
+    dropdownIndicator: (provided: any) => ({
+      ...provided,
+      color: theme.palette.text.secondary,
+      '&:hover': {
+        color: theme.palette.text.primary,
+      },
+    }),
+    clearIndicator: (provided: any) => ({
+      ...provided,
+      color: theme.palette.text.secondary,
+      '&:hover': {
+        color: theme.palette.text.primary,
+      },
+    }),
+    valueContainer: (provided: any) => ({
+      ...provided,
+      padding: '8px 16px',
+    }),
+  }
 
   return (
-    <Controller
-      control={control}
-      name={name}
-      render={({ field, fieldState: { error } }) => {
-        // Convertir el valor del formulario (ID) a objeto para Autocomplete
-        let fieldValue
-
-        if (field.value === null || field.value === undefined || field.value === '') {
-          fieldValue = multiple ? [] : null
-        } else if (multiple) {
-          // Para múltiples valores, buscar cada uno en todas las opciones (incluyendo búsqueda)
-          fieldValue = Array.isArray(field.value)
-            ? field.value.map((val: any) => {
-                const foundOption = allOptions.find(opt => opt.value === val)
-
-                return foundOption || val
-              })
-            : []
-        } else {
-          // Para valor único, buscar en todas las opciones (incluyendo búsqueda)
-          const foundOption = allOptions.find(opt => opt.value === field.value)
-
-          fieldValue = foundOption ?? field.value
-        }
-
-        return (
-          <Autocomplete
-            value={fieldValue}
-            multiple={multiple}
-            freeSolo={freeSolo}
-            options={allOptions}
-            loading={loading || isSearching}
-            disabled={disabled}
-            open={undefined} // Permitir que el Autocomplete maneje su propio estado
-            onChange={(event, newValue) => {
-              // Extraer solo el valor (ID) para enviarlo al formulario
-              if (multiple) {
-                const values = Array.isArray(newValue)
-                  ? newValue.map(option =>
-                      typeof option === 'object' && option && 'value' in option ? option.value : option
-                    )
-                  : []
-
-                field.onChange(values)
-              } else {
-                const value =
-                  newValue && typeof newValue === 'object' && 'value' in newValue ? newValue.value : newValue
-
-                field.onChange(value)
-              }
-            }}
-            onBlur={field.onBlur}
-            getOptionLabel={option => {
-              // Manejar diferentes tipos de opciones
-              if (typeof option === 'string') return option
-
-              if (typeof option === 'object' && option && 'label' in option) {
-                return option.label
-              }
-
-              return ''
-            }}
-            isOptionEqualToValue={(option, value) => {
-              // Comparaciones cruzadas para string/objeto
-              if (typeof option === 'string' && typeof value === 'string') {
-                return option === value
-              }
-
-              if (typeof option === 'object' && option && 'value' in option) {
-                if (typeof value === 'object' && value && 'value' in value) {
-                  return option.value === value.value
+    <div className='w-full'>
+      <Controller
+        control={control}
+        name={name}
+        render={({ field: { onChange, value }, fieldState: { error } }) => (
+          <>
+            <AsyncSelect
+              className='react-select-container'
+              classNamePrefix='react-select'
+              cacheOptions
+              defaultOptions
+              loadOptions={loadOptions}
+              onChange={onChange}
+              value={value}
+              styles={customSelectStyles}
+              placeholder='Seleccionar...'
+              noOptionsMessage={() => 'No se encontraron opciones'}
+              loadingMessage={() => 'Cargando...'}
+              isClearable
+              isSearchable
+              theme={selectTheme => ({
+                ...selectTheme,
+                borderRadius: theme.shape.borderRadius,
+                colors: {
+                  ...selectTheme.colors,
+                  primary: theme.palette.primary.main,
+                  primary75: theme.palette.primary.light,
+                  primary50: theme.palette.primary.light + '80',
+                  primary25: theme.palette.primary.light + '40',
+                  danger: theme.palette.error.main,
+                  dangerLight: theme.palette.error.light,
+                  neutral0: theme.palette.background.paper,
+                  neutral5: theme.palette.action.hover,
+                  neutral10: theme.palette.action.selected,
+                  neutral20: theme.palette.divider,
+                  neutral30: theme.palette.text.disabled,
+                  neutral40: theme.palette.text.secondary,
+                  neutral50: theme.palette.text.secondary,
+                  neutral60: theme.palette.text.primary,
+                  neutral70: theme.palette.text.primary,
+                  neutral80: theme.palette.text.primary,
+                  neutral90: theme.palette.text.primary
                 }
-
-                if (typeof value === 'string') {
-                  return option.value === value
-                }
-              }
-
-              if (typeof value === 'object' && value && 'value' in value && typeof option === 'string') {
-                return value.value === option
-              }
-
-              return false
-            }}
-            noOptionsText={noOptionsText}
-            loadingText={loadingText}
-            renderInput={params => (
-              <MUITextField
-                {...params}
-                label={label}
-                placeholder={placeholder}
-                required={required}
-                error={!!error}
-                helperText={error?.message}
-                variant='outlined'
-                slotProps={{
-                  inputLabel: {
-                    shrink: true
-                  }
-                }}
-                slots={{
-                  endAdornment: () => (
-                    <>
-                      {loading || isSearching ? <CircularProgress color='inherit' size={20} /> : null}
-                      {params.InputProps?.endAdornment}
-                    </>
-                  )
-                }}
-                {...props}
-              />
-            )}
-            renderOption={(props, option) => (
-                <MenuItem {...props} key={option.value} className='!py-2 !px-4'>
-                  {option.label}
-                </MenuItem>
-            )}
-          />
-        )
-      }}
-      slotProps={{
-          paper: {
-            children: (
-              <>
-                {refreshData && (
-                  <SearchMenuItem
-                    refreshData={refreshData}
-                    minSearchLength={minSearchLength}
-                    debounceTime={debounceTime}
-                    onSearchResults={handleSearchResults}
-                    onSearchStart={handleSearchStart}
-                    loading={isSearching}
-                    searchPlaceholder='Buscar opciones...'
-                  />
-                )}
-              </>
-            )
-        }
-      }
-    }
-    />
+              })}
+            />
+            {error && <FormHelperText error>{error.message}</FormHelperText>}
+          </>
+        )}
+      />
+    </div>
   )
 }
+
+export default AsyncSelectField;

@@ -2,7 +2,8 @@ import type { ReactNode } from 'react'
 
 import type { Control, FieldPath, FieldValues, UseFormReturn } from 'react-hook-form'
 
-import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response.ts'
+
+
 
 import type {
   TextFieldProps as MuiTextFieldProps,
@@ -11,6 +12,10 @@ import type { CheckboxProps as MuiCheckboxProps } from '@mui/material/Checkbox'
 import type { InputProps as MuiInputProps } from '@mui/material/Input'
 
 import type { z } from 'zod'
+
+import type { InterfaceRepositoryAPI } from '@/services/repositories/BaseRepository'
+
+import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response.ts'
 
 export type FormRepository = {
   base_url: string
@@ -89,15 +94,7 @@ export type AsyncLoadFunction<T = any> = (params?: {
 }) => Promise<ResponseAPI<T>>
 
 export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
-  refreshData: AsyncLoadFunction
-  minSearchLength?: number
-  debounceTime?: number
-  multiple?: boolean
-  options?: AsyncSelectOption[]
-  loading?: boolean
-  fullWidth?: boolean
-  placeholder?: string
-  searchPlaceholder?: string
+  repository: InterfaceRepositoryAPI<any>
 }
 
 export type PermissionsFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & {

@@ -131,3 +131,96 @@ code {
   background-color: rgb(var(--mui-palette-info-mainChannel) / 0.08);
   border: 0;
 }
+
+/* React Select Custom Styles to integrate with MUI Theme */
+.react-select-container .react-select__control {
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.react-select-container .react-select__control:hover {
+  border-color: var(--mui-palette-action-active);
+}
+
+.react-select-container .react-select__control--is-focused {
+  border-color: var(--mui-palette-primary-main);
+  box-shadow: 0 0 0 2px rgba(var(--mui-palette-primary-mainChannel), 0.16);
+}
+
+.react-select-container .react-select__control--is-focused:hover {
+  border-color: var(--mui-palette-primary-main);
+}
+
+.react-select-container .react-select__menu {
+  border: 1px solid var(--mui-palette-divider);
+  box-shadow: var(--mui-customShadows-lg);
+}
+
+.react-select-container .react-select__option {
+  transition: background-color 0.15s ease-in-out;
+}
+
+.react-select-container .react-select__option--is-focused {
+  background-color: var(--mui-palette-action-hover);
+}
+
+.react-select-container .react-select__option--is-selected {
+  background-color: var(--mui-palette-primary-main);
+  color: var(--mui-palette-primary-contrastText);
+}
+
+.react-select-container .react-select__option--is-selected.react-select__option--is-focused {
+  background-color: var(--mui-palette-primary-dark);
+}
+
+.react-select-container .react-select__placeholder {
+  color: var(--mui-palette-text-secondary);
+}
+
+.react-select-container .react-select__input-container {
+  color: var(--mui-palette-text-primary);
+}
+
+.react-select-container .react-select__single-value {
+  color: var(--mui-palette-text-primary);
+}
+
+.react-select-container .react-select__indicator-separator {
+  background-color: var(--mui-palette-divider);
+}
+
+.react-select-container .react-select__dropdown-indicator {
+  color: var(--mui-palette-text-secondary);
+  transition: color 0.15s ease-in-out;
+}
+
+.react-select-container .react-select__dropdown-indicator:hover {
+  color: var(--mui-palette-text-primary);
+}
+
+.react-select-container .react-select__clear-indicator {
+  color: var(--mui-palette-text-secondary);
+  transition: color 0.15s ease-in-out;
+}
+
+.react-select-container .react-select__clear-indicator:hover {
+  color: var(--mui-palette-text-primary);
+}
+
+.react-select-container .react-select__loading-indicator {
+  color: var(--mui-palette-primary-main);
+}
+
+.react-select-container .react-select__value-container {
+  padding: 8px 16px;
+}
+
+.react-select-container .react-select__control--is-disabled {
+  background-color: var(--mui-palette-action-disabledBackground);
+  border-color: var(--mui-palette-divider);
+  opacity: 0.6;
+}
+
+.react-select-container .react-select__control--is-disabled .react-select__placeholder,
+.react-select-container .react-select__control--is-disabled .react-select__single-value {
+  color: var(--mui-palette-text-disabled);
+}

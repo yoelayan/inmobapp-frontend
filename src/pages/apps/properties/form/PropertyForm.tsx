@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, memo } from 'react'
 
+
 import { useFormContext } from 'react-hook-form'
 
 import classnames from 'classnames'
@@ -61,6 +62,7 @@ import {
   type CreatePropertyFormData,
   type EditPropertyFormData
 } from '@/validations/propertySchema'
+import StatesRepository from '@/services/repositories/locations/StatesRepository'
 
 interface PropertyFormProps {
   mode?: 'create' | 'edit'
@@ -93,7 +95,7 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 }))
 
 
-const Step1Content = () => {
+const Step1Content = memo(() => {
   console.log('re-render')
   const { data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
   const { data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
@@ -111,12 +113,14 @@ const Step1Content = () => {
 
   // watch
   const { watch } = useFormContext()
-  const stateId = watch('state_id')
+  const state = watch('state_id')
 
   const municipalityId = watch('municipality_id')
 
   useEffect(() => {
-    if (stateId) {
+    console.log('state', state)
+
+    if (state) {
       fetchMunicipalities(
         {
           page: 1,
@@ -125,13 +129,13 @@ const Step1Content = () => {
           filters: [
             {
               field: 'state',
-              value: stateId
+              value: state.value
             }
           ]
         }
       )
     }
-  }, [stateId, fetchMunicipalities])
+  }, [state, fetchMunicipalities])
 
   useEffect(() => {
 
@@ -184,17 +188,12 @@ const Step1Content = () => {
           name='state_id'
           label='Estado'
           required
-          fullWidth
-          loading={statesLoading}
-          refreshData={fetchStatesData}
-          options={states.results?.map(state => ({ value: state.id, label: state.name })) || []}
-          placeholder='Seleccionar estado...'
-          minSearchLength={0}
+          repository={StatesRepository}
         />
       </Grid>
 
       <Grid size={{ xs: 12, md: 3 }}>
-        <FormField
+        {/* <FormField
           type='async-select'
           name='municipality_id'
           label='Municipio'
@@ -203,13 +202,13 @@ const Step1Content = () => {
           loading={municipalitiesLoading}
           refreshData={fetchMunicipalities}
           options={municipalities.results?.map(municipality => ({ value: municipality.id, label: municipality.name })) || []}
-          placeholder='Seleccionar municipio...'
+
           minSearchLength={0}
           disabled={!stateId}
-        />
+        /> */}
       </Grid>
       <Grid size={{ xs: 12, md: 3 }}>
-        <FormField
+        {/* <FormField
           type='async-select'
           name='parish_id'
           label='Parroquia'
@@ -218,10 +217,10 @@ const Step1Content = () => {
           loading={parishesLoading}
           refreshData={fetchParishes}
           options={parishes.results?.map(parish => ({ value: parish.id, label: parish.name })) || []}
-          placeholder='Seleccionar parroquia...'
+
           minSearchLength={0}
           disabled={!municipalityId}
-        />
+        /> */}
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
         <FormField name='code' label='Código' fullWidth />
@@ -231,7 +230,7 @@ const Step1Content = () => {
       </Grid>
     </>
   )
-}
+})
 
 const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormProps) => {
   const { notify } = useNotification()
@@ -590,10 +589,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               onSuccess={handleSuccess}
               onError={handleError}
               setFormData={setFormData}
+              actionsComponent={<FormNavigationButtons />}
             >
               <Grid container spacing={6}>
                 {renderStepContent(activeStep)}
-                <FormNavigationButtons />
               </Grid>
             </Form>
           )}
