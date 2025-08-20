@@ -33,14 +33,14 @@ const basePropertySchema = z.object({
 
   rent_price: z.coerce.number().min(0, { message: 'El precio de alquiler debe ser mayor o igual a 0' }).optional(),
 
-  state: z
+  state_id: z
     .object({
       label: z.string(),
       value: z.number()
     })
     .optional(),
 
-  municipality: z
+  municipality_id: z
     .object({
       label: z.string(),
       value: z.number()

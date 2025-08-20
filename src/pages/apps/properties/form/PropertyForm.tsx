@@ -142,7 +142,7 @@ const Step1Content = memo(() => {
       <Grid size={{ xs: 12, md: 6 }}>
         <FormField
           type='async-select'
-          name='state'
+          name='state_id'
           label='Estado'
           required
           repository={StatesRepository}
@@ -152,7 +152,7 @@ const Step1Content = memo(() => {
       <Grid size={{ xs: 12, md: 3 }}>
         <FormField
           type='async-select'
-          name='municipality'
+          name='municipality_id'
           label='Municipio'
           required
           repository={MunicipalitiesRepository}
@@ -404,6 +404,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const setFormData = (data: any, methods: any) => {
     Object.entries(data).forEach(([key, value]) => {
+      if (typeof value === 'object' && value !== null) {
+        value = value.value
+      }
+
       methods.setValue(key, value)
     })
   }
