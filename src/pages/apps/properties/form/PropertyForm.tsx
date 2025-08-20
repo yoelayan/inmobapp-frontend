@@ -224,10 +224,18 @@ const Step1Content = () => {
         />
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
-        <FormField name='code' label='Código' fullWidth />
+        <FormField name='code'
+          label='Código'
+          fullWidth
+          required
+        />
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
-        <FormField name='address' label='Dirección' required fullWidth />
+        <FormField name='address'
+          label='Dirección'
+          required={false}
+          fullWidth
+        />
       </Grid>
     </>
   )
@@ -243,11 +251,11 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   /* Data */
 
-  const { data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
-  const { fetchData: fetchClients } = useClients()
-  const { data: clientStatuses, fetchData: fetchClientStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers } = useUsers()
-  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
+  const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
+  const { loading: clientsLoading, data: clients, fetchData: fetchClients } = useClients()
+  const { loading: clientStatusLoading, data: clientStatuses, fetchData: fetchClientStatuses } = useClientStatus()
+  const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsers()
+  const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
 
 
   // Cargar datasets una sola vez (evita loops por identidades inestables)
@@ -418,6 +426,28 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const handleError = (error: any) => {
     console.error('Error en el formulario:', error)
+    console.error('Error response:', error.response)
+    console.error('Error data:', error.response?.data)
+    console.error('Error status:', error.response?.status)
+    console.error('Error headers:', error.response?.headers)
+
+    // Mostrar el error específico del backend
+    if (error.response?.data) {
+      const errorData = error.response.data
+      console.error('Backend error details:', errorData)
+
+      if (errorData.message) {
+        notify(errorData.message, 'error')
+      } else if (errorData.detail) {
+        notify(errorData.detail, 'error')
+      } else if (errorData.error) {
+        notify(errorData.error, 'error')
+      } else {
+        notify(`Error ${error.response.status}: ${JSON.stringify(errorData)}`, 'error')
+      }
+    } else {
+      notify('Error al procesar el formulario', 'error')
+    }
   }
 
   const setFormData = (data: any, methods: any) => {
@@ -440,8 +470,32 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     return (
       <Grid size={{ xs: 12, md: 6 }}>
         <Box className='flex items-end gap-2'>
-          <Box className='flex-1'>{/* Async select de clientes */}</Box>
-          <Button variant='outlined' onClick={handleOpenClientModal} sx={{ minWidth: 'auto', height: '56px', px: 2 }}>
+          <Box className='flex-1'>
+            <FormField
+              type='async-select'
+              name='owner_id'
+              label='Cliente'
+              required
+              fullWidth
+              loading={clientsLoading}
+              refreshData={fetchClients}
+              options={clients?.results?.map(client => ({
+                value: client.id,
+                label: client.name
+              })) || []}
+              placeholder='Seleccionar cliente...'
+              minSearchLength={0}
+            />
+          </Box>
+          <Button
+            variant='outlined'
+            onClick={handleOpenClientModal}
+            sx={{
+              minWidth: 'auto',
+              height: '56px',
+              px: 2
+            }}
+          >
             <i className='tabler-plus text-[18px]' />
           </Button>
         </Box>
@@ -453,7 +507,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     const formMethods = useFormContext()
 
     return (
-      <Grid size={{ xs: 12 }} className='flex justify-between'>
+        <Box display='flex' gap={2} justifyContent='space-between' mt={3}>
         <Button
           variant='tonal'
           disabled={activeStep === 0}
@@ -477,7 +531,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         >
           {activeStep === steps.length - 1 ? 'Guardar' : activeStep === 1 ? 'Crear Propiedad' : 'Siguiente'}
         </Button>
-      </Grid>
+      </Box>
     )
   }
 
@@ -488,8 +542,40 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
       case 1:
         return (
           <>
-            <Grid size={{ xs: 12, md: 6 }}>{/* Franquicia */}</Grid>
-            <Grid size={{ xs: 12, md: 6 }}>{/* Usuario asignado */}</Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                type='async-select'
+                name='franchise_id'
+                label='Franquicia'
+                required
+                fullWidth
+                loading={franchisesLoading}
+                refreshData={fetchFranchises}
+                options={franchises?.results?.map(franchise => ({
+                  value: franchise.id,
+                  label: franchise.name
+                })) || []}
+                placeholder='Seleccionar franquicia...'
+                minSearchLength={0}
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <FormField
+                type='async-select'
+                name='assigned_to_id'
+                label='Usuario Asignado'
+                required
+                fullWidth
+                loading={usersLoading}
+                refreshData={fetchUsers}
+                options={users?.results?.map(user => ({
+                  value: user.id,
+                  label: user.name
+                })) || []}
+                placeholder='Seleccionar usuario...'
+                minSearchLength={0}
+              />
+            </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <FormField
                 name='type_negotiation_id'
@@ -590,10 +676,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               onSuccess={handleSuccess}
               onError={handleError}
               setFormData={setFormData}
+              actionsComponent={<FormNavigationButtons />}
             >
               <Grid container spacing={6}>
                 {renderStepContent(activeStep)}
-                <FormNavigationButtons />
               </Grid>
             </Form>
           )}
