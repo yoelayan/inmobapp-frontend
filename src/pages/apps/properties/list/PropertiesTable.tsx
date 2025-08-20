@@ -66,8 +66,13 @@ const columns: ColumnDef<IRealProperty>[] = [
     enableColumnFilter: true
   },
   {
-    accessorKey: 'city.name',
-    header: 'Ciudad',
+    accessorKey: 'municipality.name',
+    header: 'Municipio',
+    enableColumnFilter: true
+  },
+  {
+    accessorKey: 'parish.name',
+    header: 'Parroquia',
     enableColumnFilter: true
   },
   {
@@ -79,11 +84,54 @@ const columns: ColumnDef<IRealProperty>[] = [
     accessorKey: 'price',
     header: 'Precio (USD)',
     enableColumnFilter: false,
-    cell: ({ getValue }) => {
-      const price = getValue()
+    cell: ({ row }) => {
+      const price = row.original.price
+      const rentPrice = row.original.rent_price
+      const negotiationType = row.original.type_negotiation?.name
 
+      // Si no hay ningún precio, mostrar vacío
+      if (!price && !rentPrice) return ''
 
-      return price ? `$${Number(price).toLocaleString()}` : ''
+      // Si es "Venta y Alquiler", mostrar ambos precios
+      if (negotiationType === 'Venta y Alquiler' && price && rentPrice) {
+        return (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+            <Box sx={{ fontSize: '0.8rem' }}>
+              <Box component="span" sx={{ color: 'success.main', fontWeight: 'bold' }}>V: </Box>
+              ${Number(price).toLocaleString()}
+            </Box>
+            <Box sx={{ fontSize: '0.8rem' }}>
+              <Box component="span" sx={{ color: 'info.main', fontWeight: 'bold' }}>A: </Box>
+              ${Number(rentPrice).toLocaleString()}
+            </Box>
+          </Box>
+        )
+      }
+
+      // Para otros tipos, mostrar solo el precio correspondiente
+      let displayPrice = null
+      let priceType = ''
+
+      if (negotiationType === 'Venta' && price) {
+        displayPrice = price
+        priceType = 'Venta'
+      } else if (negotiationType === 'Alquiler' && rentPrice) {
+        displayPrice = rentPrice
+        priceType = 'Alquiler'
+      }
+
+      if (!displayPrice) return ''
+
+      return (
+        <Box>
+          <Box sx={{ fontWeight: 'bold' }}>
+            ${Number(displayPrice).toLocaleString()}
+          </Box>
+          <Box sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+            {priceType}
+          </Box>
+        </Box>
+      )
     }
   },
   {

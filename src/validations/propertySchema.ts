@@ -62,7 +62,9 @@ const basePropertySchema = z.object({
   address: z
     .string()
     .min(5, { message: 'La dirección debe tener al menos 5 caracteres' })
-    .max(255, { message: 'La dirección debe tener menos de 255 caracteres' }),
+    .max(255, { message: 'La dirección debe tener menos de 255 caracteres' })
+    .optional()
+    .or(z.literal('')),
 
   owner_id: z
     .number({ message: 'El cliente es requerido' })
