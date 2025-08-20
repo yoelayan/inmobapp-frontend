@@ -152,7 +152,7 @@ const Step1Content = memo(() => {
       <Grid size={{ xs: 12, md: 3 }}>
         <FormField
           type='async-select'
-          name='municipality_id'
+          name='municipality'
           label='Municipio'
           required
           repository={MunicipalitiesRepository}
