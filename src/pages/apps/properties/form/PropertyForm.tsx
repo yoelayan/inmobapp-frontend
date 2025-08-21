@@ -64,6 +64,10 @@ import {
 
 import StatesRepository from '@/services/repositories/locations/StatesRepository'
 import MunicipalitiesRepository from '@/services/repositories/locations/MunicipalitiesRepository'
+import ParishesRepository from '@/services/repositories/locations/ParishesRepository'
+import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
+import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
+import UsersRepository from '@/services/repositories/users/UsersRepository'
 
 interface PropertyFormProps {
   mode?: 'create' | 'edit'
@@ -110,7 +114,8 @@ const Step1Content = memo(() => {
 
   // watch
   const { watch } = useFormContext()
-  const state = watch('state')
+  const state = watch('state_id')
+  const municipality = watch('municipality_id')
 
 
   return (
@@ -156,24 +161,20 @@ const Step1Content = memo(() => {
           label='Municipio'
           required
           repository={MunicipalitiesRepository}
-          filters={state ? [{ field: 'state', value: state?.value }] : []}
-          disabled={!state}
+          filters={state && state.value ? [{ field: 'state', value: state.value }] : []}
+          disabled={!state || !state.value}
         />
       </Grid>
       <Grid size={{ xs: 12, md: 3 }}>
-        {/* <FormField
+        <FormField
           type='async-select'
           name='parish_id'
           label='Parroquia'
           required
-          fullWidth
-          loading={parishesLoading}
-          refreshData={fetchParishes}
-          options={parishes.results?.map(parish => ({ value: parish.id, label: parish.name })) || []}
-
-          minSearchLength={0}
-          disabled={!municipalityId}
-        /> */}
+          repository={ParishesRepository}
+          filters={state && municipality ? [{ field: 'municipality', value: municipality?.value }] : []}
+          disabled={!state || !municipality}
+        />
       </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
         <FormField name='code'
@@ -404,11 +405,28 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const setFormData = (data: any, methods: any) => {
     Object.entries(data).forEach(([key, value]) => {
-      if (typeof value === 'object' && value !== null) {
-        value = value.value
+      if (typeof value === 'object' && value !== null && 'value' in value) {
+        // Mapear campos de ubicación
+        if (key === 'state') {
+          methods.setValue('state_id', value.value)
+        } else if (key === 'municipality') {
+          methods.setValue('municipality_id', value.value)
+        } else if (key === 'parish') {
+          methods.setValue('parish_id', value.value)
+        } else if (key === 'owner') {
+          methods.setValue('owner_id', value.value)
+        } else if (key === 'franchise') {
+          methods.setValue('franchise_id', value.value)
+        } else if (key === 'assigned_to') {
+          methods.setValue('assigned_to_id', value.value)
+        } else {
+          // Para otros campos, usar el valor directamente
+          methods.setValue(key, value.value)
+        }
+      } else {
+        // Para campos que no son objetos, usar el valor tal como está
+        methods.setValue(key, value)
       }
-
-      methods.setValue(key, value)
     })
   }
 
@@ -432,15 +450,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               name='owner_id'
               label='Cliente'
               required
-              fullWidth
-              loading={clientsLoading}
-              refreshData={fetchClients}
-              options={clients?.results?.map(client => ({
-                value: client.id,
-                label: client.name
-              })) || []}
-              placeholder='Seleccionar cliente...'
-              minSearchLength={0}
+              repository={ClientsRepository}
             />
           </Box>
           <Button
@@ -504,15 +514,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                 name='franchise_id'
                 label='Franquicia'
                 required
-                fullWidth
-                loading={franchisesLoading}
-                refreshData={fetchFranchises}
-                options={franchises?.results?.map(franchise => ({
-                  value: franchise.id,
-                  label: franchise.name
-                })) || []}
-                placeholder='Seleccionar franquicia...'
-                minSearchLength={0}
+                repository={FranchisesRepository}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -521,15 +523,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                 name='assigned_to_id'
                 label='Usuario Asignado'
                 required
-                fullWidth
-                loading={usersLoading}
-                refreshData={fetchUsers}
-                options={users?.results?.map(user => ({
-                  value: user.id,
-                  label: user.name
-                })) || []}
-                placeholder='Seleccionar usuario...'
-                minSearchLength={0}
+                repository={UsersRepository}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 6 }}>

@@ -12,12 +12,18 @@ const basePropertySchema = z.object({
   code: z.string().optional().or(z.literal('')),
 
   franchise_id: z
-    .number({ message: 'La franquicia es requerida' })
-    .min(1, { message: 'Debe seleccionar una franquicia' }),
+    .object({
+      label: z.string(),
+      value: z.number()
+    })
+    .optional(),
 
   assigned_to_id: z
-    .number({ message: 'El usuario asignado es requerido' })
-    .min(1, { message: 'Debe seleccionar un usuario' }),
+    .object({
+      label: z.string(),
+      value: z.number()
+    })
+    .optional(),
 
   status_id: z.number({ message: 'El estado es requerido' }).min(1, { message: 'Debe seleccionar un estado' }),
 
@@ -47,7 +53,12 @@ const basePropertySchema = z.object({
     })
     .optional(),
 
-  parish_id: z.number({ message: 'La parroquia es requerida' }).min(1, { message: 'Debe seleccionar una parroquia' }),
+  parish_id: z
+    .object({
+      label: z.string(),
+      value: z.number()
+    })
+    .optional(),
 
   address: z
     .string()
@@ -56,7 +67,12 @@ const basePropertySchema = z.object({
     .optional()
     .or(z.literal('')),
 
-  owner_id: z.number({ message: 'El cliente es requerido' }).min(1, { message: 'Debe seleccionar un cliente' }),
+  owner_id: z
+    .object({
+      label: z.string(),
+      value: z.number()
+    })
+    .optional(),
 
   characteristics: z
     .array(
