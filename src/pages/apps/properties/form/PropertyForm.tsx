@@ -404,32 +404,35 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   }
 
   const setFormData = (data: any, methods: any) => {
+    const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
+
     Object.entries(data).forEach(([key, value]) => {
-      if (typeof value === 'object' && value !== null && 'value' in value) {
-        // Mapear campos de ubicación
-        if (key === 'state') {
-          methods.setValue('state_id', value.value)
-        } else if (key === 'municipality') {
-          methods.setValue('municipality_id', value.value)
-        } else if (key === 'parish') {
-          methods.setValue('parish_id', value.value)
-        } else if (key === 'owner') {
-          methods.setValue('owner_id', value.value)
-        } else if (key === 'franchise') {
-          methods.setValue('franchise_id', value.value)
-        } else if (key === 'assigned_to') {
-          methods.setValue('assigned_to_id', value.value)
-        } else {
-          // Para otros campos, usar el valor directamente
-          methods.setValue(key, value.value)
-        }
+      if (asyncFields.includes(key)) {
+        methods.setValue(key, value.value)
       } else {
-        // Para campos que no son objetos, usar el valor tal como está
         methods.setValue(key, value)
       }
     })
   }
+  // Función para transformar los datos antes de enviarlos al backend
+  const transformFormData = (data: any) => {
+    console.log('🔍 transformFormData ejecutándose con:', data)
 
+    const transformedData = { ...data }
+
+    // Transformar campos async-select de {label, value} a solo value
+    const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
+
+    asyncFields.forEach(field => {
+      if (transformedData[field] && typeof transformedData[field] === 'object' && 'value' in transformedData[field]) {
+        console.log(`🔄 Transformando ${field}:`, transformedData[field], '→', transformedData[field].value)
+        transformedData[field] = transformedData[field].value
+      }
+    })
+
+    console.log('✅ Datos transformados:', transformedData)
+    return transformedData
+  }
   const ClientFieldWithCreateButton = () => {
     const { setValue } = useFormContext()
 
@@ -626,6 +629,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               onSuccess={handleSuccess}
               onError={handleError}
               setFormData={setFormData}
+              transformData={transformFormData}
               actionsComponent={<FormNavigationButtons />}
             >
               <Grid container spacing={6}>

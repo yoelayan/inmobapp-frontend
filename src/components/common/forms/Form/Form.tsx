@@ -24,6 +24,7 @@ export const Form = <T extends FieldValues>({
   mode = 'create',
   entityId,
   setFormData,
+  transformData,
   actionsComponent
 }: BaseFormProps<T>) => {
 
@@ -81,10 +82,14 @@ export const Form = <T extends FieldValues>({
 
   const onSubmit = (data: T) => {
     if (repository) {
-      console.log('Submitting form:', data)
-      console.log('Form data keys:', Object.keys(data))
-      console.log('Form data values:', Object.values(data))
-      submitForm(data)
+      // Transformar los datos antes del envío si existe transformData
+      const finalData = transformData ? transformData(data) : data
+
+      console.log('Submitting form:', finalData)
+      console.log('Form data keys:', Object.keys(finalData))
+      console.log('Form data values:', Object.values(finalData))
+
+      submitForm(finalData)
     } else {
       // Si no hay repository, ejecutar onSuccess directamente
       onSuccess?.(data)
