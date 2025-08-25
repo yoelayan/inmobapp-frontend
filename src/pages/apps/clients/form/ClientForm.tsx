@@ -92,31 +92,17 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
       <Grid container spacing={3}>
         {/* --- Campo Nombre (Usando FormField) --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          <FormField
-            name='name'
-            label='Nombre'
-            required
-            fullWidth
-          />
+          <FormField name='name' label='Nombre' required fullWidth />
         </Grid>
 
         {/* --- Campo Teléfono - ocupa 3 si hay email, 6 si no --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          <FormField
-            name='phone'
-            label='Telefono'
-            required
-            fullWidth
-          />
+          <FormField name='phone' label='Telefono' required fullWidth />
         </Grid>
 
         {/* --- Campo Email - ocupa 3 si hay teléfono, 6 si no --- */}
         <Grid size={{ xs: 12, sm: 6 }}>
-          <FormField
-            name='email'
-            label='Email'
-            fullWidth
-          />
+          <FormField name='email' label='Email' fullWidth />
         </Grid>
 
         {/* --- Campo Status (Usando FormField) --- */}

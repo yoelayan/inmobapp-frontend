@@ -13,18 +13,18 @@ export const createClientSchema = z.object({
       label: z.string(),
       value: z.number()
     })
-  .refine((data) => data.value !== undefined, {
-    message: 'La franquicia es requerida'
-  }),
+    .refine(data => data.value !== undefined, {
+      message: 'La franquicia es requerida'
+    }),
 
-  assigned_to_id: z
+  elpepe: z
     .object({
       label: z.string(),
       value: z.number()
     })
-  .refine((data) => data.value !== undefined, {
-    message: 'El usuario asignado es requerido'
-  })
+    .refine(data => data.value !== undefined, {
+      message: 'El usuario asignado es requerido'
+    })
 })
 
 // Esquema para editar un cliente
@@ -42,7 +42,7 @@ export const editClientSchema = z.object({
     message: 'El franquicia es requerida'
   }),
 
-  assigned_to_id: z
+  elpepe: z
     .object({
       label: z.string(),
       value: z.number()

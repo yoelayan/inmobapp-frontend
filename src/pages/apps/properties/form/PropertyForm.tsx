@@ -574,58 +574,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
     console.log('✅ setFormData completado')
 
-    // Verificar que los valores se establecieron correctamente
-    setTimeout(() => {
-      console.log('🔍 Verificación de valores establecidos:')
-      textFields.forEach(field => {
-        const value = methods.getValues(field)
-        console.log(`  - ${field}:`, value)
-      })
-      selectFields.forEach(field => {
-        const value = methods.getValues(field)
-        console.log(`  - ${field}:`, value)
-      })
-      asyncFieldOrder.forEach(field => {
-        const value = methods.getValues(field)
-        console.log(`  - ${field}:`, value)
-      })
-    }, 100)
-  }
-  // Función para formatear los datos antes de enviarlos al backend
-  const formatData = (data: any) => {
-    console.log('🔍 formatData ejecutándose con:', data)
 
-    const formattedData = { ...data }
-
-    // Transformar campos async-select de {label, value} a solo value
-    const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
-
-    // Campos del Paso 1 que necesitan transformación especial
-    const step1Fields = ['name', 'code', 'address', 'description', 'status_id', 'type_property_id']
-
-    console.log('📋 Campos a transformar:')
-    console.log('  - AsyncFields:', asyncFields)
-    console.log('  - Step1Fields:', step1Fields)
-
-    // Transformar campos async-select
-    asyncFields.forEach(field => {
-      if (formattedData[field] && typeof formattedData[field] === 'object' && 'value' in formattedData[field]) {
-        console.log(`🔄 Transformando async-select ${field}:`, formattedData[field], '→', formattedData[field].value)
-        formattedData[field] = formattedData[field].value
-      }
-    })
-
-    // Verificar que los campos del Paso 1 estén presentes
-    step1Fields.forEach(field => {
-      if (formattedData[field] !== undefined) {
-        console.log(`✅ Campo Paso 1 ${field}:`, formattedData[field])
-      } else {
-        console.log(`⚠️ Campo Paso 1 ${field} NO encontrado`)
-      }
-    })
-
-    console.log('✅ Datos formateados:', formattedData)
-    return formattedData
   }
 
   const FormNavigationButtons = () => {
@@ -820,7 +769,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               onSuccess={handleSuccess}
               onError={handleError}
               setFormData={setFormData}
-              formatData={formatData}
               actionsComponent={<FormNavigationButtons />}
             >
               <Grid container spacing={6}>
