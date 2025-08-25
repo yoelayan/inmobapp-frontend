@@ -339,12 +339,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   // Modal crear cliente
   const handleOpenClientModal = () => {
-    if (!users || !franchises || !clientStatuses) {
-      fetchUsers()
-      fetchFranchises()
-      fetchClientStatuses()
-    }
-
     setIsClientModalOpen(true)
   }
 
@@ -597,11 +591,11 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
       })
     }, 100)
   }
-  // Función para transformar los datos antes de enviarlos al backend
-  const transformFormData = (data: any) => {
-    console.log('🔍 transformFormData ejecutándose con:', data)
+  // Función para formatear los datos antes de enviarlos al backend
+  const formatData = (data: any) => {
+    console.log('🔍 formatData ejecutándose con:', data)
 
-    const transformedData = { ...data }
+    const formattedData = { ...data }
 
     // Transformar campos async-select de {label, value} a solo value
     const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
@@ -615,23 +609,23 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
     // Transformar campos async-select
     asyncFields.forEach(field => {
-      if (transformedData[field] && typeof transformedData[field] === 'object' && 'value' in transformedData[field]) {
-        console.log(`🔄 Transformando async-select ${field}:`, transformedData[field], '→', transformedData[field].value)
-        transformedData[field] = transformedData[field].value
+      if (formattedData[field] && typeof formattedData[field] === 'object' && 'value' in formattedData[field]) {
+        console.log(`🔄 Transformando async-select ${field}:`, formattedData[field], '→', formattedData[field].value)
+        formattedData[field] = formattedData[field].value
       }
     })
 
     // Verificar que los campos del Paso 1 estén presentes
     step1Fields.forEach(field => {
-      if (transformedData[field] !== undefined) {
-        console.log(`✅ Campo Paso 1 ${field}:`, transformedData[field])
+      if (formattedData[field] !== undefined) {
+        console.log(`✅ Campo Paso 1 ${field}:`, formattedData[field])
       } else {
         console.log(`⚠️ Campo Paso 1 ${field} NO encontrado`)
       }
     })
 
-    console.log('✅ Datos transformados:', transformedData)
-    return transformedData
+    console.log('✅ Datos formateados:', formattedData)
+    return formattedData
   }
 
   const FormNavigationButtons = () => {
@@ -826,7 +820,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               onSuccess={handleSuccess}
               onError={handleError}
               setFormData={setFormData}
-              transformData={transformFormData}
+              transformData={formatData}
               actionsComponent={<FormNavigationButtons />}
             >
               <Grid container spacing={6}>
@@ -856,9 +850,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           {isClientModalOpen && (
             <Box>
                 <ClientForm
-                  statuses={clientStatuses}
-                  users={users}
-                  franchises={franchises}
                   onSuccess={handleClientCreated}
                 />
             </Box>

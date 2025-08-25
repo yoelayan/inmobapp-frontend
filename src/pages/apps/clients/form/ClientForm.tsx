@@ -78,32 +78,32 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
   // Determinar el esquema a usar
   const schema = clientId ? editClientSchema : createClientSchema
 
-  // Función para transformar los datos antes de enviarlos al backend
-  const transformFormData = (data: any) => {
-    console.log('🔍 transformFormData ejecutándose con:', data)
+  // Función para formatear los datos antes de enviarlos al backend
+  const formatData = (data: any) => {
+    console.log('🔍 formatData ejecutándose con:', data)
 
-    const transformedData = { ...data }
+    const formattedData = { ...data }
 
     // Transformar campos async-select de {label, value} a solo value
-    const asyncFields = ['franchise', 'assigned_to']
+    const asyncFields = ['franchise_id', 'assigned_to_id']
 
     // Transformar campos async-select
     asyncFields.forEach(field => {
-      if (transformedData[field] && typeof transformedData[field] === 'object' && 'value' in transformedData[field]) {
-        console.log(`🔄 Transformando async-select ${field}:`, transformedData[field], '→', transformedData[field].value)
-        transformedData[field] = transformedData[field].value
+      if (formattedData[field] && typeof formattedData[field] === 'object' && 'value' in formattedData[field]) {
+        console.log(`🔄 Transformando async-select ${field}:`, formattedData[field], '→', formattedData[field].value)
+        formattedData[field] = formattedData[field].value
       }
     })
 
-    console.log('✅ Datos transformados:', transformedData)
-    return transformedData
+    console.log('✅ Datos formateados:', formattedData)
+    return formattedData
   }
 
   // Función para establecer datos del formulario (para modo edición)
   const setFormData = (data: any, methods: any) => {
     console.log('🔍 setFormData ejecutándose con:', data)
 
-    const asyncFields = ['franchise', 'assigned_to']
+    const asyncFields = ['franchise_id', 'assigned_to_id']
 
     // Establecer campos async-select
     asyncFields.forEach(field => {
@@ -118,7 +118,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
           console.log(`✅ Campo ${field} establecido:`, { label: value.name || value.email || value.identifier || value.id, value: value.id })
         } else if (typeof value === 'number') {
           // Es solo el ID, necesitamos buscar el objeto correspondiente para obtener el label
-          const objectKey = field === 'franchise' ? 'franchise' : 'assigned_to'
+          const objectKey = field === 'franchise_id' ? 'franchise' : 'assigned_to'
           const objectData = data[objectKey]
 
           if (objectData && typeof objectData === 'object' && 'id' in objectData) {
@@ -136,7 +136,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
         } else {
           // Otro tipo de valor
           methods.setValue(field, value)
-          console.log(`✅ Campo ${field} establecido con valor directo:`, value)
+          console.log(`✅ Campo ${field} establecido solo con ID:`, value)
         }
       }
     })
@@ -173,7 +173,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
       onSuccess={handleSuccess}
       onError={handleError}
       setFormData={setFormData}
-      transformData={transformFormData}
+      transformData={formatData}
     >
       <Grid container spacing={3}>
         {/* --- Campo Nombre (Usando FormField) --- */}
@@ -221,7 +221,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormField
             type='async-select'
-            name='franchise'
+            name='franchise_id'
             label='Franquicia'
             required
             repository={FranchisesRepository}
@@ -232,7 +232,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormField
             type='async-select'
-            name='assigned_to'
+            name='assigned_to_id'
             label='Usuario Asignado'
             required
             repository={UsersRepository}
