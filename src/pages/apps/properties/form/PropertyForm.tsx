@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef, memo } from 'react'
 
-import type { FilterItem } from '@/types/api/response'
 
 
 import { useFormContext } from 'react-hook-form'
@@ -32,10 +31,7 @@ import type { StepProps } from '@mui/material/Step'
 
 import usePropertyStatus from '@hooks/api/realstate/usePropertyStatus'
 import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
-
-
 import usePropertyNegotiation from '@hooks/api/realstate/usePropertyNegotiation'
-
 import useClients from '@hooks/api/crm/useClients'
 import useClientStatus from '@hooks/api/crm/useClientStatus'
 import useUsers from '@hooks/api/users/useUsers'
@@ -55,7 +51,6 @@ import {
   editPropertySchema,
   defaultPropertyValues,
   step1Schema,
-  step3Schema,
   step1PartialSchema,
   step2PartialSchema,
   type CreatePropertyFormData,
@@ -97,7 +92,6 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 
 const Step1Content = memo(({ statuses, propertyTypes }: { statuses: any, propertyTypes: any }) => {
   console.log('re-render')
-  const [ municipalitiesFilters, setMunicipalitiesFilters ] = useState<FilterItem[]>([])
 
   // watch
   const { watch } = useFormContext()
@@ -314,15 +308,13 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   /* Data */
 
-  const { loading: negotiationsLoading, data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
-  const { loading: clientsLoading, data: clients, fetchData: fetchClients } = useClients()
-  const { loading: clientStatusLoading, data: clientStatuses, fetchData: fetchClientStatuses } = useClientStatus()
-  const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsers()
-  const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
-
   const { data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
   const { data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
-
+  const { data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
+  const { fetchData: fetchClients } = useClients()
+  const { data: clientStatuses, fetchData: fetchClientStatuses } = useClientStatus()
+  const { data: users, fetchData: fetchUsers } = useUsers()
+  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
 
   // Cargar datasets una sola vez (evita loops por identidades inestables)
   const didInitRef = useRef(false)
@@ -331,14 +323,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     if (didInitRef.current) return
     didInitRef.current = true
 
-    fetchNegotiations()
     fetchStatuses()
     fetchPropertyTypes()
-
-    fetchClients()
-    fetchClientStatuses()
-    fetchUsers()
-    fetchFranchises()
+    fetchNegotiations()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -768,7 +755,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   return (
     <>
-      <Card>
+      <Card className="mt-2 min-h-screen">
         <CardHeader title={propertyId ? 'Actualizar Propiedad' : 'Crear Propiedad'} />
 
         {/* Solo mostrar stepper en modo creación */}
@@ -868,18 +855,12 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         <DialogContent>
           {isClientModalOpen && (
             <Box>
-              {!users || !franchises || !clientStatuses ? (
-                <Box className='flex justify-center p-5'>
-                  <Typography>Cargando datos...</Typography>
-                </Box>
-              ) : (
                 <ClientForm
                   statuses={clientStatuses}
                   users={users}
                   franchises={franchises}
                   onSuccess={handleClientCreated}
                 />
-              )}
             </Box>
           )}
         </DialogContent>
