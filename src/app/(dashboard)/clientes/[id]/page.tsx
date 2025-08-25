@@ -1,56 +1,32 @@
 'use client'
 
-import React, { useEffect } from 'react'
+import React from 'react'
 
 import { useParams } from 'next/navigation'
 
-import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/material'
+import { Card, CardContent, CardHeader } from '@mui/material'
 
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
-import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useUsers from '@/hooks/api/users/useUsers'
-import useFranchises from '@/hooks/api/realstate/useFranchises'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
 const ClientPage: React.FC = () => {
   const params = useParams()
   const clientId = params?.id ? String(params.id) : undefined // Obtiene el ID de la URL si existe
 
-  const { data: statuses, fetchData: fetchStatuses, loading: loadingStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsers()
-  const { data: franchises, fetchData: fetchFranchises, loading: loadingFranchises } = useFranchises()
-
-  useEffect(() => {
-    fetchUsers()
-    fetchFranchises()
-    fetchStatuses()
-  }, [fetchUsers, fetchFranchises, fetchStatuses])
-
-  if (loadingStatuses || loadingUsers || loadingFranchises) {
-    return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
-        <CircularProgress />
-        <span style={{ marginLeft: '10px' }}>Cargando datos del Cliente...</span>
-      </Box>
-    )
-  }
-
   return (
     <>
       <BreadcrumbWrapper />
       <Card>
-      <CardHeader title='Actualizar Cliente' />
-      <CardContent>
-        <ClientForm
-          clientId={clientId}
-          statuses={statuses} // Pasa la lista de statuses al formulario
-          users={users}
-          franchises={franchises}
-
-          // onSuccess={() => { /* Redirigir o mostrar mensaje */ }} // Callback opcional
-        />
-      </CardContent>
-    </Card>
+        <CardHeader title='Actualizar Cliente' />
+        <CardContent>
+          <ClientForm
+            clientId={clientId}
+            onSuccess={() => {
+              /* Redirigir o mostrar mensaje */
+            }}
+          />
+        </CardContent>
+      </Card>
     </>
   )
 }

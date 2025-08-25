@@ -240,7 +240,7 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
 
       {/* Campos de precio según negociación */}
       {showSalePrice && (
-        <Grid size={{ xs: 12, md: showRentPrice ? 6 : 6 }}>
+        <Grid size={{ xs: 12, md: showRentPrice ? 3 : 6 }}>
           <FormField
             name='price'
             type='number'
@@ -251,7 +251,7 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
         </Grid>
       )}
       {showRentPrice && (
-        <Grid size={{ xs: 12, md: showSalePrice ? 6 : 6 }}>
+        <Grid size={{ xs: 12, md: showSalePrice ? 3 : 6 }}>
           <FormField
             name='rent_price'
             type='number'
