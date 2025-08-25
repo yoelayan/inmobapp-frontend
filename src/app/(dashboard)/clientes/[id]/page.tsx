@@ -16,7 +16,8 @@ const ClientPage: React.FC = () => {
   return (
     <>
       <BreadcrumbWrapper />
-      <Card>
+      {/* TODO: Enviar card al componente de formulario */}
+      <Card className="h-full mt-4">
         <CardHeader title='Actualizar Cliente' />
         <CardContent>
           <ClientForm
