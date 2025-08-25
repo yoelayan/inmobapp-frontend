@@ -82,6 +82,14 @@ export type ImageFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & Mui
   currentImageUrl?: string
 }
 
+export type MultipleImageFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & MuiInputProps & {
+  accept?: string
+  helperText?: string
+  previewSize?: number
+  currentImageUrls?: string[]
+  maxImages?: number
+}
+
 
 export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldBaseProps<T> {
   repository: InterfaceRepositoryAPI<any>

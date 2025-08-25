@@ -38,6 +38,7 @@ import useUsers from '@hooks/api/users/useUsers'
 import useFranchises from '@hooks/api/realstate/useFranchises'
 
 import { Form, FormField } from '@components/common/forms/Form'
+import { MultipleImageField } from '@components/common/forms/fields/MultipleImageField'
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import CustomAvatar from '@core/components/mui/Avatar'
 import DirectionalIcon from '@components/DirectionalIcon'
@@ -63,6 +64,7 @@ import ParishesRepository from '@/services/repositories/locations/ParishesReposi
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
 import UsersRepository from '@/services/repositories/users/UsersRepository'
+import { EditorField } from '@components/common/forms/fields/EditorField'
 
 interface PropertyFormProps {
   mode?: 'create' | 'edit'
@@ -668,8 +670,31 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
             <Typography variant='h6' gutterBottom sx={{ color: 'primary.main' }}>
               🏠 Datos de Publicación
             </Typography>
-            <Typography variant='body2' color='text.secondary'>
-              Esta sección será implementada próximamente con características dinámicas e imágenes.
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <EditorField
+              name='description'
+              label='Descripción'
+              placeholder='Describe las características de la propiedad...'
+              minHeight={150}
+              maxHeight={300}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <MultipleImageField
+              name='images'
+              label='Imágenes de la Propiedad'
+              accept='image/*'
+              maxImages={20}
+              helperText='Selecciona hasta 20 imágenes de la propiedad. Las primeras 5 se mostrarán en la vista principal.'
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic' }}>
+              Características dinámicas serán implementadas próximamente.
             </Typography>
           </Grid>
         </>
