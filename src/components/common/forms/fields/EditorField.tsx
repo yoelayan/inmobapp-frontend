@@ -11,7 +11,7 @@ import { TextAlign } from '@tiptap/extension-text-align'
 import classnames from 'classnames'
 
 // MUI Imports
-import { Box, Typography, Divider, FormHelperText } from '@mui/material'
+import { Box, Typography, Divider, FormHelperText, useTheme } from '@mui/material'
 
 // React Hook Form Imports
 import { Controller, useFormContext } from 'react-hook-form'
@@ -44,9 +44,9 @@ export const EditorField = <T extends FieldValues>({
       control={control}
       render={({ field, fieldState: { error } }) => (
         <Box>
-          <Typography variant='h6' className="mb-2">
+          <Typography variant='h6' sx={{ mb: 2 }}>
             {label}
-            {required && <span className="text-red-500 ml-1">*</span>}
+            {required && <span style={{ color: 'error.main' }}>*</span>}
           </Typography>
           <EditorComponent
             value={field.value || ''}
@@ -58,7 +58,7 @@ export const EditorField = <T extends FieldValues>({
             {...props}
           />
           {error && (
-            <FormHelperText error className="mt-1">
+            <FormHelperText error sx={{ mt: 1 }}>
               {error.message}
             </FormHelperText>
           )}
@@ -85,6 +85,8 @@ const EditorComponent = ({
   minHeight = 200,
   maxHeight = 400
 }: EditorComponentProps) => {
+  const theme = useTheme()
+
   const editor = useEditor({
     immediatelyRender: false,
     extensions: [
@@ -126,10 +128,20 @@ const EditorComponent = ({
   }, [disabled, editor])
 
   return (
-    <Box className="border border-gray-300 rounded-md overflow-hidden">
+    <Box
+      sx={{
+        border: '1px solid',  // ← Borde más fino
+        borderColor: theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.12)'  // ← Borde sutil en modo oscuro
+          : 'rgba(0, 0, 0, 0.08)',       // ← Borde sutil en modo claro
+        borderRadius: 1,  // ← Radio más pequeño
+        overflow: 'hidden',
+        bgcolor: theme.palette.background.paper
+      }}
+    >
       <EditorToolbar editor={editor} disabled={disabled} />
       <Divider />
-      <Box className="p-4">
+      <Box sx={{ p: 2 }}>
         <EditorContent editor={editor} />
       </Box>
     </Box>
@@ -143,16 +155,22 @@ const EditorToolbar = ({
   editor: Editor | null
   disabled?: boolean
 }) => {
+  const theme = useTheme()
+
   if (!editor) {
     return null
   }
 
-  const buttonClass = "transition-colors duration-200"
-  const activeClass = "bg-primary-100 text-primary-600"
-  const inactiveClass = "text-gray-600 hover:bg-gray-100"
-
   return (
-    <div className='flex flex-wrap gap-x-2 gap-y-1 p-3 bg-gray-50'>
+    <Box sx={{
+      display: 'flex',
+      flexWrap: 'wrap',
+      gap: 1,
+      p: 1.5,
+      bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+      borderBottom: 1,
+      borderColor: theme.palette.divider
+    }}>
       {/* Bold Button */}
       <CustomIconButton
         {...(editor.isActive('bold') && { color: 'primary' })}
@@ -160,12 +178,21 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().toggleBold().run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive('bold'),
-          [inactiveClass]: !editor.isActive('bold')
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive('bold') && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive('bold') && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i className={classnames('tabler-bold', { 'text-textSecondary': !editor.isActive('bold') })} />
+        <i className="tabler-bold" />
       </CustomIconButton>
 
       {/* Italic Button */}
@@ -175,12 +202,21 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive('italic'),
-          [inactiveClass]: !editor.isActive('italic')
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive('italic') && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive('italic') && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i className={classnames('tabler-italic', { 'text-textSecondary': !editor.isActive('italic') })} />
+        <i className="tabler-italic" />
       </CustomIconButton>
 
       {/* Underline Button */}
@@ -190,12 +226,21 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().toggleUnderline().run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive('underline'),
-          [inactiveClass]: !editor.isActive('underline')
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive('underline') && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive('underline') && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i className={classnames('tabler-underline', { 'text-textSecondary': !editor.isActive('underline') })} />
+        <i className="tabler-underline" />
       </CustomIconButton>
 
       {/* Strike Button */}
@@ -205,15 +250,24 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().toggleStrike().run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive('strike'),
-          [inactiveClass]: !editor.isActive('strike')
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive('strike') && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive('strike') && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i className={classnames('tabler-strikethrough', { 'text-textSecondary': !editor.isActive('strike') })} />
+        <i className="tabler-strikethrough" />
       </CustomIconButton>
 
-      <Divider orientation="vertical" className="mx-1" />
+      <Divider orientation="vertical" sx={{ mx: 0.5 }} />
 
       {/* Text Alignment Buttons */}
       <CustomIconButton
@@ -222,14 +276,21 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().setTextAlign('left').run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive({ textAlign: 'left' }),
-          [inactiveClass]: !editor.isActive({ textAlign: 'left' })
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive({ textAlign: 'left' }) && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive({ textAlign: 'left' }) && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i
-          className={classnames('tabler-align-left', { 'text-textSecondary': !editor.isActive({ textAlign: 'left' }) })}
-        />
+        <i className="tabler-align-left" />
       </CustomIconButton>
 
       <CustomIconButton
@@ -238,16 +299,21 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().setTextAlign('center').run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive({ textAlign: 'center' }),
-          [inactiveClass]: !editor.isActive({ textAlign: 'center' })
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive({ textAlign: 'center' }) && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive({ textAlign: 'center' }) && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i
-          className={classnames('tabler-align-center', {
-            'text-textSecondary': !editor.isActive({ textAlign: 'center' })
-          })}
-        />
+        <i className="tabler-align-center" />
       </CustomIconButton>
 
       <CustomIconButton
@@ -256,16 +322,21 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().setTextAlign('right').run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive({ textAlign: 'right' }),
-          [inactiveClass]: !editor.isActive({ textAlign: 'right' })
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive({ textAlign: 'right' }) && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive({ textAlign: 'right' }) && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i
-          className={classnames('tabler-align-right', {
-            'text-textSecondary': !editor.isActive({ textAlign: 'right' })
-          })}
-        />
+        <i className="tabler-align-right" />
       </CustomIconButton>
 
       <CustomIconButton
@@ -274,17 +345,22 @@ const EditorToolbar = ({
         size='small'
         disabled={disabled}
         onClick={() => editor.chain().focus().setTextAlign('justify').run()}
-        className={classnames(buttonClass, {
-          [activeClass]: editor.isActive({ textAlign: 'justify' }),
-          [inactiveClass]: !editor.isActive({ textAlign: 'justify' })
-        })}
+        sx={{
+          transition: 'all 0.2s',
+          ...(editor.isActive({ textAlign: 'justify' }) && {
+            bgcolor: 'primary.100',
+            color: 'primary.600'
+          }),
+          ...(!editor.isActive({ textAlign: 'justify' }) && {
+            color: theme.palette.text.secondary,
+            '&:hover': {
+              bgcolor: theme.palette.action.hover
+            }
+          })
+        }}
       >
-        <i
-          className={classnames('tabler-align-justified', {
-            'text-textSecondary': !editor.isActive({ textAlign: 'justify' })
-          })}
-        />
+        <i className="tabler-align-justified" />
       </CustomIconButton>
-    </div>
+    </Box>
   )
 }

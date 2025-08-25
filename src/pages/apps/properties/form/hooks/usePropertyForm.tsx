@@ -18,7 +18,6 @@ const defaultPropertyValues: Partial<IRealProperty> = {
   type_negotiation_id: undefined,
   type_property_id: undefined,
   price: 0,
-  initial_price: 0,
   rent_price: 0,
   state_id: undefined,
   city_id: undefined,
@@ -112,7 +111,6 @@ export const usePropertyForm = (propertyId?: string) => {
         franchise_id: getValues('franchise_id'),
         assigned_to_id: getValues('assigned_to_id'),
         type_negotiation_id: getValues('type_negotiation_id'),
-        initial_price: getValues('initial_price'),
         price: getValues('price') || 0,
         rent_price: getValues('rent_price') || 0
       }
@@ -123,7 +121,6 @@ export const usePropertyForm = (propertyId?: string) => {
         franchise_id: true,
         assigned_to_id: true,
         type_negotiation_id: true,
-        initial_price: true,
         price: true,
         rent_price: true
       })

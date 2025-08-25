@@ -17,7 +17,6 @@ export interface IRealProperty {
   characteristics: IPropertyCharacteristic[]
   code: string
   price: number
-  initial_price: number
   rent_price: number
   address: string
   images: IImage[]
