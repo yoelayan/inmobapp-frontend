@@ -24,7 +24,7 @@ export const Form = <T extends FieldValues>({
   mode = 'create',
   entityId,
   setFormData,
-  transformData,
+  formatData,
   actionsComponent
 }: BaseFormProps<T>) => {
 
@@ -82,8 +82,8 @@ export const Form = <T extends FieldValues>({
 
   const onSubmit = (data: T) => {
     if (repository) {
-      // Transformar los datos antes del envío si existe transformData
-      const finalData = transformData ? transformData(data) : data
+      // Formatear los datos antes del envío si existe formatData
+      const finalData = formatData ? formatData(data) : data
 
       console.log('Submitting form:', finalData)
       console.log('Form data keys:', Object.keys(finalData))

@@ -34,7 +34,7 @@ export interface BaseFormProps<T extends FieldValues> {
   mode?: 'create' | 'edit'
   entityId?: number
   setFormData?: (data: any, methods: UseFormReturn<T>) => void
-  transformData?: (data: T) => Record<string, any>
+  formatData?: (data: T) => Record<string, any>
   actionsComponent?: ReactNode
 }
 

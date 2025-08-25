@@ -820,7 +820,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               onSuccess={handleSuccess}
               onError={handleError}
               setFormData={setFormData}
-              transformData={formatData}
+              formatData={formatData}
               actionsComponent={<FormNavigationButtons />}
             >
               <Grid container spacing={6}>

@@ -75,7 +75,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
 
     // Transformar campos async-select de {label, value} a solo value
     const asyncFields = ['franchise_id', 'assigned_to_id']
-    const asyncFields = ['franchise_id', 'assigned_to_id']
 
     // Transformar campos async-select
     asyncFields.forEach(field => {
@@ -85,9 +84,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
       }
     })
 
-    console.log('✅ Datos transformados:', transformedData)
-
-    return transformedData
     console.log('✅ Datos formateados:', formattedData)
     return formattedData
   }
@@ -167,7 +163,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
       onSuccess={handleSuccess}
       onError={handleError}
       setFormData={setFormData}
-      transformData={formatData}
+      formatData={formatData}
     >
       <Grid container spacing={3}>
         {/* --- Campo Nombre (Usando FormField) --- */}
