@@ -67,84 +67,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
   // Determinar el esquema a usar
   const schema = clientId ? editClientSchema : createClientSchema
 
-  // Función para formatear los datos antes de enviarlos al backend
-  const formatData = (data: any) => {
-    console.log('🔍 formatData ejecutándose con:', data)
-
-    const formattedData = { ...data }
-
-    // Transformar campos async-select de {label, value} a solo value
-    const asyncFields = ['franchise_id', 'assigned_to_id']
-    const asyncFields = ['franchise_id', 'assigned_to_id']
-
-    // Transformar campos async-select
-    asyncFields.forEach(field => {
-      if (formattedData[field] && typeof formattedData[field] === 'object' && 'value' in formattedData[field]) {
-        console.log(`🔄 Transformando async-select ${field}:`, formattedData[field], '→', formattedData[field].value)
-        formattedData[field] = formattedData[field].value
-      }
-    })
-
-    console.log('✅ Datos transformados:', transformedData)
-
-    return transformedData
-    console.log('✅ Datos formateados:', formattedData)
-    return formattedData
-  }
-
-  // Función para establecer datos del formulario (para modo edición)
-  const setFormData = (data: any, methods: any) => {
-    console.log('🔍 setFormData ejecutándose con:', data)
-
-    const asyncFields = ['franchise_id', 'assigned_to_id']
-
-    // Establecer campos async-select
-    asyncFields.forEach(field => {
-      if (data[field]) {
-        const value = data[field]
-
-        if (typeof value === 'object' && 'id' in value) {
-          // El backend devuelve objetos anidados como {id: 1, name: "Franquicia"}
-          methods.setValue(field, {
-            label: value.name || value.email || value.identifier || value.id,
-            value: value.id
-          })
-          console.log(`✅ Campo ${field} establecido:`, { label: value.name || value.email || value.identifier || value.id, value: value.id })
-        } else if (typeof value === 'number') {
-          // Es solo el ID, necesitamos buscar el objeto correspondiente para obtener el label
-          const objectKey = field === 'franchise_id' ? 'franchise' : 'assigned_to'
-          const objectData = data[objectKey]
-
-          if (objectData && typeof objectData === 'object' && 'id' in objectData) {
-            // Usar el objeto anidado para crear el label
-            methods.setValue(field, {
-              label: objectData.name || objectData.email || objectData.identifier || objectData.id,
-              value: value
-            })
-            console.log(`✅ Campo ${field} establecido con objeto anidado:`, { label: objectData.name || objectData.email || objectData.identifier || objectData.id, value: value })
-          } else {
-            // Si no hay objeto anidado, solo usar el ID
-            methods.setValue(field, value)
-            console.log(`✅ Campo ${field} establecido solo con ID:`, value)
-          }
-        } else {
-          // Otro tipo de valor
-          methods.setValue(field, value)
-          console.log(`✅ Campo ${field} establecido solo con ID:`, value)
-        }
-      }
-    })
-
-    // Establecer otros campos
-    Object.entries(data).forEach(([key, value]) => {
-      if (!asyncFields.includes(key) && value !== undefined && value !== null) {
-        methods.setValue(key, value)
-        console.log(`✅ Campo ${key} establecido:`, value)
-      }
-    })
-
-    console.log('✅ setFormData completado')
-  }
 
   const handleSuccess = (client: CreateClientFormData | EditClientFormData) => {
     console.log(`Cliente ${clientId ? 'actualizado' : 'creado'}:`, client)
@@ -166,8 +88,6 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
       entityId={clientId ? Number(clientId) : undefined}
       onSuccess={handleSuccess}
       onError={handleError}
-      setFormData={setFormData}
-      transformData={formatData}
     >
       <Grid container spacing={3}>
         {/* --- Campo Nombre (Usando FormField) --- */}

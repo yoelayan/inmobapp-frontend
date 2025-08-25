@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+
+
 // Esquema para crear un cliente
 export const createClientSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
@@ -11,14 +13,18 @@ export const createClientSchema = z.object({
       label: z.string(),
       value: z.number()
     })
-    .optional(),
+  .refine((data) => data.value !== undefined, {
+    message: 'La franquicia es requerida'
+  }),
 
   assigned_to_id: z
     .object({
       label: z.string(),
       value: z.number()
     })
-    .optional()
+  .refine((data) => data.value !== undefined, {
+    message: 'El usuario asignado es requerido'
+  })
 })
 
 // Esquema para editar un cliente
@@ -31,13 +37,19 @@ export const editClientSchema = z.object({
     .object({
       label: z.string(),
       value: z.number()
-    }),
+    })
+  .refine((data) => data.value !== undefined, {
+    message: 'El franquicia es requerida'
+  }),
 
   assigned_to_id: z
     .object({
       label: z.string(),
       value: z.number()
     })
+  .refine((data) => data.value !== undefined, {
+    message: 'El usuario asignado es requerido'
+  })
 })
 
 // Valores por defecto para el formulario
@@ -46,8 +58,8 @@ export const defaultClientValues = {
   email: '',
   phone: '',
   status: undefined,
-  franchise: undefined,
-  assigned_to: undefined
+  franchise_id: undefined,
+  assigned_to_id: undefined
 }
 
 // Tipos TypeScript

@@ -80,16 +80,30 @@ export const Form = <T extends FieldValues>({
     }
   }, [error, methods])
 
+  // Detectar si hay valores object con label y value, extraer el value y setearlo en el campo
+  const handleObjectValues = (data: Record<string, any>) => {
+    Object.keys(data).forEach(key => {
+      if (typeof data[key] === 'object' && 'label' in data[key] && 'value' in data[key]) {
+        methods.setValue(key as Path<T>, data[key].value)
+      }
+    })
+  }
+
   const onSubmit = (data: T) => {
     if (repository) {
       // Transformar los datos antes del envío si existe transformData
       const finalData = transformData ? transformData(data) : data
 
+      handleObjectValues(finalData)
+
+
       console.log('Submitting form:', finalData)
       console.log('Form data keys:', Object.keys(finalData))
       console.log('Form data values:', Object.values(finalData))
 
-      submitForm(finalData)
+      const values = methods.getValues()
+
+      submitForm(values as T)
     } else {
       // Si no hay repository, ejecutar onSuccess directamente
       onSuccess?.(data)
