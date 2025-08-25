@@ -167,7 +167,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
     {
       label: 'Editar',
       onClick: (row: Record<string, any>) => {
-        router.push(`/propiedades/${row.id}/`)
+        router.push(`/propiedades/${row.id}/editar/`)
       },
       icon: <EditIcon fontSize="small" />
     },

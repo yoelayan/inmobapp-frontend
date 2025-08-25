@@ -77,12 +77,7 @@ interface PropertyFormProps {
 
 const steps = [
   { icon: 'tabler-home', title: 'Información General', description: 'Información básica de la propiedad' },
-  { icon: 'tabler-currency-dollar', title: 'Datos Negociación', description: 'Precios y Datos del propietario' },
-  {
-    icon: 'tabler-file-description',
-    title: 'Datos de publicación',
-    description: 'Caracteristicas y Presentación de la propiedad'
-  }
+  { icon: 'tabler-currency-dollar', title: 'Datos Negociación', description: 'Precios y Datos del propietario' }
 ]
 
 const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
@@ -100,17 +95,9 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 }))
 
 
-const Step1Content = memo(() => {
+const Step1Content = memo(({ statuses, propertyTypes }: { statuses: any, propertyTypes: any }) => {
   console.log('re-render')
-  const { data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
-  const { data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
   const [ municipalitiesFilters, setMunicipalitiesFilters ] = useState<FilterItem[]>([])
-
-  useEffect(() => {
-    fetchStatuses()
-    fetchPropertyTypes()
-  }, [fetchStatuses, fetchPropertyTypes])
-
 
   // watch
   const { watch } = useFormContext()
@@ -130,7 +117,7 @@ const Step1Content = memo(() => {
           label='Estatus'
           required
           fullWidth
-          options={statuses?.results?.map(status => ({ value: status.id, label: status.name })) || []}
+          options={statuses?.results?.map((status: any) => ({ value: status.id, label: status.name })) || []}
         />
       </Grid>
       <Grid size={{ xs: 12, md: 3 }}>
@@ -140,7 +127,7 @@ const Step1Content = memo(() => {
           label='Tipo de Propiedad'
           required
           fullWidth
-          options={propertyTypes?.results?.map(type => ({ value: type.id, label: type.name })) || []}
+          options={propertyTypes?.results?.map((type: any) => ({ value: type.id, label: type.name })) || []}
         />
       </Grid>
 
@@ -161,8 +148,8 @@ const Step1Content = memo(() => {
           label='Municipio'
           required
           repository={MunicipalitiesRepository}
-          filters={state && state.value ? [{ field: 'state', value: state.value }] : []}
-          disabled={!state || !state.value}
+          filters={state && (typeof state === 'object' ? state.value : state) ? [{ field: 'state', value: typeof state === 'object' ? state.value : state }] : []}
+          disabled={!state || !(typeof state === 'object' ? state.value : state)}
         />
       </Grid>
       <Grid size={{ xs: 12, md: 3 }}>
@@ -172,7 +159,7 @@ const Step1Content = memo(() => {
           label='Parroquia'
           required
           repository={ParishesRepository}
-          filters={state && municipality ? [{ field: 'municipality', value: municipality?.value }] : []}
+          filters={state && municipality ? [{ field: 'municipality', value: typeof municipality === 'object' ? municipality.value : municipality }] : []}
           disabled={!state || !municipality}
         />
       </Grid>
@@ -194,6 +181,129 @@ const Step1Content = memo(() => {
   )
 })
 
+const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedClient, setNewlyCreatedClient }: {
+  negotiations: any,
+  setIsClientModalOpen: (open: boolean) => void,
+  newlyCreatedClient: any,
+  setNewlyCreatedClient: (client: any) => void
+}) => {
+  const { watch, setValue } = useFormContext()
+  const negotiationTypeId = watch('type_negotiation_id')
+
+  const showSalePrice = negotiationTypeId === 1 || negotiationTypeId === 3
+  const showRentPrice = negotiationTypeId === 2 || negotiationTypeId === 3
+
+  useEffect(() => {
+    if (negotiationTypeId) {
+      if (!showSalePrice) setValue('price', '')
+      if (!showRentPrice) setValue('rent_price', '')
+    }
+  }, [negotiationTypeId, showSalePrice, showRentPrice, setValue])
+
+  // Manejar cliente recién creado
+  useEffect(() => {
+    if (newlyCreatedClient) {
+      setValue('owner_id', newlyCreatedClient.id)
+      setNewlyCreatedClient(null)
+    }
+  }, [newlyCreatedClient, setValue, setNewlyCreatedClient])
+
+  return (
+    <>
+      <Grid size={{ xs: 12, md: 6 }}>
+        <FormField
+          type='async-select'
+          name='franchise_id'
+          label='Franquicia'
+          required
+          repository={FranchisesRepository}
+        />
+      </Grid>
+      <Grid size={{ xs: 12, md: 6 }}>
+        <FormField
+          type='async-select'
+          name='assigned_to_id'
+          label='Usuario Asignado'
+          required
+          repository={UsersRepository}
+        />
+      </Grid>
+      <Grid size={{ xs: 12, md: 6 }}>
+        <FormField
+          name='type_negotiation_id'
+          type='select'
+          label='Tipo de Negociación'
+          required
+          fullWidth
+          options={
+            negotiations?.results?.map((negotiation: any) => ({
+              value: negotiation.id,
+              label: negotiation.name
+            })) || []
+          }
+        />
+      </Grid>
+
+      {/* Campos de precio según negociación */}
+      {showSalePrice && (
+        <Grid size={{ xs: 12, md: showRentPrice ? 6 : 6 }}>
+          <FormField
+            name='price'
+            type='number'
+            label='Precio de Venta'
+            required={negotiationTypeId === 1}
+            fullWidth
+          />
+        </Grid>
+      )}
+      {showRentPrice && (
+        <Grid size={{ xs: 12, md: showSalePrice ? 6 : 6 }}>
+          <FormField
+            name='rent_price'
+            type='number'
+            label='Precio de Alquiler'
+            required={negotiationTypeId === 2}
+            fullWidth
+          />
+        </Grid>
+      )}
+      {!negotiationTypeId && (
+        <Grid size={{ xs: 12 }}>
+          <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic', p: 2 }}>
+            Selecciona un tipo de negociación para configurar los precios
+          </Typography>
+        </Grid>
+      )}
+
+      {/* Campo de cliente con botón de crear */}
+      <Grid size={{ xs: 12, md: 6 }}>
+        <Box className='flex items-end gap-2'>
+          <Box className='flex-1'>
+            <FormField
+              type='async-select'
+              name='owner_id'
+              label='Cliente'
+              required
+              repository={ClientsRepository}
+            />
+          </Box>
+          <Button
+            variant='outlined'
+            onClick={() => setIsClientModalOpen(true)}
+            sx={{
+              minWidth: 'auto',
+              height: '56px',
+              px: 2
+            }}
+          >
+            <i className='tabler-plus text-[18px]' />
+          </Button>
+        </Box>
+      </Grid>
+    </>
+  )
+})
+
 const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormProps) => {
   const { notify } = useNotification()
   const [activeStep, setActiveStep] = useState(0)
@@ -210,6 +320,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const { loading: usersLoading, data: users, fetchData: fetchUsers } = useUsers()
   const { loading: franchisesLoading, data: franchises, fetchData: fetchFranchises } = useFranchises()
 
+  const { data: statuses, fetchData: fetchStatuses } = usePropertyStatus()
+  const { data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
+
 
   // Cargar datasets una sola vez (evita loops por identidades inestables)
   const didInitRef = useRef(false)
@@ -219,6 +332,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     didInitRef.current = true
 
     fetchNegotiations()
+    fetchStatuses()
+    fetchPropertyTypes()
 
     fetchClients()
     fetchClientStatuses()
@@ -226,6 +341,14 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchFranchises()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // En modo edición, permitir navegación libre entre pasos
+  useEffect(() => {
+    if (propertyId && mode === 'edit') {
+      // En modo edición, permitir acceso a todos los pasos
+      // No necesitamos restringir la navegación
+    }
+  }, [propertyId, mode])
 
   // Modal crear cliente
   const handleOpenClientModal = () => {
@@ -247,56 +370,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     notify(`Cliente "${newClient.name}" creado exitosamente`, 'success')
   }
 
-  // Campos de precio según negociación
-  const NegotiationPriceFields = () => {
-    const { watch, setValue } = useFormContext()
-    const negotiationTypeId = watch('type_negotiation_id')
-
-    const showSalePrice = negotiationTypeId === 1 || negotiationTypeId === 3
-    const showRentPrice = negotiationTypeId === 2 || negotiationTypeId === 3
-
-    useEffect(() => {
-      if (negotiationTypeId) {
-        if (!showSalePrice) setValue('price', '')
-        if (!showRentPrice) setValue('rent_price', '')
-      }
-    }, [negotiationTypeId, showSalePrice, showRentPrice, setValue])
-
-    return (
-      <>
-        {showSalePrice && (
-          <Grid size={{ xs: 12, md: showRentPrice ? 6 : 6 }}>
-            <FormField
-              name='price'
-              type='number'
-              label='Precio de Venta'
-              required={negotiationTypeId === 1}
-              fullWidth
-            />
-          </Grid>
-        )}
-        {showRentPrice && (
-          <Grid size={{ xs: 12, md: showSalePrice ? 6 : 6 }}>
-            <FormField
-              name='rent_price'
-              type='number'
-              label='Precio de Alquiler'
-              required={negotiationTypeId === 2}
-              fullWidth
-            />
-          </Grid>
-        )}
-        {!negotiationTypeId && (
-          <Grid size={{ xs: 12 }}>
-            <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic', p: 2 }}>
-              Selecciona un tipo de negociación para configurar los precios
-            </Typography>
-          </Grid>
-        )}
-      </>
-    )
-  }
-
   // Paso 1
 
   /* Steps Control */
@@ -306,14 +379,14 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     } else {
       if (index === 0) setActiveStep(0)
       else if (index === 1) notify('Complete el paso 1 primero', 'warning')
-      else if (index === 2) {
-        if (!propertyId) notify('Debe crear la propiedad en el paso 2 antes de continuar', 'warning')
-        else setActiveStep(2)
-      }
     }
   }
 
-  const handleBack = () => setActiveStep(prev => prev - 1)
+  const handleBack = () => {
+    if (activeStep > 0) {
+      setActiveStep(prev => prev - 1)
+    }
+  }
 
   const getCurrentStepSchema = () => {
     switch (activeStep) {
@@ -321,8 +394,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         return step1PartialSchema
       case 1:
         return step2PartialSchema
-      case 2:
-        return step3Schema
       default:
         return step1PartialSchema
     }
@@ -330,7 +401,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const handleNext = async (formMethods: any) => {
     try {
-
+      // En modo creación, validar paso 1 antes de avanzar
       if (activeStep === 0) {
         const result = step1Schema.safeParse(formMethods.getValues())
 
@@ -344,8 +415,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         }
 
         setActiveStep(1)
-      } else if (activeStep === 1) {
-        return
       } else if (activeStep < steps.length - 1) {
         setActiveStep(prev => prev + 1)
       }
@@ -358,7 +427,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const handleReset = () => setActiveStep(0)
 
   const getFormSchema = () => {
-    if (propertyId) return editPropertySchema
+    if (propertyId) {
+      // En modo edición, usar un schema completo que incluya todos los campos
+      return editPropertySchema
+    }
     if (activeStep === 1) return createPropertySchema
 
     return getCurrentStepSchema()
@@ -369,9 +441,17 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
     console.log(`Propiedad ${mode === 'edit' ? 'actualizada' : 'creada'}:`, property)
 
-    if (mode === 'create' && activeStep === 1) {
-      setActiveStep(2)
-      notify('Propiedad creada exitosamente. Ahora puedes agregar características e imágenes.', 'success')
+    if (mode === 'edit') {
+      notify('Propiedad actualizada exitosamente', 'success')
+      console.log('✅ Notificación de éxito mostrada')
+      onSuccess?.(property)
+    } else if (mode === 'create' && activeStep === 1) {
+      // En modo creación, redirigir al formulario de edición para continuar con el paso 3
+      notify('Propiedad creada exitosamente. Redirigiendo al formulario de edición...', 'success')
+      // Pequeño delay para que se vea la notificación antes de redirigir
+      setTimeout(() => {
+        onSuccess?.(property)
+      }, 1000)
     } else {
       onSuccess?.(property)
     }
@@ -404,15 +484,131 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   }
 
   const setFormData = (data: any, methods: any) => {
-    const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
+    console.log('🔍 setFormData ejecutándose con:', data)
 
-    Object.entries(data).forEach(([key, value]) => {
-      if (asyncFields.includes(key)) {
-        methods.setValue(key, value.value)
-      } else {
-        methods.setValue(key, value)
+    const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
+    const selectFields = ['status_id', 'type_property_id'] // Campos SelectField del Paso 1
+    const textFields = ['name', 'code', 'address', 'description'] // Campos de texto del Paso 1
+
+    console.log('📋 Campos a procesar:')
+    console.log('  - AsyncFields:', asyncFields)
+    console.log('  - SelectFields:', selectFields)
+    console.log('  - TextFields:', textFields)
+
+    // Primero establecer los campos async-select para que los filtros funcionen
+    const asyncFieldOrder = ['state_id', 'municipality_id', 'parish_id']
+
+    asyncFieldOrder.forEach(field => {
+      if (data[field]) {
+        const value = data[field]
+        if (typeof value === 'object' && 'id' in value) {
+          // El backend devuelve objetos anidados como {id: 1, name: "Estado"}
+          methods.setValue(field, {
+            label: value.name || value.email || value.identifier || value.id,
+            value: value.id
+          })
+          console.log(`✅ Campo ${field} establecido:`, { label: value.name || value.email || value.identifier || value.id, value: value.id })
+        } else if (typeof value === 'number') {
+          // Es solo el ID, necesitamos buscar el objeto correspondiente para obtener el label
+          const objectKey = field.replace('_id', '') // state_id -> state
+          const objectData = data[objectKey]
+
+          if (objectData && typeof objectData === 'object' && 'id' in objectData) {
+            // Usar el objeto anidado para crear el label
+            methods.setValue(field, {
+              label: objectData.name || objectData.email || objectData.identifier || objectData.id,
+              value: value
+            })
+            console.log(`✅ Campo ${field} establecido con objeto anidado:`, { label: objectData.name || objectData.email || objectData.identifier || objectData.id, value: value })
+          } else {
+            // Si no hay objeto anidado, solo usar el ID
+            methods.setValue(field, value)
+            console.log(`✅ Campo ${field} establecido solo con ID:`, value)
+          }
+        } else {
+          // Otro tipo de valor
+          methods.setValue(field, value)
+          console.log(`✅ Campo ${field} establecido con valor directo:`, value)
+        }
       }
     })
+
+    // Luego establecer todos los demás campos
+    Object.entries(data).forEach(([key, value]) => {
+      if (!asyncFieldOrder.includes(key)) { // Evitar duplicar los campos ya establecidos
+        if (asyncFields.includes(key) && value) {
+          // Si es un campo async-select y tiene valor
+          if (typeof value === 'object' && 'id' in value) {
+            // El backend devuelve objetos anidados como {id: 1, name: "Estado"}
+            // Los convertimos al formato {label: "Estado", value: 1} que espera el campo async-select
+            methods.setValue(key, {
+              label: (value as any).name || (value as any).email || (value as any).identifier || (value as any).id,
+              value: (value as any).id
+            })
+          } else if (typeof value === 'number') {
+            // Es solo el ID, necesitamos buscar el objeto correspondiente para obtener el label
+            const objectKey = key.replace('_id', '') // state_id -> state
+            const objectData = data[objectKey]
+
+            if (objectData && typeof objectData === 'object' && 'id' in objectData) {
+              // Usar el objeto anidado para crear el label
+              methods.setValue(key, {
+                label: objectData.name || objectData.email || objectData.identifier || objectData.id,
+                value: value
+              })
+            } else {
+              // Si no hay objeto anidado, solo usar el ID
+              methods.setValue(key, value)
+            }
+          } else {
+            // Otro tipo de valor
+            methods.setValue(key, value)
+          }
+        } else if (selectFields.includes(key) && value) {
+          // Manejar campos SelectField del Paso 1
+          if (typeof value === 'object' && 'id' in value) {
+            // Si viene como objeto, usar solo el ID
+            methods.setValue(key, value.id)
+            console.log(`✅ Campo SelectField ${key} establecido con ID:`, value.id)
+          } else if (typeof value === 'number') {
+            // Si viene como número, usarlo directamente
+            methods.setValue(key, value)
+            console.log(`✅ Campo SelectField ${key} establecido con valor:`, value)
+          } else {
+            // Otro tipo de valor
+            methods.setValue(key, value)
+            console.log(`✅ Campo SelectField ${key} establecido con valor directo:`, value)
+          }
+        } else if (textFields.includes(key) && value !== undefined && value !== null) {
+          // Manejar campos de texto del Paso 1
+          methods.setValue(key, value)
+          console.log(`✅ Campo de texto ${key} establecido:`, value)
+        } else if (!asyncFields.includes(key) && !selectFields.includes(key) && !textFields.includes(key)) {
+          // Otros campos
+          methods.setValue(key, value)
+          console.log(`✅ Campo ${key} establecido:`, value)
+        }
+      }
+    })
+
+    console.log('✅ setFormData completado')
+
+    // Verificar que los valores se establecieron correctamente
+    setTimeout(() => {
+      console.log('🔍 Verificación de valores establecidos:')
+      textFields.forEach(field => {
+        const value = methods.getValues(field)
+        console.log(`  - ${field}:`, value)
+      })
+      selectFields.forEach(field => {
+        const value = methods.getValues(field)
+        console.log(`  - ${field}:`, value)
+      })
+      asyncFieldOrder.forEach(field => {
+        const value = methods.getValues(field)
+        console.log(`  - ${field}:`, value)
+      })
+    }, 100)
   }
   // Función para transformar los datos antes de enviarlos al backend
   const transformFormData = (data: any) => {
@@ -423,58 +619,55 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     // Transformar campos async-select de {label, value} a solo value
     const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
 
+    // Campos del Paso 1 que necesitan transformación especial
+    const step1Fields = ['name', 'code', 'address', 'description', 'status_id', 'type_property_id']
+
+    console.log('📋 Campos a transformar:')
+    console.log('  - AsyncFields:', asyncFields)
+    console.log('  - Step1Fields:', step1Fields)
+
+    // Transformar campos async-select
     asyncFields.forEach(field => {
       if (transformedData[field] && typeof transformedData[field] === 'object' && 'value' in transformedData[field]) {
-        console.log(`🔄 Transformando ${field}:`, transformedData[field], '→', transformedData[field].value)
+        console.log(`🔄 Transformando async-select ${field}:`, transformedData[field], '→', transformedData[field].value)
         transformedData[field] = transformedData[field].value
+      }
+    })
+
+    // Verificar que los campos del Paso 1 estén presentes
+    step1Fields.forEach(field => {
+      if (transformedData[field] !== undefined) {
+        console.log(`✅ Campo Paso 1 ${field}:`, transformedData[field])
+      } else {
+        console.log(`⚠️ Campo Paso 1 ${field} NO encontrado`)
       }
     })
 
     console.log('✅ Datos transformados:', transformedData)
     return transformedData
   }
-  const ClientFieldWithCreateButton = () => {
-    const { setValue } = useFormContext()
-
-    useEffect(() => {
-      if (newlyCreatedClient) {
-        setValue('owner_id', newlyCreatedClient.id)
-        setNewlyCreatedClient(null)
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [newlyCreatedClient, setValue])
-
-    return (
-      <Grid size={{ xs: 12, md: 6 }}>
-        <Box className='flex items-end gap-2'>
-          <Box className='flex-1'>
-            <FormField
-              type='async-select'
-              name='owner_id'
-              label='Cliente'
-              required
-              repository={ClientsRepository}
-            />
-          </Box>
-          <Button
-            variant='outlined'
-            onClick={handleOpenClientModal}
-            sx={{
-              minWidth: 'auto',
-              height: '56px',
-              px: 2
-            }}
-          >
-            <i className='tabler-plus text-[18px]' />
-          </Button>
-        </Box>
-      </Grid>
-    )
-  }
 
   const FormNavigationButtons = () => {
     const formMethods = useFormContext()
 
+    // En modo edición, mostrar solo el botón de actualizar centrado
+    if (propertyId) {
+      return (
+        <Box display='flex' justifyContent='center' mt={4}>
+          <Button
+            type='submit'
+            variant='contained'
+            size='large'
+            startIcon={<i className='tabler-check' />}
+            sx={{ minWidth: '200px' }}
+          >
+            Actualizar Propiedad
+          </Button>
+        </Box>
+      )
+    }
+
+    // En modo creación, mantener la navegación por pasos
     return (
         <Box display='flex' gap={2} justifyContent='space-between' mt={3}>
         <Button
@@ -491,74 +684,81 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           variant='contained'
           onClick={activeStep === 1 ? undefined : () => handleNext(formMethods)}
           endIcon={
-            activeStep === steps.length - 1 ? (
+            activeStep === 1 ? (
               <i className='tabler-check' />
             ) : (
               <DirectionalIcon ltrIconClass='tabler-arrow-right' rtlIconClass='tabler-arrow-left' />
             )
           }
         >
-          {activeStep === steps.length - 1 ? 'Guardar' : activeStep === 1 ? 'Crear Propiedad' : 'Siguiente'}
+          {activeStep === 1 ? 'Crear Propiedad' : 'Siguiente'}
         </Button>
       </Box>
     )
   }
 
   const renderStepContent = (activeStep: number) => {
+    // En modo edición, mostrar todos los campos en una sola página
+    if (propertyId) {
+      return (
+        <>
+          {/* Paso 1: Información General */}
+          <Grid size={{ xs: 12 }}>
+            <Typography variant='h6' gutterBottom sx={{ mb: 3, color: 'primary.main' }}>
+              📋 Información General
+            </Typography>
+          </Grid>
+          <Step1Content statuses={statuses} propertyTypes={propertyTypes} />
+
+          {/* Divider */}
+          <Grid size={{ xs: 12 }}>
+            <Divider sx={{ my: 4 }} />
+          </Grid>
+
+          {/* Paso 2: Datos de Negociación */}
+          <Grid size={{ xs: 12 }}>
+            <Typography variant='h6' gutterBottom sx={{ mb: 3, color: 'primary.main' }}>
+              💰 Datos de Negociación
+            </Typography>
+          </Grid>
+          <Step2Content
+            negotiations={negotiations}
+            setIsClientModalOpen={setIsClientModalOpen}
+            newlyCreatedClient={newlyCreatedClient}
+            setNewlyCreatedClient={setNewlyCreatedClient}
+          />
+
+          {/* Divider */}
+          <Grid size={{ xs: 12 }}>
+            <Divider sx={{ my: 4 }} />
+          </Grid>
+
+          {/* Paso 3: Características (futuro) */}
+          <Grid size={{ xs: 12 }}>
+            <Typography variant='h6' gutterBottom sx={{ color: 'primary.main' }}>
+              🏠 Datos de Publicación
+            </Typography>
+            <Typography variant='body2' color='text.secondary'>
+              Esta sección será implementada próximamente con características dinámicas e imágenes.
+            </Typography>
+          </Grid>
+        </>
+      )
+    }
+
+    // En modo creación, solo mostrar pasos 1 y 2
     switch (activeStep) {
       case 0:
-        return <Step1Content />
+        return <Step1Content statuses={statuses} propertyTypes={propertyTypes} />
       case 1:
         return (
           <>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField
-                type='async-select'
-                name='franchise_id'
-                label='Franquicia'
-                required
-                repository={FranchisesRepository}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField
-                type='async-select'
-                name='assigned_to_id'
-                label='Usuario Asignado'
-                required
-                repository={UsersRepository}
-              />
-            </Grid>
-            <Grid size={{ xs: 12, md: 6 }}>
-              <FormField
-                name='type_negotiation_id'
-                type='select'
-                label='Tipo de Negociación'
-                required
-                fullWidth
-                options={
-                  negotiations?.results?.map(negotiation => ({
-                    value: negotiation.id,
-                    label: negotiation.name
-                  })) || []
-                }
-              />
-            </Grid>
-            <NegotiationPriceFields />
-            <ClientFieldWithCreateButton />
-          </>
-        )
-      case 2:
-        return (
-          <>
-            <Grid size={{ xs: 12 }}>
-              <Typography variant='h6' gutterBottom>
-                Características y Presentación
-              </Typography>
-              <Typography variant='body2' color='text.secondary'>
-                Esta sección será implementada próximamente con características dinámicas e imágenes.
-              </Typography>
-            </Grid>
+            <Step2Content
+              negotiations={negotiations}
+              setIsClientModalOpen={setIsClientModalOpen}
+              newlyCreatedClient={newlyCreatedClient}
+              setNewlyCreatedClient={setNewlyCreatedClient}
+            />
           </>
         )
       default:
@@ -570,6 +770,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     <>
       <Card>
         <CardHeader title={propertyId ? 'Actualizar Propiedad' : 'Crear Propiedad'} />
+
+        {/* Solo mostrar stepper en modo creación */}
+        {!propertyId && (
+          <>
         <StepperWrapper className='m-4'>
           <Stepper
             activeStep={activeStep}
@@ -609,6 +813,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           </Stepper>
         </StepperWrapper>
         <Divider sx={{ m: '0 !important' }} />
+          </>
+        )}
         <CardContent>
           {activeStep === steps.length ? (
             <>
@@ -619,6 +825,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                 </Button>
               </Box>
             </>
+          ) : !statuses || !propertyTypes ? (
+            <Box className='flex justify-center p-5'>
+              <Typography>Cargando datos...</Typography>
+            </Box>
           ) : (
             <Form
               schema={schema}
