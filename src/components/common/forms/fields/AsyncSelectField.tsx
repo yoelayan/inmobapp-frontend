@@ -12,7 +12,7 @@ import debounce from '@/utils/debounce'
 
 import type { AsyncSelectFieldProps } from '@/types/common/forms.types'
 
-const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
+export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
   name,
   label,
   repository,
@@ -225,5 +225,3 @@ const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
     </FormControl>
   )
 }
-
-export default AsyncSelectField;
