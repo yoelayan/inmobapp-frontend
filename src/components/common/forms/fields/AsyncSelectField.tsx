@@ -4,7 +4,7 @@ import AsyncSelect from 'react-select/async';
 import { useTheme } from '@mui/material/styles';
 
 import { Controller, useFormContext } from 'react-hook-form';
-import { type TextFieldProps as MUITextFieldProps, FormHelperText } from '@mui/material'
+import { type TextFieldProps as MUITextFieldProps, FormHelperText, InputLabel, FormControl } from '@mui/material'
 
 import type { FieldValues } from 'react-hook-form'
 
@@ -14,6 +14,7 @@ import type { AsyncSelectFieldProps } from '@/types/common/forms.types'
 
 const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
   name,
+  label,
   repository,
   onChange,
   filters,
@@ -59,6 +60,7 @@ const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
       borderRadius: theme.shape.borderRadius,
       borderWidth: '1px',
       minHeight: '56px',
+      marginTop: '16px', // Add margin for the label space
       fontSize: '1rem',
       fontFamily: theme.typography.fontFamily,
       backgroundColor: theme.palette.mode === 'dark'
@@ -157,12 +159,19 @@ const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
   }
 
   return (
-    <div className='w-full'>
+    <FormControl className='w-full' variant='outlined'>
       <Controller
         control={control}
         name={name}
         render={({ field: { onChange: onChangeField, value }, fieldState: { error } }) => (
           <>
+            <InputLabel
+              shrink={true}
+
+              error={!!error}
+            >
+              {label}
+            </InputLabel>
             <AsyncSelect
               isDisabled={disabled}
               className='react-select-container'
@@ -213,7 +222,7 @@ const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
           </>
         )}
       />
-    </div>
+    </FormControl>
   )
 }
 
