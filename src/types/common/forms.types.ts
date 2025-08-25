@@ -97,6 +97,12 @@ export type PermissionsFieldProps<T extends FieldValues> = FormFieldBaseProps<T>
   collapsible?: boolean
 }
 
+export type EditorFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & {
+  placeholder?: string
+  minHeight?: number
+  maxHeight?: number
+}
+
 export type FormContainerProps = {
   title?: string
   subtitle?: string
