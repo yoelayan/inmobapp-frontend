@@ -15,7 +15,7 @@ import { DateField } from '@components/common/forms/fields/DateField'
 import { CheckboxField } from '@components/common/forms/fields/CheckboxField'
 import { FileField } from '@components/common/forms/fields/FileField'
 import { ImageField } from '@components/common/forms/fields/ImageField'
-import AsyncSelectField from '@components/common/forms/fields/AsyncSelectField'
+import { AsyncSelectField } from '@components/common/forms/fields/AsyncSelectField'
 
 type FormFieldProps<T extends FieldValues> =
   | ({ type?: 'text' | 'email' | 'password' | 'number' | 'tel' } & TextFieldProps<T>)

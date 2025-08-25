@@ -2,22 +2,16 @@
 
 import React, { useEffect, useRef } from 'react'
 
-import { Button, Box, CircularProgress, Grid2 as Grid } from '@mui/material'
+import { Box, CircularProgress, Grid2 as Grid } from '@mui/material'
 
-import type { ResponseAPI } from '@/types/api/response'
 
 import { Form, FormField } from '@components/common/forms/Form'
-
-import TextField from '@/components/features/form/TextField'
 
 import { useNotification } from '@/hooks/useNotification'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
 import useUsers from '@/hooks/api/users/useUsers'
 import useFranchises from '@/hooks/api/realstate/useFranchises'
-import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IClient } from '@/types/apps/ClientesTypes'
-import type { IUser } from '@/types/apps/UserTypes'
-import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 
 // Importar repositorios para async-select
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
@@ -60,17 +54,12 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
   }, [])
 
 
-
-  // --- Lógica para determinar el espaciado condicional ---
-  const getPhoneSize = (phone: string, email: string) => phone && email ? 3 : 6
-  const getEmailSize = (phone: string, email: string) => phone && email ? 3 : 6
-
   // --- Renderizado Condicional (Carga Inicial) ---
   if (!statuses || !users || !franchises) {
     return (
       <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
         <CircularProgress />
-        <span style={{ marginLeft: '10px' }}>Cargando datos...</span>
+        <span className="ml-2 text-gray-600 text-base">Cargando datos...</span>
       </Box>
     )
   }
@@ -86,6 +75,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
 
     // Transformar campos async-select de {label, value} a solo value
     const asyncFields = ['franchise_id', 'assigned_to_id']
+    const asyncFields = ['franchise_id', 'assigned_to_id']
 
     // Transformar campos async-select
     asyncFields.forEach(field => {
@@ -95,6 +85,9 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
       }
     })
 
+    console.log('✅ Datos transformados:', transformedData)
+
+    return transformedData
     console.log('✅ Datos formateados:', formattedData)
     return formattedData
   }
@@ -109,6 +102,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
     asyncFields.forEach(field => {
       if (data[field]) {
         const value = data[field]
+
         if (typeof value === 'object' && 'id' in value) {
           // El backend devuelve objetos anidados como {id: 1, name: "Franquicia"}
           methods.setValue(field, {

@@ -11,7 +11,7 @@ const ClientPage: React.FC = () => {
   return (
     <>
       <BreadcrumbWrapper />
-      <Card>
+      <Card className='h-screen mt-4'>
         <CardHeader title='Crear Cliente' />
         <CardContent>
           <ClientForm
