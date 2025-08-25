@@ -12,6 +12,7 @@ import type { BaseFormProps } from '@/types/common/forms.types'
 import { useFormRepository } from '@hooks/forms/useFormRepository'
 import { FormActions } from './FormActions'
 import { FormError } from './FormError'
+import { isAsyncSelectField } from '@/validations/common'
 
 
 export const Form = <T extends FieldValues>({
@@ -49,11 +50,36 @@ export const Form = <T extends FieldValues>({
     if (setFormData && initialData) {
       setFormData(initialData, methods)
     } else if (initialData && mode === 'edit') {
-      Object.entries(initialData as DefaultValues<T>).forEach(([key, value]) => {
-        methods.setValue(key as Path<T>, value)
+      // Get only the schema field names (not internal zod keys)
+      // For zod object schemas, the shape is in .shape or ._def.shape()
+
+      const shape = (schemaToUse as any).shape
+
+      const schemaKeys = Object.keys(shape)
+
+
+      schemaKeys.forEach(key => {
+        if (key in initialData) {
+          // Verificar si el campo es del tipo asyncSelectValidation
+          if (isAsyncSelectField(shape[key])) {
+            console.log('Campo asyncSelectValidation encontrado:', key)
+            const keyWithoutId = key.replace('_id', '') // franchise_id -> franchise
+
+            const newObject = {
+              value: initialData[keyWithoutId]?.id,
+              label: initialData[keyWithoutId]?.name
+            }
+
+            methods.setValue(key as Path<T>, newObject as any)
+          } else {
+            methods.setValue(key as Path<T>, initialData[key])
+          }
+        }
       })
     }
-  }, [initialData, mode, methods, setFormData])
+
+    console.log(methods.getValues())
+  }, [initialData, mode, methods, setFormData, schemaToUse])
 
   // Manejar errores de validación del backend
   useEffect(() => {

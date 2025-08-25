@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+import { asyncSelectValidation } from './common'
+
 // Base schema for property data
 const basePropertySchema = z.object({
   name: z
@@ -11,19 +13,9 @@ const basePropertySchema = z.object({
 
   code: z.string().optional().or(z.literal('')),
 
-  franchise_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .optional(),
+  franchise_id: asyncSelectValidation,
 
-  assigned_to_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .optional(),
+  assigned_to_id: asyncSelectValidation,
 
   status_id: z.number({ message: 'El estado es requerido' }).min(1, { message: 'Debe seleccionar un estado' }),
 
@@ -39,26 +31,11 @@ const basePropertySchema = z.object({
 
   rent_price: z.coerce.number().min(0, { message: 'El precio de alquiler debe ser mayor o igual a 0' }).optional(),
 
-  state_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .optional(),
+  state_id: asyncSelectValidation,
 
-  municipality_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .optional(),
+  municipality_id: asyncSelectValidation,
 
-  parish_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .optional(),
+  parish_id: asyncSelectValidation,
 
   address: z
     .string()
@@ -67,12 +44,7 @@ const basePropertySchema = z.object({
     .optional()
     .or(z.literal('')),
 
-  owner_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .optional(),
+  owner_id: asyncSelectValidation,
 
   characteristics: z
     .array(

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 
+import { asyncSelectValidation } from './common'
 
 
 // Esquema para crear un cliente
@@ -8,24 +9,13 @@ export const createClientSchema = z.object({
   email: z.string().email('El email debe ser válido').optional().or(z.literal('')),
   phone: z.string().min(1, 'El teléfono es requerido'),
   status: z.number().min(1, 'El status es requerido'),
-  franchise_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .refine(data => data.value !== undefined, {
-      message: 'La franquicia es requerida'
-    }),
+  franchise_id: asyncSelectValidation,
 
-  elpepe: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-    .refine(data => data.value !== undefined, {
-      message: 'El usuario asignado es requerido'
-    })
+  assigned_to_id: asyncSelectValidation,
 })
+
+
+
 
 // Esquema para editar un cliente
 export const editClientSchema = z.object({
@@ -33,23 +23,8 @@ export const editClientSchema = z.object({
   email: z.string().email('El email debe ser válido').optional().or(z.literal('')),
   phone: z.string().min(1, 'El teléfono es requerido'),
   status: z.number().min(1, 'El status es requerido'),
-  franchise_id: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-  .refine((data) => data.value !== undefined, {
-    message: 'El franquicia es requerida'
-  }),
-
-  elpepe: z
-    .object({
-      label: z.string(),
-      value: z.number()
-    })
-  .refine((data) => data.value !== undefined, {
-    message: 'El usuario asignado es requerido'
-  })
+  franchise_id: asyncSelectValidation,
+  assigned_to_id: asyncSelectValidation
 })
 
 // Valores por defecto para el formulario

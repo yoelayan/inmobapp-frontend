@@ -464,118 +464,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     }
   }
 
-  const setFormData = (data: any, methods: any) => {
-    console.log('🔍 setFormData ejecutándose con:', data)
 
-    const asyncFields = ['state_id', 'municipality_id', 'parish_id', 'owner_id', 'franchise_id', 'assigned_to_id']
-    const selectFields = ['status_id', 'type_property_id'] // Campos SelectField del Paso 1
-    const textFields = ['name', 'code', 'address', 'description'] // Campos de texto del Paso 1
-
-    console.log('📋 Campos a procesar:')
-    console.log('  - AsyncFields:', asyncFields)
-    console.log('  - SelectFields:', selectFields)
-    console.log('  - TextFields:', textFields)
-
-    // Primero establecer los campos async-select para que los filtros funcionen
-    const asyncFieldOrder = ['state_id', 'municipality_id', 'parish_id']
-
-    asyncFieldOrder.forEach(field => {
-      if (data[field]) {
-        const value = data[field]
-        if (typeof value === 'object' && 'id' in value) {
-          // El backend devuelve objetos anidados como {id: 1, name: "Estado"}
-          methods.setValue(field, {
-            label: value.name || value.email || value.identifier || value.id,
-            value: value.id
-          })
-          console.log(`✅ Campo ${field} establecido:`, { label: value.name || value.email || value.identifier || value.id, value: value.id })
-        } else if (typeof value === 'number') {
-          // Es solo el ID, necesitamos buscar el objeto correspondiente para obtener el label
-          const objectKey = field.replace('_id', '') // state_id -> state
-          const objectData = data[objectKey]
-
-          if (objectData && typeof objectData === 'object' && 'id' in objectData) {
-            // Usar el objeto anidado para crear el label
-            methods.setValue(field, {
-              label: objectData.name || objectData.email || objectData.identifier || objectData.id,
-              value: value
-            })
-            console.log(`✅ Campo ${field} establecido con objeto anidado:`, { label: objectData.name || objectData.email || objectData.identifier || objectData.id, value: value })
-          } else {
-            // Si no hay objeto anidado, solo usar el ID
-            methods.setValue(field, value)
-            console.log(`✅ Campo ${field} establecido solo con ID:`, value)
-          }
-        } else {
-          // Otro tipo de valor
-          methods.setValue(field, value)
-          console.log(`✅ Campo ${field} establecido con valor directo:`, value)
-        }
-      }
-    })
-
-    // Luego establecer todos los demás campos
-    Object.entries(data).forEach(([key, value]) => {
-      if (!asyncFieldOrder.includes(key)) { // Evitar duplicar los campos ya establecidos
-        if (asyncFields.includes(key) && value) {
-          // Si es un campo async-select y tiene valor
-          if (typeof value === 'object' && 'id' in value) {
-            // El backend devuelve objetos anidados como {id: 1, name: "Estado"}
-            // Los convertimos al formato {label: "Estado", value: 1} que espera el campo async-select
-            methods.setValue(key, {
-              label: (value as any).name || (value as any).email || (value as any).identifier || (value as any).id,
-              value: (value as any).id
-            })
-          } else if (typeof value === 'number') {
-            // Es solo el ID, necesitamos buscar el objeto correspondiente para obtener el label
-            const objectKey = key.replace('_id', '') // state_id -> state
-            const objectData = data[objectKey]
-
-            if (objectData && typeof objectData === 'object' && 'id' in objectData) {
-              // Usar el objeto anidado para crear el label
-              methods.setValue(key, {
-                label: objectData.name || objectData.email || objectData.identifier || objectData.id,
-                value: value
-              })
-            } else {
-              // Si no hay objeto anidado, solo usar el ID
-              methods.setValue(key, value)
-            }
-          } else {
-            // Otro tipo de valor
-            methods.setValue(key, value)
-          }
-        } else if (selectFields.includes(key) && value) {
-          // Manejar campos SelectField del Paso 1
-          if (typeof value === 'object' && 'id' in value) {
-            // Si viene como objeto, usar solo el ID
-            methods.setValue(key, value.id)
-            console.log(`✅ Campo SelectField ${key} establecido con ID:`, value.id)
-          } else if (typeof value === 'number') {
-            // Si viene como número, usarlo directamente
-            methods.setValue(key, value)
-            console.log(`✅ Campo SelectField ${key} establecido con valor:`, value)
-          } else {
-            // Otro tipo de valor
-            methods.setValue(key, value)
-            console.log(`✅ Campo SelectField ${key} establecido con valor directo:`, value)
-          }
-        } else if (textFields.includes(key) && value !== undefined && value !== null) {
-          // Manejar campos de texto del Paso 1
-          methods.setValue(key, value)
-          console.log(`✅ Campo de texto ${key} establecido:`, value)
-        } else if (!asyncFields.includes(key) && !selectFields.includes(key) && !textFields.includes(key)) {
-          // Otros campos
-          methods.setValue(key, value)
-          console.log(`✅ Campo ${key} establecido:`, value)
-        }
-      }
-    })
-
-    console.log('✅ setFormData completado')
-
-
-  }
 
   const FormNavigationButtons = () => {
     const formMethods = useFormContext()
@@ -768,7 +657,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               entityId={propertyId ? Number(propertyId) : undefined}
               onSuccess={handleSuccess}
               onError={handleError}
-              setFormData={setFormData}
               actionsComponent={<FormNavigationButtons />}
             >
               <Grid container spacing={6}>
