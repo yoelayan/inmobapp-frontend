@@ -23,6 +23,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import { useAuthContext } from '@/auth/context/AuthContext'
 
 import { propertyImageSchema, type PropertyImageFormData } from '@/validations/propertyImageSchema'
+import useProperties from '@/hooks/api/realstate/useProperties'
 
 interface PropertyImageProps {
   label?: string
@@ -60,6 +61,9 @@ export const PropertyImage = ({
   const [backendImages, setBackendImages] = useState<Array<{id: number, image: string, order?: number}>>([])
   const { session } = useAuthContext()
 
+  // Usar el hook useProperties para manejar la lógica de imágenes
+  const { getAllImages, uploadImages, deleteImage } = useProperties()
+
   // Detectar si estamos en modo edición
   const isEditMode = !!propertyId
 
@@ -67,70 +71,38 @@ export const PropertyImage = ({
   useEffect(() => {
     if (isEditMode && propertyId) {
       fetchExistingImages()
+    } else {
+      // En modo creación, limpiar imágenes del backend y errores
+      setBackendImages([])
+      setValidationError('')
     }
   }, [isEditMode, propertyId])
 
-  // Obtener imágenes existentes del backend
+  // Obtener imágenes existentes del backend usando useProperties
   const fetchExistingImages = async () => {
     if (!propertyId) return
 
-    // Usar la URL completa del backend (sin duplicar /api/)
-    const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/properties/${propertyId}/get-images/`
-    console.log('Fetching images from:', url)
+    // Limpiar errores previos antes de hacer la petición
+    setValidationError('')
 
     try {
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 segundos timeout
-
-      const headers: Record<string, string> = {}
-      if (session?.access) {
-        headers['Authorization'] = `Bearer ${session.access}`
-      }
-
-      const response = await fetch(url, {
-        signal: controller.signal,
-        headers
-      })
-
-      clearTimeout(timeoutId)
-      console.log('Response status:', response.status)
-      console.log('Response headers:', response.headers)
-
-      if (response.ok) {
-        const contentType = response.headers.get('content-type')
-        console.log('Content-Type:', contentType)
-
-        if (contentType && contentType.includes('application/json')) {
-          const data = await response.json()
-          console.log('Images data:', data)
-          setBackendImages(data.results || [])
-        } else {
-          console.error('Invalid content type:', contentType)
-          // Vamos a ver qué está devolviendo realmente el backend
-          const responseText = await response.text()
-          console.error('Response body (first 500 chars):', responseText.substring(0, 500))
-          setValidationError('Error: Respuesta del servidor no es JSON')
-        }
+      const response = await getAllImages(propertyId)
+      console.log('Images data:', response)
+      setBackendImages(response.results || [])
+      // Limpiar errores si todo salió bien
+      setValidationError('')
+    } catch (error: unknown) {
+      console.error('Error fetching images:', error)
+      if (error instanceof Error) {
+        setValidationError(`Error al cargar las imágenes: ${error.message}`)
       } else {
-        console.error('Error response:', response.status, response.statusText)
-        // También ver qué devuelve en caso de error
-        const responseText = await response.text()
-        console.error('Error response body (first 500 chars):', responseText.substring(0, 500))
-        setValidationError(`Error ${response.status}: ${response.statusText}`)
-      }
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        console.error('Request timeout')
-        setValidationError('Error: Timeout al cargar las imágenes')
-      } else {
-        console.error('Error fetching images:', error)
         setValidationError('Error al cargar las imágenes')
       }
     }
   }
 
-  // Subir imágenes al backend
-  const uploadImages = async (files: File[]) => {
+  // Subir imágenes al backend usando useProperties
+  const handleUploadImages = async (files: File[]) => {
     if (!propertyId) {
       // En modo creación, solo llamar al callback
       onImagesChange?.(files)
@@ -139,98 +111,48 @@ export const PropertyImage = ({
 
     try {
       setIsUploading(true)
-      const formData = new FormData()
-      files.forEach(file => {
-        formData.append('images', file)
-      })
 
-      // Usar la URL completa del backend (sin duplicar /api/)
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/properties/${propertyId}/upload-images/`
-      console.log('Uploading images to:', url)
-      console.log('Files to upload:', files.map(f => ({ name: f.name, size: f.size, type: f.type })))
+      // Convertir File[] a FileList para usar con uploadImages
+      const dataTransfer = new DataTransfer()
+      files.forEach(file => dataTransfer.items.add(file))
+      const fileList = dataTransfer.files
 
-      const headers: Record<string, string> = {}
-      if (session?.access) {
-        headers['Authorization'] = `Bearer ${session.access}`
-      }
-
-      const response = await fetch(url, {
-        method: 'POST',
-        body: formData,
-        headers
-      })
-
-      console.log('Upload response status:', response.status)
-      console.log('Upload response headers:', response.headers)
-
-      if (response.ok) {
-        const contentType = response.headers.get('content-type')
-        console.log('Upload response content-type:', contentType)
-
-        if (contentType && contentType.includes('application/json')) {
-          const data = await response.json()
-          console.log('Upload success data:', data)
-        } else {
-          const responseText = await response.text()
-          console.error('Upload response not JSON (first 500 chars):', responseText.substring(0, 500))
-        }
+      // Usar el método de useProperties
+      await uploadImages(propertyId, fileList)
 
         // Recargar las imágenes existentes
         await fetchExistingImages()
         // Limpiar archivos de carga
         setUploadingFiles([])
-      } else {
-        const contentType = response.headers.get('content-type')
-        if (contentType && contentType.includes('application/json')) {
-          const errorData = await response.json()
-          setValidationError(errorData.message || 'Error al subir las imágenes')
-        } else {
-          const responseText = await response.text()
-          console.error('Upload error response (first 500 chars):', responseText.substring(0, 500))
-          setValidationError('Error al subir las imágenes')
-        }
-      }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error uploading images:', error)
-      setValidationError('Error al subir las imágenes')
+      if (error instanceof Error) {
+        setValidationError(`Error al subir las imágenes: ${error.message}`)
+      } else {
+          setValidationError('Error al subir las imágenes')
+      }
     } finally {
       setIsUploading(false)
     }
   }
 
-  // Eliminar imagen del backend
-  const deleteBackendImage = async (imageId: number) => {
+  // Eliminar imagen del backend usando useProperties
+  const handleDeleteBackendImage = async (imageId: number) => {
     if (!propertyId) return
 
     try {
-      // Usar la misma URL absoluta que las otras funciones
-      const url = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/properties/${propertyId}/delete-image/`
-      console.log('Deleting image from:', url, 'Image ID:', imageId)
+      // Usar el método de useProperties
+      await deleteImage(imageId)
 
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      }
-      if (session?.access) {
-        headers['Authorization'] = `Bearer ${session.access}`
-      }
-
-      // Enviar image_id en el body como espera el backend
-      const response = await fetch(url, {
-        method: 'DELETE',
-        headers,
-        body: JSON.stringify({ image_id: imageId })
-      })
-
-      if (response.ok) {
         // Recargar las imágenes existentes
         await fetchExistingImages()
-      } else {
-        const errorData = await response.json()
-        setValidationError(errorData.message || 'Error al eliminar la imagen')
-      }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting image:', error)
-      setValidationError('Error al eliminar la imagen')
+      if (error instanceof Error) {
+        setValidationError(`Error al eliminar la imagen: ${error.message}`)
+      } else {
+        setValidationError('Error al eliminar la imagen')
+      }
     }
   }
 
@@ -243,7 +165,7 @@ export const PropertyImage = ({
   }
 
   // Helper to get all images (backend + uploading + current)
-  const getAllImages = () => {
+  const getAllImagesForDisplay = () => {
     const allImages: Array<{
       file: File | string | null,
       isBackend: boolean,
@@ -296,9 +218,9 @@ export const PropertyImage = ({
       propertyImageSchema.parse(data)
       setValidationError('')
       return true
-    } catch (error: any) {
-      if (error.errors && error.errors.length > 0) {
-        setValidationError(error.errors[0].message)
+    } catch (error: unknown) {
+      if (error && typeof error === 'object' && 'errors' in error && Array.isArray((error as any).errors) && (error as any).errors.length > 0) {
+        setValidationError((error as any).errors[0].message)
       }
       return false
     }
@@ -328,8 +250,8 @@ export const PropertyImage = ({
         // Agregar archivos a la lista de carga
         setUploadingFiles(prev => [...prev, ...files])
 
-        // Subir las imágenes
-        await uploadImages(files)
+        // Subir las imágenes usando useProperties
+        await handleUploadImages(files)
       }
     }
   }
@@ -346,8 +268,8 @@ export const PropertyImage = ({
       // Agregar archivos a la lista de carga
       setUploadingFiles(prev => [...prev, ...newFiles])
 
-      // Subir las imágenes
-      await uploadImages(newFiles)
+      // Subir las imágenes usando useProperties
+      await handleUploadImages(newFiles)
     }
 
     // Limpiar el input
@@ -362,8 +284,8 @@ export const PropertyImage = ({
     isUploading?: boolean
   }) => {
     if (imageData.isBackend && imageData.imageId) {
-      // Eliminar imagen del backend
-      await deleteBackendImage(imageData.imageId)
+      // Eliminar imagen del backend usando useProperties
+      await handleDeleteBackendImage(imageData.imageId)
     } else if (imageData.isUploading) {
       // Eliminar archivo que se está cargando
       const newFiles = uploadingFiles.filter((_: File, i: number) =>
@@ -373,7 +295,7 @@ export const PropertyImage = ({
     }
   }
 
-  const allImages = getAllImages()
+  const allImages = getAllImagesForDisplay()
 
         return (
           <Box width="100%">
