@@ -1,6 +1,6 @@
 'use client'
 import type { ReactNode } from 'react'
-import React, { useEffect, createContext, useState, useCallback } from 'react'
+import React, { useEffect, createContext, useState, useCallback, useContext } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -17,6 +17,15 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
+// Hook personalizado para usar el contexto de autenticación
+export const useAuthContext = () => {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuthContext must be used within an AuthProvider')
+  }
+  return context
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)

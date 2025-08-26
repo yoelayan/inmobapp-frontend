@@ -27,9 +27,9 @@ const basePropertySchema = z.object({
     .number({ message: 'El tipo de propiedad es requerido' })
     .min(1, { message: 'Debe seleccionar un tipo de propiedad' }),
 
-  price: z.coerce.number().min(0, { message: 'El precio debe ser mayor o igual a 0' }).optional(),
+  price: z.coerce.number().min(0.01, { message: 'El precio debe ser mayor a 0' }).optional(),
 
-  rent_price: z.coerce.number().min(0, { message: 'El precio de alquiler debe ser mayor o igual a 0' }).optional(),
+  rent_price: z.coerce.number().min(0.01, { message: 'El precio de alquiler debe ser mayor a 0' }).optional(),
 
   state_id: asyncSelectValidation,
 
@@ -53,24 +53,12 @@ const basePropertySchema = z.object({
         value: z.union([z.string(), z.number(), z.boolean()])
       })
     )
-    .optional(),
-
-  images: z
-    .array(
-      z.object({
-        id: z.number().optional(),
-        image: z.string().optional(),
-        order: z.number().optional(),
-        preview: z.any().optional()
-      })
-    )
     .optional()
 })
 
 // Schema for creating properties - Solo se usa al completar paso 2
 export const createPropertySchema = basePropertySchema.omit({
-  characteristics: true,
-  images: true
+  characteristics: true
 })
 
 // Schema for editing properties
@@ -149,11 +137,10 @@ export const step2Schema = z.object({
 })
 
 export const step3Schema = z.object({
-  characteristics: basePropertySchema.shape.characteristics,
-  images: basePropertySchema.shape.images
+  characteristics: basePropertySchema.shape.characteristics
 })
 
-// Default values for form
+// Default values for form - No enviar valores 0
 export const defaultPropertyValues = {
   name: '',
   description: '',
@@ -163,15 +150,14 @@ export const defaultPropertyValues = {
   status_id: undefined,
   type_negotiation_id: undefined,
   type_property_id: undefined,
-  price: 0,
-  rent_price: 0,
+  price: undefined, // Cambiado de 0 a undefined
+  rent_price: undefined, // Cambiado de 0 a undefined
   state_id: undefined,
   municipality_id: undefined,
   parish_id: undefined,
   address: '',
   owner_id: undefined,
-  characteristics: [],
-  images: []
+  characteristics: []
 }
 
 export type CreatePropertyFormData = z.infer<typeof createPropertySchema>
