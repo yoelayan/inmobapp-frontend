@@ -59,8 +59,6 @@ import {
   type EditPropertyFormData
 } from '@/validations/propertySchema'
 
-import type { ImageUploadResponse } from '@/validations/propertyImageSchema'
-
 
 import StatesRepository from '@/services/repositories/locations/StatesRepository'
 import MunicipalitiesRepository from '@/services/repositories/locations/MunicipalitiesRepository'
@@ -335,8 +333,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [newlyCreatedClient, setNewlyCreatedClient] = useState<any>(null)
-  const [currentImageUrls, setCurrentImageUrls] = useState<string[]>([])
-  const [isLoadingImages, setIsLoadingImages] = useState(false)
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
 
 
@@ -371,13 +367,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     }
   }, [propertyId, mode])
 
-  // Cargar imágenes existentes cuando se edita una propiedad
-  useEffect(() => {
-    if (propertyId && mode === 'edit') {
-      fetchExistingImages()
-    }
-  }, [propertyId, mode])
-
   // Modal crear cliente
   const handleOpenClientModal = () => {
     setIsClientModalOpen(true)
@@ -390,68 +379,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchClients()
     setNewlyCreatedClient(newClient)
     notify(`Cliente "${newClient.name}" creado exitosamente`, 'success')
-  }
-
-  // Obtener imágenes existentes del backend
-  const fetchExistingImages = async () => {
-    if (!propertyId) return
-
-    try {
-      setIsLoadingImages(true)
-      const response = await fetch(`/api/realstate/properties/${propertyId}/get-images/`)
-      if (response.ok) {
-        const data = await response.json()
-        const imageUrls = data.results.map((img: ImageUploadResponse) => img.image)
-        setCurrentImageUrls(imageUrls)
-      }
-    } catch (error) {
-      console.error('Error fetching images:', error)
-      notify('Error al cargar las imágenes existentes', 'error')
-    } finally {
-      setIsLoadingImages(false)
-    }
-  }
-
-  // Subir imágenes al backend
-  const uploadImages = async (files: File[]) => {
-    if (!propertyId) {
-      notify('Debe guardar la propiedad antes de subir imágenes', 'warning')
-      return
-    }
-
-    try {
-      setIsLoadingImages(true)
-      const formData = new FormData()
-      files.forEach(file => {
-        formData.append('images', file)
-      })
-
-      const response = await fetch(`/api/realstate/properties/${propertyId}/upload-images/`, {
-        method: 'POST',
-        body: formData
-      })
-
-      if (response.ok) {
-        notify('Imágenes subidas exitosamente', 'success')
-        // Recargar las imágenes existentes
-        await fetchExistingImages()
-      } else {
-        const errorData = await response.json()
-        notify(errorData.message || 'Error al subir las imágenes', 'error')
-      }
-    } catch (error) {
-      console.error('Error uploading images:', error)
-      notify('Error al subir las imágenes', 'error')
-    } finally {
-      setIsLoadingImages(false)
-    }
-  }
-
-  // Manejo de imágenes - ahora solo sube al backend
-  const handleImagesChange = async (files: File[]) => {
-    if (files.length > 0) {
-      await uploadImages(files)
-    }
   }
 
   // Paso 1
@@ -676,9 +603,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
             <PropertyImage
               label='Imágenes de la Propiedad'
               accept='image/*'
-              currentImageUrls={currentImageUrls}
-              onImagesChange={handleImagesChange}
-              isLoading={isLoadingImages}
               propertyId={propertyId}
             />
           </Grid>

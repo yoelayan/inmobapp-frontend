@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react'
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
 
 import {
   Box,
@@ -20,6 +21,7 @@ import CloseIcon from '@mui/icons-material/Close'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 import { useAuthContext } from '@/auth/context/AuthContext'
 
 import { propertyImageSchema, type PropertyImageFormData } from '@/validations/propertyImageSchema'
@@ -51,7 +53,7 @@ export const PropertyImage = ({
   propertyId
 }: PropertyImageProps) => {
   const theme = useTheme()
-  const inputRef = useRef<HTMLInputElement | null>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -59,10 +61,11 @@ export const PropertyImage = ({
   const [uploadingFiles, setUploadingFiles] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [backendImages, setBackendImages] = useState<Array<{id: number, image: string, order?: number}>>([])
+  const [isReordering, setIsReordering] = useState(false)
   const { session } = useAuthContext()
 
   // Usar el hook useProperties para manejar la lógica de imágenes
-  const { getAllImages, uploadImages, deleteImage } = useProperties()
+  const { getAllImages, uploadImages, deleteImage, updateImagesOrder } = useProperties()
 
   // Detectar si estamos en modo edición
   const isEditMode = !!propertyId
@@ -88,16 +91,26 @@ export const PropertyImage = ({
     try {
       const response = await getAllImages(propertyId)
       console.log('Images data:', response)
-      setBackendImages(response.results || [])
+
+      // El backend devuelve { results: [...], total: number, page: number, ... }
+      // pero el tipo IRealProperty no incluye esta estructura
+      const images = (response as any).results || []
+      setBackendImages(images)
+
       // Limpiar errores si todo salió bien
       setValidationError('')
     } catch (error: unknown) {
-      console.error('Error fetching images:', error)
-      if (error instanceof Error) {
-        setValidationError(`Error al cargar las imágenes: ${error.message}`)
-      } else {
-        setValidationError('Error al cargar las imágenes')
+      // No mostrar errores molestos en la consola para el usuario
+      // Solo loggear para debugging del desarrollador
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Error fetching images:', error)
       }
+
+      // Mostrar mensaje amigable al usuario
+      setValidationError('No se pudieron cargar las imágenes existentes')
+
+      // Limpiar las imágenes del backend para evitar errores de UI
+      setBackendImages([])
     }
   }
 
@@ -153,6 +166,55 @@ export const PropertyImage = ({
       } else {
         setValidationError('Error al eliminar la imagen')
       }
+    }
+  }
+
+  // Manejar el reordenamiento de imágenes
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination || !propertyId) return
+
+    const { source, destination } = result
+
+    // Si la imagen se movió a la misma posición, no hacer nada
+    if (source.index === destination.index) return
+
+    try {
+      setIsReordering(true)
+
+      // Crear una copia del array de imágenes
+      const newImagesOrder = Array.from(backendImages)
+
+      // Mover la imagen a la nueva posición
+      const [movedImage] = newImagesOrder.splice(source.index, 1)
+      newImagesOrder.splice(destination.index, 0, movedImage)
+
+      // Actualizar el estado local inmediatamente para una mejor UX
+      setBackendImages(newImagesOrder)
+
+      // Preparar los datos para enviar al backend
+      const imagesWithOrder = newImagesOrder.map((img, index) => ({
+        id: img.id,
+        order: index + 1
+      }))
+
+      // Enviar el nuevo orden al backend
+      await updateImagesOrder(propertyId, imagesWithOrder)
+
+      // Mostrar mensaje de éxito
+      setValidationError('')
+    } catch (error: unknown) {
+      console.error('Error reordering images:', error)
+
+      // Revertir el cambio en caso de error
+      await fetchExistingImages()
+
+      if (error instanceof Error) {
+        setValidationError(`Error al reordenar las imágenes: ${error.message}`)
+      } else {
+        setValidationError('Error al reordenar las imágenes')
+      }
+    } finally {
+      setIsReordering(false)
     }
   }
 
@@ -297,6 +359,9 @@ export const PropertyImage = ({
 
   const allImages = getAllImagesForDisplay()
 
+  // Solo mostrar drag & drop para reordenar si hay imágenes del backend
+  const showReorderDragDrop = isEditMode && backendImages.length > 1
+
         return (
           <Box width="100%">
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
@@ -319,6 +384,16 @@ export const PropertyImage = ({
           <Box display="flex" alignItems="center" gap={1}>
             <CircularProgress size={16} />
             Subiendo imágenes...
+          </Box>
+        </Alert>
+      )}
+
+      {/* Reordering indicator */}
+      {isReordering && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <CircularProgress size={16} />
+            Reordenando imágenes...
           </Box>
         </Alert>
       )}
@@ -396,11 +471,24 @@ export const PropertyImage = ({
               />
             </Paper>
 
-            {/* Images Grid with Horizontal Scroll - Show 4 at once */}
+            {/* Images Grid with Drag & Drop Reordering */}
             {allImages.length > 0 && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" sx={{ mb: 2 }}>
                   Imágenes ({allImages.length})
+                  {showReorderDragDrop && (
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      sx={{
+                        ml: 2,
+                        color: 'text.secondary',
+                        fontStyle: 'italic'
+                      }}
+                    >
+                      • Arrastra las imágenes para reordenarlas
+                    </Typography>
+                  )}
                 </Typography>
 
                 {/* Contenedor principal que ocupa las 12 columnas */}
@@ -411,168 +499,205 @@ export const PropertyImage = ({
                     overflow: 'hidden', // Oculta el overflow del contenedor principal
                   }}
                 >
-                  {/* Contenedor de scroll horizontal que ocupa las 12 columnas */}
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      gap: 2,
-                      overflowX: 'auto', // Scroll horizontal automático
-                      overflowY: 'hidden', // Sin scroll vertical
-                      pb: 2, // Padding bottom para el scrollbar
-                      minHeight: previewSize + 60, // Altura mínima para evitar saltos
-                      width: '100%', // Ocupa todo el ancho disponible (12 columnas)
-                      '&::-webkit-scrollbar': {
-                        height: 8,
-                      },
-                      '&::-webkit-scrollbar-track': {
-                        backgroundColor: theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.1)'
-                          : 'rgba(0, 0, 0, 0.1)',
-                        borderRadius: 4,
-                      },
-                      '&::-webkit-scrollbar-thumb': {
-                        backgroundColor: theme.palette.mode === 'dark'
-                          ? 'rgba(255, 255, 255, 0.3)'
-                          : 'rgba(0, 0, 0, 0.3)',
-                        borderRadius: 4,
-                        '&:hover': {
-                          backgroundColor: theme.palette.mode === 'dark'
-                            ? 'rgba(255, 255, 255, 0.5)'
-                            : 'rgba(0, 0, 0, 0.5)',
-                        },
-                      },
-                    }}
-                  >
-                    {allImages.map((imageData, index) => {
-                      const previewUrl = getPreviewUrl(imageData.file)
-                      if (!previewUrl) return null
-
-                      return (
+                  {/* Drag & Drop Context para reordenar imágenes */}
+                  <DragDropContext onDragEnd={handleDragEnd}>
+                    <Droppable droppableId="images" direction="horizontal">
+                      {(provided) => (
                         <Box
-                          key={index}
+                          ref={provided.innerRef}
+                          {...provided.droppableProps}
                           sx={{
-                            flexShrink: 0, // CRÍTICO: Evita que las imágenes se compriman
-                            width: previewSize, // Ancho fijo igual al previewSize
-                            height: previewSize + 40, // Altura fija para el contenedor
+                            display: 'flex',
+                            gap: 2,
+                            overflowX: 'auto', // Scroll horizontal automático
+                            overflowY: 'hidden', // Sin scroll vertical
+                            pb: 2, // Padding bottom para el scrollbar
+                            minHeight: previewSize + 60, // Altura mínima para evitar saltos
+                            width: '100%', // Ocupa todo el ancho disponible (12 columnas)
+                            '&::-webkit-scrollbar': {
+                              height: 8,
+                            },
+                            '&::-webkit-scrollbar-track': {
+                              backgroundColor: theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.1)'
+                                : 'rgba(0, 0, 0, 0.1)',
+                              borderRadius: 4,
+                            },
+                            '&::-webkit-scrollbar-thumb': {
+                              backgroundColor: theme.palette.mode === 'dark'
+                                ? 'rgba(255, 255, 255, 0.3)'
+                                : 'rgba(0, 0, 0, 0.3)',
+                              borderRadius: 4,
+                              '&:hover': {
+                                backgroundColor: theme.palette.mode === 'dark'
+                                  ? 'rgba(255, 255, 255, 0.5)'
+                                  : 'rgba(0, 0, 0, 0.5)',
+                              },
+                            },
                           }}
                         >
-                          <Box position="relative">
-                            <Card
-                              sx={{
-                                width: '100%',
-                                height: '100%',
-                                cursor: 'pointer',
-                                overflow: 'hidden',
-                                border: '1px solid',
-                                borderColor: theme.palette.mode === 'dark'
-                                  ? 'rgba(255, 255, 255, 0.12)'
-                                  : 'rgba(0, 0, 0, 0.08)',
-                                borderRadius: 1,
-                                transition: 'all 0.2s ease-in-out',
-                                '&:hover': {
-                                  transform: 'scale(1.02)',
-                                  boxShadow: theme.shadows[4],
-                                  '& .image-preview': {
-                                    filter: 'brightness(0.8)'
-                                  }
-                                }
-                              }}
-                              onClick={() => {
-                                setSelectedImageIndex(index)
-                                setIsFullScreenOpen(true)
-                              }}
-                            >
-                              <Box position="relative">
-                                <CardMedia
-                                  component="img"
-                                  image={previewUrl}
-                                  alt={`${label} ${index + 1}`}
-                                  className="image-preview"
-                                  sx={{
-                                    width: '100%',
-                                    height: previewSize,
-                                    objectFit: 'cover',
-                                    borderRadius: 1,
-                                    transition: 'filter 0.2s ease-in-out'
-                                  }}
-                                />
+                          {allImages.map((imageData, index) => {
+                            const previewUrl = getPreviewUrl(imageData.file)
+                            if (!previewUrl) return null
 
-                                {/* Backend image indicator */}
-                                {imageData.isBackend && (
-                                  <Chip
-                                    label="Actual"
-                                    size="small"
+                            // Solo las imágenes del backend pueden ser arrastradas para reordenar
+                            const canDrag = imageData.isBackend && showReorderDragDrop
+
+                            return (
+                              <Draggable
+                                key={imageData.imageId || `uploading-${index}`}
+                                draggableId={String(imageData.imageId || `uploading-${index}`)}
+                                index={index}
+                                isDragDisabled={!canDrag}
+                              >
+                                {(provided, snapshot) => (
+                                  <Box
+                                    ref={provided.innerRef}
+                                    {...provided.draggableProps}
                                     sx={{
-                                      position: 'absolute',
-                                      top: 8,
-                                      left: 8,
-                                      bgcolor: 'rgba(0, 0, 0, 0.7)',
-                                      color: 'white',
-                                      fontSize: '0.7rem'
+                                      flexShrink: 0, // CRÍTICO: Evita que las imágenes se compriman
+                                      width: previewSize, // Ancho fijo igual al previewSize
+                                      height: previewSize + 40, // Altura fija para el contenedor
                                     }}
-                                  />
+                                  >
+                                    <Box position="relative">
+                                      <Card
+                                        sx={{
+                                          width: '100%',
+                                          height: '100%',
+                                          cursor: canDrag ? 'grab' : 'pointer',
+                                          overflow: 'hidden',
+                                          border: '1px solid',
+                                          borderColor: snapshot.isDragging
+                                            ? 'primary.main'
+                                            : theme.palette.mode === 'dark'
+                                              ? 'rgba(255, 255, 255, 0.12)'
+                                              : 'rgba(0, 0, 0, 0.08)',
+                                          borderRadius: 1,
+                                          transition: 'all 0.2s ease-in-out',
+                                          transform: snapshot.isDragging ? 'rotate(5deg)' : 'none',
+                                          boxShadow: snapshot.isDragging ? theme.shadows[8] : 'none',
+                                          '&:hover': {
+                                            transform: snapshot.isDragging ? 'rotate(5deg)' : 'scale(1.02)',
+                                            boxShadow: snapshot.isDragging ? theme.shadows[8] : theme.shadows[4],
+                                            '& .image-preview': {
+                                              filter: 'brightness(0.8)'
+                                            }
+                                          }
+                                        }}
+                                        onClick={() => {
+                                          setSelectedImageIndex(index)
+                                          setIsFullScreenOpen(true)
+                                        }}
+                                      >
+                                        <Box position="relative">
+                                          <CardMedia
+                                            component="img"
+                                            image={previewUrl}
+                                            alt={`${label} ${index + 1}`}
+                                            className="image-preview"
+                                            sx={{
+                                              width: '100%',
+                                              height: previewSize,
+                                              objectFit: 'cover',
+                                              borderRadius: 1,
+                                              transition: 'filter 0.2s ease-in-out'
+                                            }}
+                                          />
+
+                                          {/* Drag handle para reordenar */}
+                                          {canDrag && (
+                                            <Box
+                                              {...provided.dragHandleProps}
+                                              sx={{
+                                                position: 'absolute',
+                                                top: 8,
+                                                left: 8,
+                                                bgcolor: 'rgba(0, 0, 0, 0.7)',
+                                                color: 'white',
+                                                borderRadius: '50%',
+                                                width: 24,
+                                                height: 24,
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                cursor: 'grab',
+                                                '&:active': {
+                                                  cursor: 'grabbing'
+                                                },
+                                                zIndex: 2
+                                              }}
+                                            >
+                                              <DragIndicatorIcon sx={{ fontSize: 16 }} />
+                                            </Box>
+                                          )}
+
+                                          {/* Uploading indicator */}
+                                          {imageData.isUploading && (
+                                            <Chip
+                                              label="Subiendo..."
+                                              size="small"
+                                              sx={{
+                                                position: 'absolute',
+                                                top: 8,
+                                                left: 8,
+                                                bgcolor: 'primary.main',
+                                                color: 'white',
+                                                fontSize: '0.7rem'
+                                              }}
+                                            />
+                                          )}
+
+                                          {/* Delete button */}
+                                          <IconButton
+                                            onClick={(e) => {
+                                              e.stopPropagation()
+                                              handleDeleteImage(imageData)
+                                            }}
+                                            sx={{
+                                              position: 'absolute',
+                                              top: 8,
+                                              right: 8,
+                                              bgcolor: 'error.main',
+                                              color: 'white',
+                                              '&:hover': {
+                                                bgcolor: 'error.dark'
+                                              }
+                                            }}
+                                          >
+                                            <DeleteIcon />
+                                          </IconButton>
+                                        </Box>
+                                      </Card>
+
+                                      {/* Image index */}
+                                      <Typography
+                                        variant="caption"
+                                        sx={{
+                                          position: 'absolute',
+                                          bottom: 8,
+                                          left: 8,
+                                          bgcolor: 'rgba(0, 0, 0, 0.7)',
+                                          color: 'white',
+                                          px: 1,
+                                          py: 0.5,
+                                          borderRadius: theme.shape.borderRadius,
+                                          fontSize: '0.7rem'
+                                        }}
+                                      >
+                                        {index + 1}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
                                 )}
-
-                                {/* Uploading indicator */}
-                                {imageData.isUploading && (
-                                  <Chip
-                                    label="Subiendo..."
-                                    size="small"
-                                    sx={{
-                                      position: 'absolute',
-                                      top: 8,
-                                      left: 8,
-                                      bgcolor: 'primary.main',
-                                      color: 'white',
-                                      fontSize: '0.7rem'
-                                    }}
-                                  />
-                                )}
-
-                                {/* Delete button */}
-                                <IconButton
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    handleDeleteImage(imageData)
-                                  }}
-                                  sx={{
-                                    position: 'absolute',
-                                    top: 8,
-                                    right: 8,
-                                    bgcolor: 'error.main',
-                                    color: 'white',
-                                    '&:hover': {
-                                      bgcolor: 'error.dark'
-                                    }
-                                  }}
-                                >
-                                  <DeleteIcon />
-                                </IconButton>
-                              </Box>
-                            </Card>
-
-                            {/* Image index */}
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                position: 'absolute',
-                                bottom: 8,
-                                left: 8,
-                                bgcolor: 'rgba(0, 0, 0, 0.7)',
-                                color: 'white',
-                                px: 1,
-                                py: 0.5,
-                                borderRadius: theme.shape.borderRadius,
-                                fontSize: '0.7rem'
-                              }}
-                            >
-                              {index + 1}
-                            </Typography>
-                          </Box>
+                              </Draggable>
+                            )
+                          })}
+                          {provided.placeholder}
                         </Box>
-                      )
-                    })}
-                  </Box>
+                      )}
+                    </Droppable>
+                  </DragDropContext>
                 </Box>
               </Box>
             )}
