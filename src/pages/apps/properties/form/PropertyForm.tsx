@@ -33,10 +33,6 @@ import usePropertyStatus from '@hooks/api/realstate/usePropertyStatus'
 import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
 import usePropertyNegotiation from '@hooks/api/realstate/usePropertyNegotiation'
 import useClients from '@hooks/api/crm/useClients'
-import useClientStatus from '@hooks/api/crm/useClientStatus'
-import useUsers from '@hooks/api/users/useUsers'
-import useFranchises from '@hooks/api/realstate/useFranchises'
-import useProperties from '@hooks/api/realstate/useProperties'
 
 import { Form, FormField } from '@components/common/forms/Form'
 import { PropertyImage } from './components/PropertyImage'
@@ -180,10 +176,10 @@ const Step1Content = memo(({ statuses, propertyTypes }: { statuses: any, propert
 })
 
 const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedClient, setNewlyCreatedClient }: {
-  negotiations: any,
+  negotiations: any, // TODO: type
   setIsClientModalOpen: (open: boolean) => void,
-  newlyCreatedClient: any,
-  setNewlyCreatedClient: (client: any) => void
+  newlyCreatedClient: any, // TODO: type
+  setNewlyCreatedClient: (client: any) => void // TODO: type
 }) => {
   const { watch, setValue } = useFormContext()
   const negotiationTypeId = watch('type_negotiation_id')
@@ -197,6 +193,7 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
       if (!showSalePrice) {
         setValue('price', undefined)
       }
+
       if (!showRentPrice) {
         setValue('rent_price', undefined)
       }
@@ -214,6 +211,7 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
   // Función para validar y limpiar precios antes de enviar
   const handlePriceChange = (field: 'price' | 'rent_price', value: string | number) => {
     const numValue = parseFloat(value.toString())
+
     if (isNaN(numValue) || numValue <= 0) {
       setValue(field, undefined)
     } else {
@@ -342,16 +340,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const { data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
   const { data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
   const { fetchData: fetchClients } = useClients()
-  const { data: clientStatuses, fetchData: fetchClientStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers } = useUsers()
-  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
 
-  // Cargar datasets una sola vez (evita loops por identidades inestables)
-  const didInitRef = useRef(false)
 
   useEffect(() => {
-    if (didInitRef.current) return
-    didInitRef.current = true
 
     fetchStatuses()
     fetchPropertyTypes()
@@ -359,20 +350,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // En modo edición, permitir navegación libre entre pasos
-  useEffect(() => {
-    if (propertyId && mode === 'edit') {
-      // En modo edición, permitir acceso a todos los pasos
-      // No necesitamos restringir la navegación
-    }
-  }, [propertyId, mode])
-
-  // Modal crear cliente
-  const handleOpenClientModal = () => {
-    setIsClientModalOpen(true)
-  }
-
-  const handleCloseClientModal = () => setIsClientModalOpen(false)
 
   const handleClientCreated = (newClient: any) => {
     setIsClientModalOpen(false)
@@ -442,6 +419,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
       // En modo edición, usar un schema completo que incluya todos los campos
       return editPropertySchema
     }
+
     if (activeStep === 1) return createPropertySchema
 
     return getCurrentStepSchema()
@@ -459,6 +437,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     } else if (mode === 'create' && activeStep === 1) {
       // En modo creación, redirigir al formulario de edición para continuar con el paso 3
       notify('Propiedad creada exitosamente. Redirigiendo al formulario de edición...', 'success')
+
       // Pequeño delay para que se vea la notificación antes de redirigir
       setTimeout(() => {
         onSuccess?.(property)
@@ -478,6 +457,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     // Mostrar el error específico del backend
     if (error.response?.data) {
       const errorData = error.response.data
+
       console.error('Backend error details:', errorData)
 
       if (errorData.message) {
@@ -502,13 +482,13 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     // En modo edición, mostrar solo el botón de actualizar centrado
     if (propertyId) {
       return (
-        <Box display='flex' justifyContent='center' mt={4}>
+        <Box display='flex' justifyContent='flex-end' mt={4}>
           <Button
             type='submit'
             variant='contained'
             size='large'
             startIcon={<i className='tabler-check' />}
-            sx={{ minWidth: '200px' }}
+            className="min-w-[200px]"
           >
             Actualizar Propiedad
           </Button>
@@ -567,7 +547,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           {/* Paso 2: Datos de Negociación */}
           <Grid size={{ xs: 12 }}>
             <Typography variant='h6' gutterBottom sx={{ mb: 3, color: 'primary.main' }}>
-              💰 Datos de Negociación
+              💰 Datos de Negociación {/* TODO: Usar iconos */}
             </Typography>
           </Grid>
           <Step2Content
@@ -585,7 +565,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           {/* Paso 3: Características (futuro) */}
           <Grid size={{ xs: 12 }}>
             <Typography variant='h6' gutterBottom sx={{ color: 'primary.main' }}>
-              🏠 Datos de Publicación
+              🏠 Datos de Publicación {/* TODO: Usar iconos */}
             </Typography>
           </Grid>
 
@@ -688,7 +668,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         <CardContent>
           {activeStep === steps.length ? (
             <>
-              <Typography className='mlb-2 mli-1'>All steps are completed!</Typography>
+              <Typography className='mlb-2 mli-1'>Todos los pasos han sido completados!</Typography>
               <Box className='flex justify-end mt-4'>
                 <Button variant='contained' onClick={handleReset}>
                   Reset
@@ -720,7 +700,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
       <Dialog
         open={isClientModalOpen}
-        onClose={handleCloseClientModal}
+        onClose={() => setIsClientModalOpen(false)}
         maxWidth='md'
         fullWidth
         PaperProps={{ sx: { minHeight: '600px' } }}
@@ -728,7 +708,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         <DialogTitle>
           <Box className='flex justify-between items-center'>
             <Typography variant='h6'>Crear Nuevo Cliente</Typography>
-            <IconButton onClick={handleCloseClientModal} size='small'>
+            <IconButton onClick={() => setIsClientModalOpen(false)} size='small'>
               <i className='tabler-x' />
             </IconButton>
           </Box>

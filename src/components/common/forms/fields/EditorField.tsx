@@ -8,7 +8,6 @@ import { StarterKit } from '@tiptap/starter-kit'
 import { Underline } from '@tiptap/extension-underline'
 import { Placeholder } from '@tiptap/extension-placeholder'
 import { TextAlign } from '@tiptap/extension-text-align'
-import classnames from 'classnames'
 
 // MUI Imports
 import { Box, Typography, Divider, FormHelperText, useTheme } from '@mui/material'
@@ -46,7 +45,7 @@ export const EditorField = <T extends FieldValues>({
         <Box>
           <Typography variant='h6' sx={{ mb: 2 }}>
             {label}
-            {required && <span style={{ color: 'error.main' }}>*</span>}
+            {required && <span className="text-red-500">*</span>}
           </Typography>
           <EditorComponent
             value={field.value || ''}
@@ -103,6 +102,7 @@ const EditorComponent = ({
     editable: !disabled,
     onUpdate({ editor }) {
       const html = editor.getHTML()
+
       if (html !== value) {
         onChange(html)
       }
@@ -170,7 +170,7 @@ const EditorToolbar = ({
       bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
       borderBottom: 1,
       borderColor: theme.palette.divider
-    }}>
+    }}> {/* TODO: usar styled para el box */}
       {/* Bold Button */}
       <CustomIconButton
         {...(editor.isActive('bold') && { color: 'primary' })}

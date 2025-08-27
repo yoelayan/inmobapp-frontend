@@ -1,5 +1,6 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react'
-import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd'
+import React, { useRef, useState, useEffect } from 'react'
+
+import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
 
 import {
   Box,
@@ -10,7 +11,6 @@ import {
   IconButton,
   Card,
   CardMedia,
-  Grid,
   Chip,
   Alert,
   Paper,
@@ -22,7 +22,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
-import { useAuthContext } from '@/auth/context/AuthContext'
 
 import { propertyImageSchema, type PropertyImageFormData } from '@/validations/propertyImageSchema'
 import useProperties from '@/hooks/api/realstate/useProperties'
@@ -54,6 +53,8 @@ export const PropertyImage = ({
 }: PropertyImageProps) => {
   const theme = useTheme()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  {/* TODO: usar zustband para los estados */}
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0)
   const [isDragOver, setIsDragOver] = useState(false)
@@ -62,7 +63,7 @@ export const PropertyImage = ({
   const [isUploading, setIsUploading] = useState(false)
   const [backendImages, setBackendImages] = useState<Array<{id: number, image: string, order?: number}>>([])
   const [isReordering, setIsReordering] = useState(false)
-  const { session } = useAuthContext()
+
 
   // Usar el hook useProperties para manejar la lógica de imágenes
   const { getAllImages, uploadImages, deleteImage, updateImagesOrder } = useProperties()
@@ -90,11 +91,13 @@ export const PropertyImage = ({
 
     try {
       const response = await getAllImages(propertyId)
+
       console.log('Images data:', response)
 
       // El backend devuelve { results: [...], total: number, page: number, ... }
       // pero el tipo IRealProperty no incluye esta estructura
       const images = (response as any).results || []
+
       setBackendImages(images)
 
       // Limpiar errores si todo salió bien
@@ -119,6 +122,7 @@ export const PropertyImage = ({
     if (!propertyId) {
       // En modo creación, solo llamar al callback
       onImagesChange?.(files)
+
       return
     }
 
@@ -127,6 +131,7 @@ export const PropertyImage = ({
 
       // Convertir File[] a FileList para usar con uploadImages
       const dataTransfer = new DataTransfer()
+
       files.forEach(file => dataTransfer.items.add(file))
       const fileList = dataTransfer.files
 
@@ -134,11 +139,13 @@ export const PropertyImage = ({
       await uploadImages(propertyId, fileList)
 
         // Recargar las imágenes existentes
-        await fetchExistingImages()
+      await fetchExistingImages()
+
         // Limpiar archivos de carga
         setUploadingFiles([])
     } catch (error: unknown) {
       console.error('Error uploading images:', error)
+
       if (error instanceof Error) {
         setValidationError(`Error al subir las imágenes: ${error.message}`)
       } else {
@@ -161,6 +168,7 @@ export const PropertyImage = ({
         await fetchExistingImages()
     } catch (error: unknown) {
       console.error('Error deleting image:', error)
+
       if (error instanceof Error) {
         setValidationError(`Error al eliminar la imagen: ${error.message}`)
       } else {
@@ -186,6 +194,7 @@ export const PropertyImage = ({
 
       // Mover la imagen a la nueva posición
       const [movedImage] = newImagesOrder.splice(source.index, 1)
+
       newImagesOrder.splice(destination.index, 0, movedImage)
 
       // Actualizar el estado local inmediatamente para una mejor UX
@@ -223,6 +232,7 @@ export const PropertyImage = ({
     if (!value) return null
     if (typeof value === 'string') return value
     if (value instanceof File) return URL.createObjectURL(value)
+
     return null
   }
 
@@ -277,13 +287,16 @@ export const PropertyImage = ({
         images: newImages,
         currentImageUrls
       }
+
       propertyImageSchema.parse(data)
       setValidationError('')
+
       return true
     } catch (error: unknown) {
       if (error && typeof error === 'object' && 'errors' in error && Array.isArray((error as any).errors) && (error as any).errors.length > 0) {
         setValidationError((error as any).errors[0].message)
       }
+
       return false
     }
   }
@@ -320,9 +333,11 @@ export const PropertyImage = ({
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
+
     if (!files) return
 
     const newFiles = Array.from(files)
+
     console.log('PropertyImage onChange:', { newFiles })
 
     // Validar archivos
@@ -353,6 +368,7 @@ export const PropertyImage = ({
       const newFiles = uploadingFiles.filter((_: File, i: number) =>
         i !== (imageData.index - backendImages.length)
       )
+
       setUploadingFiles(newFiles)
     }
   }
@@ -365,7 +381,7 @@ export const PropertyImage = ({
         return (
           <Box width="100%">
             <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              {label} {required && <span style={{ color: theme.palette.error.main }}>*</span>}
+              {label} {required && <span className="text-red-500">*</span>}
             </Typography>
 
       {/* Loading indicator */}
@@ -406,6 +422,7 @@ export const PropertyImage = ({
             )}
 
             {/* Drag & Drop Area */}
+            {/* Todo: usar styled para el paper */}
             <Paper
               elevation={isDragOver ? 8 : 1}
               sx={{
@@ -538,6 +555,7 @@ export const PropertyImage = ({
                         >
                           {allImages.map((imageData, index) => {
                             const previewUrl = getPreviewUrl(imageData.file)
+
                             if (!previewUrl) return null
 
                             // Solo las imágenes del backend pueden ser arrastradas para reordenar
