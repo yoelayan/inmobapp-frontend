@@ -463,7 +463,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
       try {
         handleSaveCharacteristics()
-        notify('Características actualizadas exitosamente', 'success')
       } catch (error) {
         console.error('Error saving characteristics:', error)
         notify('Error al guardar las características', 'error')
