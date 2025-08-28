@@ -55,5 +55,5 @@ export interface ICharacteristic {
 export interface IPropertyCharacteristic {
   id: number
   value: boolean | number | string
-  characteristic: ICharacteristic
+  characteristic?: ICharacteristic
 }

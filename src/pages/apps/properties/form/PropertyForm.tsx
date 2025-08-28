@@ -33,6 +33,7 @@ import usePropertyStatus from '@hooks/api/realstate/usePropertyStatus'
 import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
 import usePropertyNegotiation from '@hooks/api/realstate/usePropertyNegotiation'
 import useClients from '@hooks/api/crm/useClients'
+import useProperties from '@hooks/api/realstate/useProperties'
 
 import { Form, FormField } from '@components/common/forms/Form'
 import { PropertyImage } from './components/PropertyImage'
@@ -64,6 +65,10 @@ import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
 import UsersRepository from '@/services/repositories/users/UsersRepository'
 import { EditorField } from '@components/common/forms/fields/EditorField'
+
+
+import type { IPropertyCharacteristic } from '@/types/apps/RealtstateTypes'
+
 
 interface PropertyFormProps {
   mode?: 'create' | 'edit'
@@ -332,6 +337,12 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [newlyCreatedClient, setNewlyCreatedClient] = useState<any>(null)
+  const [charToSave, setCharToSave] = useState<IPropertyCharacteristic[]>([])
+
+  const {
+    updateCharacteristic
+  } = useProperties()
+
   const isSmallScreen = useMediaQuery('(max-width: 600px)')
 
 
@@ -350,7 +361,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchNegotiations()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
 
   const handleClientCreated = (newClient: any) => {
     setIsClientModalOpen(false)
@@ -428,11 +438,37 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const schema = getFormSchema()
 
+  const handleSaveCharacteristics = async () => {
+    if (!propertyId) return
+
+    try {
+      const characteristicsToUpdate = charToSave.map((char: IPropertyCharacteristic) => ({
+        id: char.id,
+        value: char.value
+      }))
+
+      await updateCharacteristic(propertyId, characteristicsToUpdate)
+      notify('Características actualizadas exitosamente', 'success')
+    } catch (error) {
+      console.error('Error updating characteristics:', error)
+      notify('Error al actualizar las características', 'error')
+    }
+  }
+
   const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
     console.log(`Propiedad ${mode === 'edit' ? 'actualizada' : 'creada'}:`, property)
 
     if (mode === 'edit') {
       notify('Propiedad actualizada exitosamente', 'success')
+
+      try {
+        handleSaveCharacteristics()
+        notify('Características actualizadas exitosamente', 'success')
+      } catch (error) {
+        console.error('Error saving characteristics:', error)
+        notify('Error al guardar las características', 'error')
+      }
+
       console.log('✅ Notificación de éxito mostrada')
       onSuccess?.(property)
     } else if (mode === 'create' && activeStep === 1) {
@@ -571,7 +607,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           </Grid>
 
                     {/* Columna Izquierda: Descripción e Imágenes */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <EditorField
               name='description'
               label='Descripción'
@@ -590,10 +626,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           </Grid>
 
           {/* Columna Derecha: Características */}
-          <Grid size={{ xs: 12, md: 6 }}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <PropertyCharacteristicsV2
               propertyId={propertyId}
-              mode="edit"
+              setCharToSave={setCharToSave}
             />
           </Grid>
         </>

@@ -46,20 +46,9 @@ const basePropertySchema = z.object({
 
   owner_id: asyncSelectValidation,
 
-  characteristics: z
-    .array(
-      z.object({
-        characteristic_id: z.number(),
-        value: z.union([z.string(), z.number(), z.boolean()])
-      })
-    )
-    .optional()
 })
 
-// Schema for creating properties - Solo se usa al completar paso 2
-export const createPropertySchema = basePropertySchema.omit({
-  characteristics: true
-})
+export const createPropertySchema = basePropertySchema
 
 // Schema for editing properties
 export const editPropertySchema = basePropertySchema.partial().extend({
@@ -136,10 +125,6 @@ export const step2Schema = z.object({
   }
 })
 
-export const step3Schema = z.object({
-  characteristics: basePropertySchema.shape.characteristics
-})
-
 // Default values for form - No enviar valores 0
 export const defaultPropertyValues = {
   name: '',
@@ -156,9 +141,8 @@ export const defaultPropertyValues = {
   municipality_id: undefined,
   parish_id: undefined,
   address: '',
-  owner_id: undefined,
-  characteristics: []
+  owner_id: undefined
 }
 
-export type CreatePropertyFormData = z.infer<typeof createPropertySchema>
+export type CreatePropertyFormData = z.infer<typeof basePropertySchema>
 export type EditPropertyFormData = z.infer<typeof editPropertySchema>

@@ -4,11 +4,7 @@ import React, { useState, useEffect } from 'react'
 import {
   Box,
   Button,
-  Card,
-  CardContent,
-  CardHeader,
   CircularProgress,
-  Divider,
   FormControl,
   FormControlLabel,
   Grid2 as Grid,
@@ -33,36 +29,42 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IPropertyCharacteristic, ICharacteristic } from '@/types/apps/RealtstateTypes'
 
 interface PropertyCharacteristicsV2Props {
-  propertyId?: string | number
-  mode?: 'create' | 'edit'
+  propertyId?: string | number,
+  setCharToSave: (chars: any[]) => void
 }
 
 const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
   propertyId,
-  mode = 'edit'
+  setCharToSave
 }) => {
   const { notify } = useNotification()
+
   const {
     getPropertyCharacteristics,
     allCharacteristics,
     deleteCharacteristic,
     addCharacteristic,
-    updateCharacteristic
+
   } = useProperties()
 
   const [loading, setLoading] = useState<boolean>(false)
   const [loadingAll, setLoadingAll] = useState<boolean>(false)
-  const [saving, setSaving] = useState<boolean>(false)
   const [characteristics, setCharacteristics] = useState<IPropertyCharacteristic[]>([])
   const [availableCharacteristics, setAvailableCharacteristics] = useState<ICharacteristic[]>([])
   const [selectedCharacteristic, setSelectedCharacteristic] = useState<string | number>('')
   const [localValues, setLocalValues] = useState<Record<number, any>>({})
 
+
+  useEffect(() => {
+    setCharToSave(characteristics)
+  }, [characteristics, setCharToSave])
+
   // Fetch property characteristics
     const fetchPropertyCharacteristics = async (silent: boolean = false) => {
     if (!propertyId) return
 
-    if (!silent) setLoading(true)
+      if (!silent) setLoading(true)
+
     try {
       const response = await getPropertyCharacteristics(propertyId)
       const newCharacteristics = response.results || []
@@ -70,12 +72,15 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
       // Preservar valores locales existentes
       setCharacteristics((prev: IPropertyCharacteristic[]) => {
         const updatedCharacteristics = newCharacteristics.map((newChar: IPropertyCharacteristic) => {
-          const existingChar = prev.find((p: IPropertyCharacteristic) => p.characteristic.code === newChar.characteristic.code)
+          const existingChar = prev.find((p: IPropertyCharacteristic) => p.characteristic?.code === newChar.characteristic?.code)
+
           if (existingChar && localValues[existingChar.id] !== undefined) {
             return { ...newChar, value: localValues[existingChar.id] }
           }
+
           return newChar
         })
+
         return updatedCharacteristics
       })
     } catch (error) {
@@ -89,12 +94,13 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
   // Fetch all available characteristics for adding optional ones
   const fetchAllCharacteristics = async () => {
     setLoadingAll(true)
+
     try {
       const response = await allCharacteristics()
       const availableChars = response.results || []
 
       // Filter out characteristics that are already added to the property
-      const existingCharIds = characteristics.map((char: IPropertyCharacteristic) => char.characteristic.id)
+      const existingCharIds = characteristics.map((char: IPropertyCharacteristic) => char.characteristic?.id)
       const filteredChars = availableChars.filter((char: ICharacteristic) => !existingCharIds.includes(char.id))
 
       setAvailableCharacteristics(filteredChars)
@@ -171,7 +177,9 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
       // Limpiar valor local
       setLocalValues(prev => {
         const newValues = { ...prev }
+
         delete newValues[characteristicId]
+
         return newValues
       })
 
@@ -185,25 +193,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
   }
 
   // Save all characteristic values
-  const handleSaveCharacteristics = async () => {
-    if (!propertyId) return
 
-    setSaving(true)
-    try {
-      const characteristicsToUpdate = characteristics.map((char: IPropertyCharacteristic) => ({
-        id: char.id,
-        value: char.value
-      }))
-
-      await updateCharacteristic(propertyId, characteristicsToUpdate)
-      notify('Características actualizadas exitosamente', 'success')
-    } catch (error) {
-      console.error('Error updating characteristics:', error)
-      notify('Error al actualizar las características', 'error')
-    } finally {
-      setSaving(false)
-    }
-  }
 
   // Render input field based on characteristic type
   const renderInputField = (characteristic: IPropertyCharacteristic) => {
@@ -233,9 +223,13 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
             label={name}
             value={value || ''}
             onChange={(e) => handleValueChange(id, parseInt(e.target.value) || 0)}
-            inputProps={{
-              step: 1,
-              min: 0
+            slotProps={{
+              input: {
+                inputProps: {
+                  step: 1,
+                  min: 0
+                }
+              }
             }}
           />
         )
@@ -248,9 +242,13 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
             label={name}
             value={value || ''}
             onChange={(e) => handleValueChange(id, parseFloat(e.target.value) || 0)}
-            inputProps={{
-              step: 0.01,
-              min: 0
+            slotProps={{
+              input: {
+                inputProps: {
+                  step: 0.01,
+                  min: 0
+                }
+              }
             }}
           />
         )
@@ -284,8 +282,8 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
   }, [propertyId, characteristics.length])
 
   // Separate required and optional characteristics
-  const requiredCharacteristics = characteristics.filter(char => char.characteristic.is_required)
-  const optionalCharacteristics = characteristics.filter(char => !char.characteristic.is_required)
+  const requiredCharacteristics = characteristics.filter(char => char.characteristic?.is_required)
+  const optionalCharacteristics = characteristics.filter(char => !char.characteristic?.is_required)
 
   // Loading state
   if (loading) {
@@ -395,20 +393,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
       </Box>
 
       {/* Save Button */}
-      {characteristics.length > 0 && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 3 }}>
-          <Button
-            variant='contained'
-            color='success'
-            onClick={handleSaveCharacteristics}
-            disabled={saving}
-            startIcon={saving ? <CircularProgress size={20} /> : <i className='tabler-check' />}
-            sx={{ minWidth: '200px' }}
-          >
-            {saving ? 'Guardando...' : 'Guardar Características'}
-          </Button>
-        </Box>
-      )}
+
     </Box>
   )
 }
