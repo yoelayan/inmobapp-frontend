@@ -36,6 +36,7 @@ import useClients from '@hooks/api/crm/useClients'
 
 import { Form, FormField } from '@components/common/forms/Form'
 import { PropertyImage } from './components/PropertyImage'
+import PropertyCharacteristicsV2 from './components/PropertyCharacteristicsV2'
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import CustomAvatar from '@core/components/mui/Avatar'
 import DirectionalIcon from '@components/DirectionalIcon'
@@ -562,14 +563,15 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
             <Divider sx={{ my: 4 }} />
           </Grid>
 
-          {/* Paso 3: Características (futuro) */}
+          {/* Paso 3: Datos de Publicación y Características */}
           <Grid size={{ xs: 12 }}>
             <Typography variant='h6' gutterBottom sx={{ color: 'primary.main' }}>
               🏠 Datos de Publicación {/* TODO: Usar iconos */}
             </Typography>
           </Grid>
 
-          <Grid size={{ xs: 12 }}>
+                    {/* Columna Izquierda: Descripción e Imágenes */}
+          <Grid size={{ xs: 12, md: 6 }}>
             <EditorField
               name='description'
               label='Descripción'
@@ -577,20 +579,22 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               minHeight={150}
               maxHeight={300}
             />
+
+            <Box sx={{ mt: 3 }}>
+              <PropertyImage
+                label='Imágenes de la Propiedad'
+                accept='image/*'
+                propertyId={propertyId}
+              />
+            </Box>
           </Grid>
 
-          <Grid size={{ xs: 12 }}>
-            <PropertyImage
-              label='Imágenes de la Propiedad'
-              accept='image/*'
+          {/* Columna Derecha: Características */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <PropertyCharacteristicsV2
               propertyId={propertyId}
+              mode="edit"
             />
-          </Grid>
-
-          <Grid size={{ xs: 12 }}>
-            <Typography variant='body2' color='text.secondary' sx={{ fontStyle: 'italic' }}>
-              Características dinámicas serán implementadas próximamente.
-            </Typography>
           </Grid>
         </>
       )
