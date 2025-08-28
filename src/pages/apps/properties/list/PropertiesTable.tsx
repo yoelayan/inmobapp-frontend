@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -201,25 +201,31 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
         loading: loading,
         refresh: fetchProperties
       }),
-    []
+    [properties, loading, fetchProperties]
   )
 
-  const handleStatusChange = (status: string) => {
+    const handleStatusChange = async (status: string) => {
     setStatusFilter(status)
 
-    // Si no hay status seleccionado, mostrar todas las propiedades
-    if (!status) {
-      fetchProperties({ filters: [], page: 1, pageSize: 10, sorting: [] })
-      return
-    }
+    try {
+      // Si no hay status seleccionado, mostrar todas las propiedades
+      if (!status) {
+        await fetchProperties()
+        return
+      }
 
-    // Aplicar filtro por status
-    fetchProperties({
-      filters: [{ field: 'status__code', value: status }],
-      page: 1,
-      pageSize: 10,
-      sorting: []
-    })
+      // Aplicar filtro por status
+      const filters = [{ field: 'status__code', value: status }]
+
+      await fetchProperties({
+        filters,
+        page: 1,
+        pageSize: 10,
+        sorting: []
+      })
+    } catch (error) {
+      console.error('Error filtering properties:', error)
+    }
   }
 
   const actions: TableAction[] = [

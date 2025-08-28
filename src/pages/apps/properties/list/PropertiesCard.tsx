@@ -101,6 +101,11 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
 
   useEffect(() => {
     fetchTotalProperties()
+    // Al cargar el componente, aplicar el filtro de la card activa por defecto
+    const defaultStatusFilter = statusMapping[cardActive]
+    if (defaultStatusFilter) {
+      onStatusChange(defaultStatusFilter)
+    }
   }, [])
 
   const fetchTotalProperties = async () => {
@@ -126,7 +131,7 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
     }
   }
 
-  const handleChangeCard = (key: string) => {
+    const handleChangeCard = (key: string) => {
     // Si se hace clic en la card ya activa, deseleccionarla
     if (cardActive === key) {
       setCardActive('')
