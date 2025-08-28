@@ -45,10 +45,56 @@ interface TableProps {
   deleteProperty: (id: string) => Promise<void>
   title?: string
   subtitle?: string
+  onStatusFilterChange?: (status: string | null) => void
 }
 
 
 const columns: ColumnDef<IRealProperty>[] = [
+  {
+    accessorKey: 'images',
+    header: 'Imagen',
+    enableColumnFilter: false,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const images = row.original.images || []
+      const coverImage = images.length > 0 ? images[0] : null
+
+      if (!coverImage) {
+        return (
+          <Box
+            sx={{
+              width: 50,
+              height: 50,
+              bgcolor: 'grey.200',
+              borderRadius: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'text.secondary'
+            }}
+          >
+            <i className="tabler-image" style={{ fontSize: '20px' }} />
+          </Box>
+        )
+      }
+
+      return (
+        <Box
+          component="img"
+          src={coverImage.image}
+          alt="Portada"
+          sx={{
+            width: 50,
+            height: 50,
+            borderRadius: 1,
+            objectFit: 'cover',
+            border: '2px solid',
+            borderColor: 'success.main'
+          }}
+        />
+      )
+    }
+  },
   {
     accessorKey: 'name',
     header: 'Nombre',
@@ -143,7 +189,7 @@ const columns: ColumnDef<IRealProperty>[] = [
   }
 ]
 
-const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle, deleteProperty }: TableProps) => {
+const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle, deleteProperty, onStatusFilterChange }: TableProps) => {
   const router = useRouter()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
@@ -160,7 +206,20 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
 
   const handleStatusChange = (status: string) => {
     setStatusFilter(status)
-    fetchProperties({ filters: [{ field: 'status__code', value: statusFilter }], page: 1, pageSize: 10, sorting: [] })
+
+    // Si no hay status seleccionado, mostrar todas las propiedades
+    if (!status) {
+      fetchProperties({ filters: [], page: 1, pageSize: 10, sorting: [] })
+      return
+    }
+
+    // Aplicar filtro por status
+    fetchProperties({
+      filters: [{ field: 'status__code', value: status }],
+      page: 1,
+      pageSize: 10,
+      sorting: []
+    })
   }
 
   const actions: TableAction[] = [
@@ -203,9 +262,42 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
             <Box className='flex gap-4 w-full'>
-              <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              {/* Mostrar filtro de status activo */}
+              {statusFilter && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1,
+                    px: 2,
+                    py: 1,
+                    bgcolor: 'primary.50',
+                    borderRadius: 1,
+                    border: '1px solid',
+                    borderColor: 'primary.200'
+                  }}
+                >
+                  <i className="tabler-filter" style={{ color: 'var(--mui-palette-primary-main)' }} />
+                  <Typography variant="body2" color="primary.main">
+                    Status: <strong>{statusFilter}</strong>
+                  </Typography>
+                </Box>
+              )}
+
+                            <Button
+                variant='outlined'
+                size='small'
+                onClick={() => {
+                  tableStore.setFilters([])
+                  setStatusFilter(null)
+                  onStatusFilterChange?.(null)
+                  fetchProperties({ filters: [], page: 1, pageSize: 10, sorting: [] })
+                }}
+                disabled={!statusFilter && tableStore.filters.length === 0}
+              >
                 Limpiar filtros
               </Button>
+
               <Button
                 key='update'
                 startIcon={<RefreshIcon />}
@@ -215,6 +307,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
               >
                 Actualizar
               </Button>
+
               {/* <Can permission='add_property'> */}
                 <Button
                   key='add'

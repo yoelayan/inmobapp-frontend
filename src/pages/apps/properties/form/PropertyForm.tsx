@@ -455,6 +455,20 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     }
   }
 
+  // Función para asegurar que la primera imagen sea la portada
+  const ensureCoverImage = (images: any[]) => {
+    if (images.length === 0) return images
+
+    // Si la primera imagen no tiene order 1, reordenar
+    const sortedImages = [...images].sort((a, b) => {
+      const orderA = a.order || 0
+      const orderB = b.order || 0
+      return orderA - orderB
+    })
+
+    return sortedImages
+  }
+
   const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
     console.log(`Propiedad ${mode === 'edit' ? 'actualizada' : 'creada'}:`, property)
 

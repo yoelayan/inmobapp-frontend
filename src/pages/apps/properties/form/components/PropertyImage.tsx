@@ -25,6 +25,7 @@ import DragIndicatorIcon from '@mui/icons-material/DragIndicator'
 
 import { propertyImageSchema, type PropertyImageFormData } from '@/validations/propertyImageSchema'
 import useProperties from '@/hooks/api/realstate/useProperties'
+import { useNotification } from '@/hooks/useNotification'
 
 interface PropertyImageProps {
   label?: string
@@ -53,6 +54,7 @@ export const PropertyImage = ({
 }: PropertyImageProps) => {
   const theme = useTheme()
   const inputRef = useRef<HTMLInputElement>(null)
+  const { notify } = useNotification()
 
   {/* TODO: usar zustband para los estados */}
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false)
@@ -98,7 +100,14 @@ export const PropertyImage = ({
       // pero el tipo IRealProperty no incluye esta estructura
       const images = (response as any).results || []
 
-      setBackendImages(images)
+      // Asegurar que las imágenes estén ordenadas correctamente
+      const sortedImages = images.sort((a: any, b: any) => {
+        const orderA = a.order || 0
+        const orderB = b.order || 0
+        return orderA - orderB
+      })
+
+      setBackendImages(sortedImages)
 
       // Limpiar errores si todo salió bien
       setValidationError('')
@@ -185,6 +194,12 @@ export const PropertyImage = ({
 
     // Si la imagen se movió a la misma posición, no hacer nada
     if (source.index === destination.index) return
+
+    // No permitir mover la primera imagen (portada) a otra posición
+    if (source.index === 0) {
+      notify('La imagen de portada no puede ser movida', 'warning')
+      return
+    }
 
     try {
       setIsReordering(true)
@@ -705,6 +720,23 @@ export const PropertyImage = ({
                                       >
                                         {index + 1}
                                       </Typography>
+
+                                      {/* Portada label for first image */}
+                                      {index === 0 && (
+                                        <Chip
+                                          label="Portada"
+                                          size="small"
+                                          sx={{
+                                            position: 'absolute',
+                                            bottom: 8,
+                                            right: 8,
+                                            bgcolor: 'success.main',
+                                            color: 'white',
+                                            fontSize: '0.7rem',
+                                            fontWeight: 'bold'
+                                          }}
+                                        />
+                                      )}
                                     </Box>
                                   </Box>
                                 )}
@@ -726,6 +758,11 @@ export const PropertyImage = ({
                 {helperText}
               </Typography>
             )}
+
+            {/* Portada info */}
+            <Typography variant="body2" sx={{ mt: 1, color: 'success.main', fontStyle: 'italic' }}>
+              💡 La primera imagen será la imagen de portada de la propiedad
+            </Typography>
 
             {/* Full Screen Dialog */}
             <Dialog

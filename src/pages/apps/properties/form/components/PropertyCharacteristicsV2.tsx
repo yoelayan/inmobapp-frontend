@@ -29,23 +29,14 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IPropertyCharacteristic, ICharacteristic } from '@/types/apps/RealtstateTypes'
 
 interface PropertyCharacteristicsV2Props {
-  propertyId?: string | number,
+  propertyId?: string | number
   setCharToSave: (chars: any[]) => void
 }
 
-const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
-  propertyId,
-  setCharToSave
-}) => {
+const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({ propertyId, setCharToSave }) => {
   const { notify } = useNotification()
 
-  const {
-    getPropertyCharacteristics,
-    allCharacteristics,
-    deleteCharacteristic,
-    addCharacteristic,
-
-  } = useProperties()
+  const { getPropertyCharacteristics, allCharacteristics, deleteCharacteristic, addCharacteristic } = useProperties()
 
   const [loading, setLoading] = useState<boolean>(false)
   const [loadingAll, setLoadingAll] = useState<boolean>(false)
@@ -54,28 +45,36 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
   const [selectedCharacteristic, setSelectedCharacteristic] = useState<string | number>('')
   const [localValues, setLocalValues] = useState<Record<number, any>>({})
 
-
   useEffect(() => {
     setCharToSave(characteristics)
   }, [characteristics, setCharToSave])
 
   // Fetch property characteristics
-    const fetchPropertyCharacteristics = async (silent: boolean = false) => {
+  const fetchPropertyCharacteristics = async (silent: boolean = false) => {
     if (!propertyId) return
 
-      if (!silent) setLoading(true)
+    if (!silent) setLoading(true)
 
     try {
       const response = await getPropertyCharacteristics(propertyId)
       const newCharacteristics = response.results || []
 
-      // Preservar valores locales existentes
+      // Preservar valores locales existentes y establecer valores por defecto
       setCharacteristics((prev: IPropertyCharacteristic[]) => {
         const updatedCharacteristics = newCharacteristics.map((newChar: IPropertyCharacteristic) => {
-          const existingChar = prev.find((p: IPropertyCharacteristic) => p.characteristic?.code === newChar.characteristic?.code)
+          const existingChar = prev.find(
+            (p: IPropertyCharacteristic) => p.characteristic?.code === newChar.characteristic?.code
+          )
 
+          // Si hay un valor local guardado, usarlo
           if (existingChar && localValues[existingChar.id] !== undefined) {
             return { ...newChar, value: localValues[existingChar.id] }
+          }
+
+          // Si el valor es null, undefined o vacío, establecer valor por defecto
+          if (newChar.value === null || newChar.value === undefined || newChar.value === '') {
+            const defaultValue = newChar.characteristic ? getDefaultValueForType(newChar.characteristic.type_value) : ''
+            return { ...newChar, value: defaultValue }
           }
 
           return newChar
@@ -112,7 +111,9 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
     }
   }
 
-    // Get default value based on characteristic type
+  // Get default value based on characteristic type
+  // Esta función establece valores por defecto apropiados para cada tipo de característica
+  // Se utiliza al cargar características desde el backend y al agregar nuevas características
   const getDefaultValueForType = (type: string): any => {
     switch (type) {
       case 'boolean':
@@ -133,24 +134,36 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
     setLocalValues(prev => ({ ...prev, [characteristicId]: value }))
 
     // Actualizar características
-    setCharacteristics(prev =>
-      prev.map(char =>
-        char.id === characteristicId
-          ? { ...char, value }
-          : char
-      )
-    )
+    setCharacteristics(prev => prev.map(char => (char.id === characteristicId ? { ...char, value } : char)))
   }
 
-    // Add new optional characteristic
+  // Add new optional characteristic
   const handleAddCharacteristic = async () => {
     if (!selectedCharacteristic || !propertyId) return
 
     try {
-      await addCharacteristic(propertyId, selectedCharacteristic)
+      const response = await addCharacteristic(propertyId, selectedCharacteristic)
+
+      // Si la respuesta incluye la nueva característica, aplicar valor por defecto inmediatamente
+      if (response && response.characteristic) {
+        const defaultValue = getDefaultValueForType(response.characteristic.type_value)
+
+        // Agregar la nueva característica con valor por defecto al estado local
+        setCharacteristics(prev => [
+          ...prev,
+          {
+            ...response,
+            value:
+              response.value !== null && response.value !== undefined && response.value !== ''
+                ? response.value
+                : defaultValue
+          }
+        ])
+      }
+
       setSelectedCharacteristic('')
 
-            // Solo actualizar la lista de características disponibles (silencioso)
+      // Solo actualizar la lista de características disponibles (silencioso)
       await fetchAllCharacteristics()
       notify('Característica agregada exitosamente', 'success')
 
@@ -164,7 +177,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
     }
   }
 
-    // Remove optional characteristic
+  // Remove optional characteristic
   const handleRemoveCharacteristic = async (characteristicId: number) => {
     if (!propertyId) return
 
@@ -194,10 +207,12 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
 
   // Save all characteristic values
 
-
   // Render input field based on characteristic type
   const renderInputField = (characteristic: IPropertyCharacteristic) => {
     const { id, value, characteristic: charDef } = characteristic
+
+    if (!charDef) return null
+
     const { type_value, name } = charDef
 
     switch (type_value) {
@@ -206,8 +221,8 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
           <FormControlLabel
             control={
               <Switch
-                checked={Boolean(value)}
-                onChange={(e) => handleValueChange(id, e.target.checked)}
+                checked={Boolean(value !== undefined && value !== null ? value : false)}
+                onChange={e => handleValueChange(id, e.target.checked)}
                 name={name}
               />
             }
@@ -219,10 +234,10 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
         return (
           <TextField
             fullWidth
-            type="number"
+            type='number'
             label={name}
-            value={value || ''}
-            onChange={(e) => handleValueChange(id, parseInt(e.target.value) || 0)}
+            value={value !== undefined && value !== null ? value : 0}
+            onChange={e => handleValueChange(id, parseInt(e.target.value) || 0)}
             slotProps={{
               input: {
                 inputProps: {
@@ -238,10 +253,10 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
         return (
           <TextField
             fullWidth
-            type="number"
+            type='number'
             label={name}
-            value={value || ''}
-            onChange={(e) => handleValueChange(id, parseFloat(e.target.value) || 0)}
+            value={value !== undefined && value !== null ? value : 0.0}
+            onChange={e => handleValueChange(id, parseFloat(e.target.value) || 0)}
             slotProps={{
               input: {
                 inputProps: {
@@ -258,10 +273,10 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
         return (
           <TextField
             fullWidth
-            type="text"
+            type='text'
             label={name}
-            value={value || ''}
-            onChange={(e) => handleValueChange(id, e.target.value)}
+            value={value !== undefined && value !== null ? value : ''}
+            onChange={e => handleValueChange(id, e.target.value)}
           />
         )
     }
@@ -271,12 +286,44 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
   useEffect(() => {
     if (propertyId) {
       fetchPropertyCharacteristics()
+    } else {
+      // En modo creación (sin propertyId), cargar características requeridas por defecto
+      fetchRequiredCharacteristics()
     }
   }, [propertyId])
 
+  // Fetch required characteristics for new properties (creation mode)
+  const fetchRequiredCharacteristics = async () => {
+    setLoading(true)
+
+    try {
+      const response = await allCharacteristics()
+      const allChars = response.results || []
+
+      // Filtrar solo las características requeridas
+      const requiredChars = allChars.filter((char: ICharacteristic) => char.is_required)
+
+      // Crear características con valores por defecto
+      const characteristicsWithDefaults: IPropertyCharacteristic[] = requiredChars.map(
+        (char: ICharacteristic, index: number) => ({
+          id: -(index + 1), // ID temporal negativo para características nuevas
+          value: getDefaultValueForType(char.type_value),
+          characteristic: char
+        })
+      )
+
+      setCharacteristics(characteristicsWithDefaults)
+    } catch (error) {
+      console.error('Error fetching required characteristics:', error)
+      notify('Error al cargar las características requeridas', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   // Fetch available characteristics when characteristics change
   useEffect(() => {
-    if (propertyId && characteristics.length >= 0) {
+    if (characteristics.length >= 0) {
       fetchAllCharacteristics()
     }
   }, [propertyId, characteristics.length])
@@ -295,7 +342,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
     )
   }
 
-    return (
+  return (
     <Box>
       {/* Required Characteristics Section */}
       <Typography variant='h6' gutterBottom sx={{ color: 'primary.main', mb: 2 }}>
@@ -318,7 +365,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
         )}
       </Grid>
 
-            {/* Optional Characteristics Section */}
+      {/* Optional Characteristics Section */}
       <Box sx={{ mb: 3 }}>
         <Typography variant='h6' gutterBottom sx={{ color: 'primary.main', mb: 2 }}>
           ⚙️ Características Opcionales
@@ -329,14 +376,12 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
             {optionalCharacteristics.map(characteristic => (
               <Grid key={characteristic.id} size={{ xs: 12, sm: 12 }}>
                 <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-                  <Box sx={{ flexGrow: 1 }}>
-                    {renderInputField(characteristic)}
-                  </Box>
+                  <Box sx={{ flexGrow: 1 }}>{renderInputField(characteristic)}</Box>
                   <IconButton
                     color='error'
                     onClick={() => handleRemoveCharacteristic(characteristic.id)}
                     sx={{ mt: 1 }}
-                    size="small"
+                    size='small'
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -356,9 +401,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
 
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <FormControl fullWidth>
-            <InputLabel id='add-characteristic-label'>
-              Seleccionar Característica
-            </InputLabel>
+            <InputLabel id='add-characteristic-label'>Seleccionar Característica</InputLabel>
             <Select
               labelId='add-characteristic-label'
               value={selectedCharacteristic}
@@ -368,7 +411,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
             >
               {availableCharacteristics.map((char: ICharacteristic) => (
                 <MenuItem key={char.id} value={char.id}>
-                  {char.name} ({char.type_value})
+                  {char.name}
                 </MenuItem>
               ))}
             </Select>
@@ -393,7 +436,6 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({
       </Box>
 
       {/* Save Button */}
-
     </Box>
   )
 }

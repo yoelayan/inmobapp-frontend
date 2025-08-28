@@ -17,6 +17,12 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 const Properties: React.FC = () => {
   const { fetchData: fetchProperties, data: properties, deleteData: deleteProperty, loading } = useProperties()
 
+  // Función para manejar cambios en el filtro de status
+  const handleStatusFilterChange = (status: string | null) => {
+    // Esta función se puede usar para sincronizar el estado del filtro
+    // entre las cards y la tabla si es necesario
+    console.log('Status filter changed:', status)
+  }
 
   return (
     <>
@@ -28,6 +34,7 @@ const Properties: React.FC = () => {
             loading={loading}
             fetchProperties={fetchProperties}
             deleteProperty={deleteProperty}
+            onStatusFilterChange={handleStatusFilterChange}
           />
       </Grid>
     </Grid>
