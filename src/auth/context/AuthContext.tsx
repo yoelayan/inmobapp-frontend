@@ -32,18 +32,21 @@ export const useAuthContext = () => {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
+  const [user, setUser] = useState<IProfile | null>(null)
   const router = useRouter()
 
   const login = async (email: string, password: string) => {
     const sessionData = await AuthService.login(email, password)
 
+    localStorage.setItem('session', JSON.stringify(sessionData))
+
     if (sessionData?.access) {
       const userData = await AuthService.me()
 
-      //agregar user data al session
-      sessionData.user = userData
+      localStorage.setItem('user', JSON.stringify(userData))
 
-    localStorage.setItem('session', JSON.stringify(sessionData))
+      setUser(userData)
+
     setSession(sessionData)
     }
 
@@ -52,12 +55,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = useCallback(async () => {
     localStorage.removeItem('session')
+    localStorage.removeItem('user')
     setSession(null)
     router.push('/login')
   }, [router])
 
   useEffect(() => {
     const session = localStorage.getItem('session')
+    const user = localStorage.getItem('user')
+
+    if (user) {
+      setUser(JSON.parse(user))
+    }
 
     if (session) {
       const parsedSession = JSON.parse(session)
@@ -88,7 +97,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         logout,
         loading,
         isAuthenticated: !!session,
-        user: session?.user || null
+        user: user || null
       }}
     >
       {children}
