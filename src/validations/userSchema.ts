@@ -20,12 +20,11 @@ const baseUserSchema = z.object({
   email: z.string().email({ message: 'El email no es válido' }),
 
   image: z
-    .custom<File | null>()
+    .custom<File>()
     .optional()
-    .nullable()
     .refine(
       file => {
-        if (!file) return true // Allow null/undefined
+        if (!file) return true // Allow undefined
         if (!(file instanceof File)) return false
 
         return file.type.startsWith('image/')
@@ -36,7 +35,7 @@ const baseUserSchema = z.object({
     )
     .refine(
       file => {
-        if (!file) return true // Allow null/undefined
+        if (!file) return true // Allow undefined
         if (!(file instanceof File)) return false
 
         return file.size <= 1024 * 1024 * 5 // 5MB limit

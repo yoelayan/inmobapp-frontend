@@ -2,6 +2,7 @@
 import React from 'react'
 
 import { useQuery } from '@tanstack/react-query'
+import { useWatch } from 'react-hook-form'
 
 import {
   Grid2, Alert
@@ -60,8 +61,11 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
   // Custom function to set form data from backend, excluding image URL
   const setFormData = (data: any, methods: any) => {
     Object.entries(data).forEach(([key, value]) => {
-      // Skip setting image field if it's a URL from backend
+      // For image field, store the URL but don't set it in the form
       if (key === 'image' && typeof value === 'string') {
+        // Store the current image URL for display purposes
+        setCurrentImageUrl(value)
+        // Don't set the image field in the form to avoid conflicts
         return
       }
 
@@ -82,15 +86,28 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
     })
   }
 
+  // Function to format data before submission, handling image field properly
+  const formatData = (data: CreateUserFormData | EditUserFormData) => {
+    const formattedData = { ...data }
+
+    // Only send image field if it's a File (new image selected)
+    if (formattedData.image instanceof File) {
+      console.log('New image selected, sending File object')
+    } else {
+      // For all other cases (undefined, null, string), don't send the field
+      delete formattedData.image
+      console.log('Image field not a File, removing from submission to preserve existing image')
+    }
+
+    console.log('Final formatted data:', formattedData)
+    return formattedData
+  }
+
   // Get current image URL from backend data for display purposes
   const [currentImageUrl, setCurrentImageUrl] = React.useState<string | undefined>()
 
   const handleSetFormData = (data: any, methods: any) => {
-    // Store the current image URL for display
-    if (data.image && typeof data.image === 'string') {
-      setCurrentImageUrl(data.image)
-    }
-
+    // setFormData now handles the image field correctly
     setFormData(data, methods)
   }
 
@@ -99,7 +116,6 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
     name: '',
     password: '',
     confirmPassword: '',
-    image: null,
     email: '',
     franchise_id: franchises?.data?.results?.find(franchise => franchise.franchise_type === 'COMMERCIAL')?.id,
     groups: [] as number[],
@@ -123,6 +139,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
         onSuccess={handleSuccess}
         onError={handleError}
         setFormData={handleSetFormData}
+        formatData={formatData}
       >
         <Grid2 container spacing={4}>
           {/* Columna izquierda: nombre, email, contraseñas */}
@@ -191,7 +208,14 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
                 }
               }}
             />
-            <FormField name='image' type='image' label='Imagen' required fullWidth currentImageUrl={currentImageUrl} />
+                        <FormField
+              name='image'
+              type='image'
+              label='Imagen'
+              required
+              fullWidth
+              currentImageUrl={currentImageUrl}
+            />
           </Grid2>
         </Grid2>
         {/* Permisos */}
