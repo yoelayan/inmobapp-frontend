@@ -5,7 +5,7 @@ import { useCallback } from 'react'
 import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
 import type { ICharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
-import type { ResponseAPI } from '@/services/repositories/BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 
 export default function useSearches(defaultFilters?: Record<string, any>) {
   const baseHook = useBaseHookApi(SearchesRepository, defaultFilters)

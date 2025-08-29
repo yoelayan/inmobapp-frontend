@@ -42,8 +42,8 @@ import type { ISearch } from '@/types/apps/ClientesTypes';
 
 const columns: ColumnDef<ISearch>[] = [
   {
-    accessorKey: 'client__name',
-    header: 'Nombre',
+    accessorKey: 'client.name',
+    header: 'Cliente',
     enableColumnFilter: true,
     enableSorting: true,
     sortingFn: 'alphanumeric'
@@ -60,8 +60,7 @@ const columns: ColumnDef<ISearch>[] = [
     cell: ({ getValue }) => {
       const budget = getValue()
 
-
-return budget ? `$${Number(budget).toLocaleString()}` : ''
+      return budget ? `$${Number(budget).toLocaleString()}` : ''
     }
   },
   {
@@ -71,17 +70,9 @@ return budget ? `$${Number(budget).toLocaleString()}` : ''
     cell: ({ getValue }) => {
       const characteristics = getValue() as any[]
 
-      if (!characteristics || characteristics.length === 0) return 'Sin características'
+      if (!characteristics || characteristics.length === 0) return '0'
 
-      return (
-        <div>
-          {characteristics.map((char: any, index: number) => (
-            <span key={index} style={{ display: 'block', fontSize: '0.8em' }}>
-              {char.characteristic?.name}: {char.value}
-            </span>
-          ))}
-        </div>
-      )
+      return `${characteristics.length}`
     }
   }
 ]
@@ -102,9 +93,12 @@ const SearchesTable = () => {
       createTableStore<ISearch>({
         data: data,
         loading: loading,
-        refresh: refreshData
+        refresh: async (params) => {
+          await refreshData()
+          return data
+        }
       }),
-    []
+    [data, loading, refreshData]
   )
 
   const handleOpenCharacteristicModal = (searchId: number) => {
@@ -195,7 +189,7 @@ const SearchesTable = () => {
     {
       label: 'Editar',
       onClick: (row: Record<string, any>) => {
-        router.push(`/clientes/search/${row.id}/`)
+        router.push(`/clientes/busquedas/${row.id}/`)
       },
       icon: <EditIcon fontSize="small" />
     },
@@ -213,8 +207,25 @@ const SearchesTable = () => {
   const tableStore = useSearchesTableStore();
 
   useEffect(() => {
+    console.log('🔄 Cargando datos de búsquedas...')
     fetchData()
   }, [fetchData])
+
+  useEffect(() => {
+    console.log('📊 Datos de búsquedas cargados:', data)
+    console.log('📊 Cantidad de búsquedas:', data?.results?.length || 0)
+    if (data?.results) {
+      data.results.forEach((search: any, index: number) => {
+        console.log(`📊 Búsqueda ${index + 1}:`, {
+          id: search.id,
+          description: search.description,
+          budget: search.budget,
+          client_id: search.client_id,
+          client_name: search.client?.name
+        })
+      })
+    }
+  }, [data])
 
   return (
     <>
@@ -234,7 +245,11 @@ const SearchesTable = () => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => fetchData()}
+                onClick={() => {
+                  console.log('🔄 Botón Actualizar clickeado')
+                  console.log('📊 Datos actuales antes de refresh:', data)
+                  fetchData()
+                }}
               >
                 Actualizar
               </Button>

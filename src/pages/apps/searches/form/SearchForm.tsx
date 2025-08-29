@@ -5,227 +5,370 @@ import React, { useState, useEffect } from 'react'
 
 // MUI Imports
 import {
-  Button,
   Box,
-  CircularProgress,
   Grid2 as Grid,
   Modal,
   Card,
   CardContent,
   Typography,
   IconButton,
-  Divider,
-  MenuItem
+  MenuItem,
+  Button,
+  CircularProgress
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
 // Component Imports
-import TextField from '@/components/features/form/TextField'
-import SelectFieldAsync from '@/components/features/form/SelectFieldAsync'
+import { Form, PageContainer, TextField, FormField } from '@/components/common/forms/Form'
 
 // Hook Imports
-import { useSearchForm } from './hooks/useSearchForm'
+import { useFormContext } from 'react-hook-form'
 import { useNotification } from '@/hooks/useNotification'
-import useClients from '@/hooks/api/crm/useClients'
 
 // Type Imports
-import type { ResponseAPI } from '@/services/repositories/BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 import type { ISearch, IClient } from '@/types/apps/ClientesTypes'
 import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
+import type { UseFormReturn } from 'react-hook-form'
 
 // Components Imports
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
+
+// Repository Import
+import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
+import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
+
+// Repositorio personalizado que intercepta los datos
+const CustomSearchesRepository = {
+  ...SearchesRepository,
+  update: async (id: number, data: any) => {
+    console.log('🔧 CustomSearchesRepository.update - Datos originales:', data)
+
+    // Transformar client_id si es un objeto
+    const transformedData = {
+      ...data,
+      client_id: typeof data.client_id === 'object' && data.client_id !== null
+        ? data.client_id.value
+        : data.client_id
+    }
+
+    console.log('🔧 CustomSearchesRepository.update - Datos transformados:', transformedData)
+
+    // Llamar al repositorio original con datos transformados
+    return await SearchesRepository.update(id, transformedData)
+  },
+
+  create: async (data: any) => {
+    console.log('🔧 CustomSearchesRepository.create - Datos originales:', data)
+
+    // Transformar client_id si es un objeto
+    const transformedData = {
+      ...data,
+      client_id: typeof data.client_id === 'object' && data.client_id !== null
+        ? data.client_id.value
+        : data.client_id
+    }
+
+    console.log('🔧 CustomSearchesRepository.create - Datos transformados:', transformedData)
+
+    // Llamar al repositorio original con datos transformados
+    return await SearchesRepository.create(transformedData)
+  }
+}
+
+// Schema Import
+import {
+  createSearchSchema,
+  editSearchSchema,
+  type CreateSearchFormData,
+  type EditSearchFormData
+} from '@/validations/searchSchema'
 
 // Component Props
 interface SearchFormProps {
   searchId?: string
   onSuccess?: (response: ISearch) => void
-  clients?: ResponseAPI<IClient> | null
-  statuses?: ResponseAPI<any> | null
-  users?: ResponseAPI<any> | null
-  franchises?: ResponseAPI<any> | null
-  refreshClients?: (filters?: Record<string, any>) => Promise<void>
+  statuses?: ResponseAPI<IStatus> | null
+  users?: ResponseAPI<IUser> | null
+  franchises?: ResponseAPI<IFranchise> | null
 }
 
 export const SearchForm: React.FC<SearchFormProps> = ({
   searchId,
-  onSuccess,
-  clients,
-  statuses,
-  users,
-  franchises,
-  refreshClients
+  onSuccess
 }) => {
-  const { control, handleSubmit, errors, isSubmitting, isLoading, serverError, setValue, watch } = useSearchForm(
-    searchId,
-    onSuccess
-  )
-
   const { notify } = useNotification()
   const [open, setOpen] = useState(false)
-
-  // Initialize useClients hook if not provided
-  const clientsHook = useClients()
-  const effectiveClients = clients || clientsHook.data
-
-  // Function to refresh client data if not provided externally
-  const handleRefreshClients = async (filters?: Record<string, any>) => {
-    if (refreshClients) {
-      await refreshClients(filters)
-    } else {
-      await clientsHook.refreshData(filters)
-    }
-  }
-
-  useEffect(() => {
-    if (!clients) {
-      clientsHook.fetchData()
-    }
-  }, [clients, clientsHook.fetchData, clientsHook])
 
   const handleButtonModal = () => {
     setOpen(!open)
   }
 
-  const ModalClient = () => {
-    const handleSuccess = (response: IClient) => {
+  // Componente interno que usa el contexto del formulario
+  const ClientSelector = () => {
+    const { setValue } = useFormContext()
+
+    const handleClientCreated = (response: IClient) => {
       setValue('client_id', response.id)
-      handleRefreshClients()
       handleButtonModal()
     }
 
-    return (
-      <Modal
-        key='modal-client'
-        open={open}
-        onClose={handleButtonModal}
-        aria-labelledby='modal-modal-title'
-        aria-describedby='modal-modal-description'
-      >
-        <Card
-          sx={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '90%',
-            maxWidth: '800px',
-            bgcolor: 'background.paper',
-            boxShadow: 24,
-            p: 4,
-            borderRadius: 2
-          }}
+    const ModalClient = () => {
+      return (
+        <Modal
+          open={open}
+          onClose={handleButtonModal}
+          aria-labelledby='modal-modal-title'
+          aria-describedby='modal-modal-description'
+          className="flex items-center justify-center p-4"
         >
-          <CardContent>
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-                <Typography id='modal-modal-title' variant='h5' component='h2'>
-                  Crear Cliente
-                </Typography>
-                <IconButton onClick={handleButtonModal}>
-                  <CloseIcon />
-                </IconButton>
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <CardContent className="p-6">
+              <Box className="space-y-6">
+                <Box className="flex justify-between items-center">
+                  <Typography variant='h5' component='h2' className="text-gray-900 dark:text-white">
+                    Crear Cliente
+                  </Typography>
+                  <IconButton
+                    onClick={handleButtonModal}
+                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                  >
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+
+                <ClientForm
+                  onSuccess={handleClientCreated}
+                />
               </Box>
+            </CardContent>
+          </Card>
+        </Modal>
+      )
+    }
 
-              <ClientForm
-                statuses={(statuses ?? null) as ResponseAPI<IStatus> | null}
-                franchises={(franchises ?? null) as ResponseAPI<IFranchise> | null}
-                users={(users ?? null) as ResponseAPI<IUser> | null}
-                onSuccess={(response: IClient) => {
-                  handleSuccess(response)
-                }}
-              />
-            </Box>
-          </CardContent>
-        </Card>
-      </Modal>
-    )
-  }
-
-  // Conditional Rendering (Loading/Initial Error)
-  if (isLoading) {
     return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
-        <CircularProgress />
-        <span style={{ marginLeft: '10px' }}>Cargando datos de la búsqueda...</span>
-      </Box>
+      <div className="space-y-3">
+        <FormField
+          name='client_id'
+          label='Cliente'
+          required={mode === 'create'}
+          type='async-select'
+          repository={ClientsRepository}
+        />
+        <Button
+          onClick={handleButtonModal}
+          variant="outlined"
+          color="primary"
+          startIcon={<span className="tabler-user-plus" />}
+          className="w-full justify-start"
+        >
+          Crear un nuevo cliente
+        </Button>
+        <ModalClient />
+      </div>
     )
   }
 
-  // Show general error if it occurred during initial loading or submission
-  // and is not associated with a specific field.
-  if (serverError && !isLoading && !isSubmitting) {
-    notify(serverError, 'error')
+  const schema = searchId ? editSearchSchema : createSearchSchema
+  const mode = searchId ? 'edit' : 'create'
+
+  console.log('🔍 Debug SearchForm:')
+  console.log('  - searchId:', searchId)
+  console.log('  - mode:', mode)
+  console.log('  - schema:', schema === editSearchSchema ? 'editSearchSchema' : 'createSearchSchema')
+  console.log('  - editSearchSchema:', editSearchSchema)
+  console.log('  - createSearchSchema:', createSearchSchema)
+
+  const defaultValues: Partial<CreateSearchFormData> = {
+    description: '',
+    budget: 0,
+    client_id: undefined
+  }
+
+  const handleSuccess = (data: CreateSearchFormData | EditSearchFormData) => {
+    console.log('✅ Búsqueda creada/actualizada exitosamente:', data)
+    console.log('📊 Tipo de datos:', typeof data)
+    console.log('🔍 Datos del formulario:', JSON.stringify(data, null, 2))
+    console.log('🎯 Schema usado:', schema === editSearchSchema ? 'editSearchSchema' : 'createSearchSchema')
+    console.log('📝 Modo:', mode)
+    console.log('🔧 client_id tipo:', typeof data.client_id, 'valor:', data.client_id)
+
+    // Notificar éxito
+    if (mode === 'edit') {
+      notify('Búsqueda actualizada exitosamente', 'success')
+    } else {
+      notify('Búsqueda creada exitosamente', 'success')
+    }
+
+    if (onSuccess) {
+      onSuccess(data as ISearch)
+    }
+  }
+
+  const handleError = (error: Error | { message?: string; status?: number }) => {
+    console.error('❌ Error en el formulario:', error)
+    console.error('🔍 Detalles del error:', {
+      message: error instanceof Error ? error.message : error.message,
+      status: error instanceof Error ? 'N/A' : error.status,
+      error: error
+    })
+    console.error('📊 Datos que se intentaron enviar:', {
+      schema: schema === editSearchSchema ? 'editSearchSchema' : 'createSearchSchema',
+      mode: mode,
+      searchId: searchId
+    })
+    const errorMessage = error instanceof Error ? error.message : error.message || 'Error desconocido'
+    notify(errorMessage, 'error')
+  }
+
+  const setFormData = (data: ISearch, methods: UseFormReturn<EditSearchFormData>) => {
+    const formData: EditSearchFormData = {
+      description: data.description,
+      budget: data.budget,
+      client_id: data.client_id
+    }
+
+    methods.reset(formData)
+  }
+
+  // Función para formatear los datos antes de enviarlos
+  const formatData = (data: CreateSearchFormData | EditSearchFormData) => {
+    console.log('🔧 formatData - Datos originales:', data)
+
+    const formattedData = {
+      ...data,
+      client_id: typeof data.client_id === 'object' && data.client_id !== null
+        ? data.client_id.value
+        : data.client_id
+    }
+
+    console.log('🔧 formatData - Datos formateados:', formattedData)
+    return formattedData
+  }
+
+  // Función personalizada para transformar datos justo antes del envío
+  const handleSubmit = (formData: any) => {
+    console.log('🚀 handleSubmit - Datos antes de transformar:', formData)
+
+    // Transformar client_id si es un objeto
+    const transformedData = {
+      ...formData,
+      client_id: typeof formData.client_id === 'object' && formData.client_id !== null
+        ? formData.client_id.value
+        : formData.client_id
+    }
+
+    console.log('🚀 handleSubmit - Datos transformados:', transformedData)
+    return transformedData
+  }
+
+  // Componente personalizado que intercepta el envío
+  const CustomForm = () => {
+    const { handleSubmit: formHandleSubmit, getValues } = useFormContext()
+
+    const onSubmit = async (e: React.FormEvent) => {
+      e.preventDefault()
+
+      const formData = getValues()
+      console.log('🚀 onSubmit - Datos del formulario:', formData)
+
+      // Transformar client_id antes de enviar
+      const transformedData = {
+        ...formData,
+        client_id: typeof formData.client_id === 'object' && formData.client_id !== null
+          ? formData.client_id.value
+          : formData.client_id
+      }
+
+      console.log('🚀 onSubmit - Datos transformados:', transformedData)
+
+      // Aquí enviaríamos los datos transformados
+      // Por ahora, solo logueamos
+    }
+
+    return (
+      <form onSubmit={onSubmit}>
+        <Grid container spacing={3} className="p-6">
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              name='description'
+              label='Descripción'
+              fullWidth
+              required
+              multiline
+              rows={3}
+              placeholder='Describe lo que estás buscando...'
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField
+              name='budget'
+              label='Presupuesto'
+              type='number'
+              fullWidth
+              required
+              placeholder='0.00'
+              inputProps={{
+                min: 0,
+                step: 0.01
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <ClientSelector />
+          </Grid>
+        </Grid>
+      </form>
+    )
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12 }}>
-          <TextField
-            control={control}
-            error={errors.description}
-            name='description'
-            label='Descripción'
-            setValue={setValue}
-            value={watch('description')}
-          />
+    <PageContainer title={searchId ? 'Editar Búsqueda' : 'Crear Búsqueda'}>
+      <Form
+        schema={schema}
+        defaultValues={defaultValues}
+        repository={CustomSearchesRepository}
+        onSuccess={handleSuccess}
+        onError={handleError}
+        mode={mode}
+        entityId={searchId ? parseInt(searchId) : undefined}
+        setFormData={setFormData}
+        formatData={formatData}
+      >
+        <Grid container spacing={3} className="p-6">
+          <Grid size={{ xs: 12 }}>
+            <TextField
+              name='description'
+              label='Descripción'
+              fullWidth
+              required
+              multiline
+              rows={3}
+              placeholder='Describe lo que estás buscando...'
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField
+              name='budget'
+              label='Presupuesto'
+              type='number'
+              fullWidth
+              required
+              placeholder='0.00'
+              inputProps={{
+                min: 0,
+                step: 0.01
+              }}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <ClientSelector />
+          </Grid>
         </Grid>
-        <Grid size={{ xs: 12 }}>
-          <TextField
-            control={control}
-            error={errors.budget}
-            name='budget'
-            label='Presupuesto'
-            setValue={setValue}
-            value={watch('budget')}
-          />
-        </Grid>
-
-        <ModalClient />
-
-        <Grid size={{ xs: 12 }}>
-          <SelectFieldAsync
-            name='client_id'
-            label='Cliente'
-            control={control}
-            error={errors.client_id}
-            setValue={setValue}
-            value={watch('client_id')}
-            response={effectiveClients}
-            dataMap={{ value: 'id', label: 'name' }}
-            refreshData={handleRefreshClients}
-          >
-            <MenuItem onClick={handleButtonModal}>
-              <i className='tabler-user-plus' /> Crear un nuevo cliente
-            </MenuItem>
-            <Divider />
-          </SelectFieldAsync>
-        </Grid>
-
-        <Grid
-          sx={{
-            display: 'flex',
-            justifyContent: 'flex-end',
-            width: '100%'
-          }}
-        >
-          <Button variant='contained' color='primary' type='submit' disabled={isSubmitting} sx={{ mt: 2 }}>
-            {isSubmitting ? (
-              <>
-                <CircularProgress size={20} color='inherit' sx={{ mr: 1 }} />
-                Guardando...
-              </>
-            ) : searchId ? (
-              'Actualizar Búsqueda'
-            ) : (
-              'Crear Búsqueda'
-            )}
-          </Button>
-        </Grid>
-      </Grid>
-    </form>
+      </Form>
+    </PageContainer>
   )
 }

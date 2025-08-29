@@ -1,70 +1,34 @@
 'use client'
 
 // React Imports
-import React, { useEffect } from 'react'
+import React from 'react'
 
 // Next Imports
 import { useRouter } from 'next/navigation'
 
 // MUI Imports
-import { Card, CardContent, CardHeader, Box, CircularProgress } from '@mui/material'
+import { Card, CardContent, CardHeader } from '@mui/material'
 
 // Component Imports
 import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 
-// Hook Imports
-import useClients from '@/hooks/api/crm/useClients'
-import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useUsers from '@/hooks/api/users/useUsers'
-import useFranchises from '@/hooks/api/realstate/useFranchises'
-
 const CreateSearchPage: React.FC = () => {
   const router = useRouter()
 
-  // Get data for form
-  const { data: clients, fetchData: fetchClients, refreshData: refreshClients, loading: loadingClients } = useClients()
-  const { data: statuses, fetchData: fetchStatuses, loading: loadingStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers, loading: loadingUsers } = useUsers()
-  const { data: franchises, fetchData: fetchFranchises, loading: loadingFranchises } = useFranchises()
-
-  useEffect(() => {
-    fetchClients()
-    fetchStatuses()
-    fetchUsers()
-    fetchFranchises()
-  }, [fetchClients, fetchStatuses, fetchUsers, fetchFranchises])
-
   const handleSuccess = () => {
-    router.push('/clientes/search')
-  }
-
-  // Show loading while fetching data
-  if (loadingClients || loadingStatuses || loadingUsers || loadingFranchises) {
-    return (
-      <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
-        <CircularProgress />
-        <span style={{ marginLeft: '10px' }}>Cargando datos necesarios...</span>
-      </Box>
-    )
+    router.push('/clientes/busquedas')
   }
 
   return (
     <>
       <BreadcrumbWrapper />
       <Card>
-      <CardHeader title='Crear Búsqueda de Cliente' />
-      <CardContent>
-        <SearchForm
-          onSuccess={handleSuccess}
-          clients={clients}
-          statuses={statuses}
-          users={users}
-          franchises={franchises}
-          refreshClients={refreshClients}
-        />
-      </CardContent>
-    </Card>
+        <CardHeader title='Crear Búsqueda de Cliente' />
+        <CardContent>
+          <SearchForm onSuccess={handleSuccess} />
+        </CardContent>
+      </Card>
     </>
   )
 }
