@@ -1,16 +1,18 @@
 'use client'
 
 // React Imports
-import React, { Suspense } from 'react'
+import React from 'react'
+
 import { useRouter } from 'next/navigation'
 
 // Component Imports
 import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 // Types
 
-function SearchPageContent({ params }: any) {
+function SearchPage({ params }: any) {
   const router = useRouter()
 
   const handleSuccess = () => {
@@ -19,18 +21,10 @@ function SearchPageContent({ params }: any) {
   }
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['change_search']}>
       <BreadcrumbWrapper />
       <SearchForm searchId={params.id} onSuccess={handleSuccess} />
-    </>
-  )
-}
-
-const SearchPage = ({ params }: any) => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <SearchPageContent params={params} />
-    </Suspense>
+    </PermissionGuard>
   )
 }
 

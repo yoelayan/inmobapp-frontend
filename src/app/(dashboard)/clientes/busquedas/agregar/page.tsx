@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader } from '@mui/material'
 // Component Imports
 import { SearchForm } from '@/pages/apps/searches/form/SearchForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 const CreateSearchPage: React.FC = () => {
   const router = useRouter()
@@ -21,7 +22,7 @@ const CreateSearchPage: React.FC = () => {
   }
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['add_search']}>
       <BreadcrumbWrapper />
       <Card>
         <CardHeader title='Crear Búsqueda de Cliente' />
@@ -29,7 +30,7 @@ const CreateSearchPage: React.FC = () => {
           <SearchForm onSuccess={handleSuccess} />
         </CardContent>
       </Card>
-    </>
+    </PermissionGuard>
   )
 }
 
