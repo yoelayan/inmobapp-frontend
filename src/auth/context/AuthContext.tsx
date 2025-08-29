@@ -5,11 +5,11 @@ import React, { useEffect, createContext, useState, useCallback, useContext } fr
 import { useRouter } from 'next/navigation'
 
 import AuthService from '@auth/services/authService'
-import type { User, Session } from '@auth/types/UserTypes'
+import type { Session, IProfile } from '@auth/types/UserTypes'
 
 interface AuthContextType {
   session: Session | null
-  user: User | null
+  user: IProfile | null
   login: (email: string, password: string) => Promise<void>
   logout: () => Promise<void>
   loading: boolean
@@ -37,8 +37,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     const sessionData = await AuthService.login(email, password)
 
+    if (sessionData?.access) {
+      const userData = await AuthService.me()
+
+      //agregar user data al session
+      sessionData.user = userData
+
     localStorage.setItem('session', JSON.stringify(sessionData))
     setSession(sessionData)
+    }
+
+
   }
 
   const logout = useCallback(async () => {

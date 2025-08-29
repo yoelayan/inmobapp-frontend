@@ -40,7 +40,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
     queryFn: () => fetchFranchises(),
   })
 
-  const roles = useQuery({
+  const groups = useQuery({
     queryKey: ['roles'],
     queryFn: () => fetchRoles(),
   })
@@ -74,6 +74,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
       } else if (key === 'groups' && Array.isArray(value)) {
         // Extract group IDs from backend group objects
         const groupIds = value.map((group: any) => group.id)
+
         methods.setValue(key, groupIds)
       } else {
         methods.setValue(key, value)
@@ -170,23 +171,23 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
               label='Roles'
               placeholder='Selecciona roles...'
               options={
-                roles?.data?.results?.map(role => ({
-                  value: role.id,
-                  label: role.name
+                groups?.data?.results?.map(group => ({
+                  value: group.id,
+                  label: group.name
                 })) || []
               }
               fullWidth
-              helperText="Selecciona uno o más roles para el usuario"
+              helperText='Selecciona uno o más roles para el usuario'
               SelectProps={{
                 multiple: true,
                 renderValue: (selected: any) => {
                   if (!selected || selected.length === 0) {
                     return 'Selecciona roles...'
                   }
-                  const selectedRoles = roles?.data?.results?.filter(role =>
-                    selected.includes(role.id)
-                  ) || []
-                  return selectedRoles.map(role => role.name).join(', ')
+
+                  const selectedGroups = groups?.data?.results?.filter(group => selected.includes(group.id)) || []
+
+                  return selectedGroups.map(group => group.name).join(', ')
                 }
               }}
             />

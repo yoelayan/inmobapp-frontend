@@ -6,7 +6,6 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
 import { useAuth } from '@auth/hooks/useAuth'
-import { LocalConvenienceStoreOutlined } from '@mui/icons-material'
 
 interface PermissionGuardProps {
   children: ReactNode
@@ -35,7 +34,6 @@ export default function PermissionGuard({
 
       return
     }
-    console.log(user.user_permissions)
 
     // Si no hay usuario o permisos, redirigir
     if (!user || !user.user_permissions) {

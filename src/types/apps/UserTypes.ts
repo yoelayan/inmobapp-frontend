@@ -23,7 +23,7 @@ export interface IUser {
   username?: string
   date_joined?: string
   last_login?: string
-  groups?: IUserGroup[]
+  roles?: IUserGroup[]
   group_names?: string[]
   user_permissions?: IUserPermission[]
   franchise?: IFranchise

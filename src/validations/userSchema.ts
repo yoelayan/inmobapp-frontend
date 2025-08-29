@@ -46,8 +46,9 @@ const baseUserSchema = z.object({
       }
     ),
   franchise_id: z.number({ message: 'La franquicia no es válida' }),
-  groups: z.array(z.union([z.string(), z.number()]))
-    .transform(arr => arr.map(item => typeof item === 'string' ? parseInt(item, 10) : item))
+  groups: z
+    .array(z.union([z.string(), z.number()]))
+    .transform(arr => arr.map(item => (typeof item === 'string' ? parseInt(item, 10) : item)))
     .optional(),
   user_permissions: z.array(z.string()).optional()
 })
