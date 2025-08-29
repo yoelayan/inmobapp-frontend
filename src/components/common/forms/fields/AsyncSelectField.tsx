@@ -163,64 +163,69 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
       <Controller
         control={control}
         name={name}
-        render={({ field: { onChange: onChangeField, value }, fieldState: { error } }) => (
-          <>
-            <InputLabel
-              shrink={true}
+        render={({ field: { onChange: onChangeField, value }, fieldState: { error } }) => {
+          const inputId = `async-select-${name}`
 
-              error={!!error}
-            >
-              {label}
-            </InputLabel>
-            <AsyncSelect
-              isDisabled={disabled}
-              className='react-select-container'
-              classNamePrefix='react-select'
-              cacheOptions
-              defaultOptions
-              loadOptions={loadOptions}
-              onChange={(option: any) => {
-                onChangeField(option)
+          return (
+            <>
+              <InputLabel
+                htmlFor={inputId}
+                shrink={true}
+                error={!!error}
+              >
+                {label}
+              </InputLabel>
+              <AsyncSelect
+                inputId={inputId}
+                isDisabled={disabled}
+                className='react-select-container'
+                classNamePrefix='react-select'
+                cacheOptions
+                defaultOptions
+                loadOptions={loadOptions}
+                onChange={(option: any) => {
+                  onChangeField(option)
 
-                if (onChange) {
-                  onChange({ label: option?.label, value: option?.value })
-                }
-              }}
-              value={value}
-              styles={customSelectStyles}
-              placeholder='Seleccionar...'
-              noOptionsMessage={() => 'No se encontraron opciones'}
-              loadingMessage={() => 'Cargando...'}
-              isClearable
-              isSearchable
-              theme={selectTheme => ({
-                ...selectTheme,
-                borderRadius: theme.shape.borderRadius,
-                colors: {
-                  ...selectTheme.colors,
-                  primary: theme.palette.primary.main,
-                  primary75: theme.palette.primary.light,
-                  primary50: theme.palette.primary.light + '80',
-                  primary25: theme.palette.primary.light + '40',
-                  danger: theme.palette.error.main,
-                  dangerLight: theme.palette.error.light,
-                  neutral0: theme.palette.background.paper,
-                  neutral5: theme.palette.action.hover,
-                  neutral10: theme.palette.action.selected,
-                  neutral20: theme.palette.divider,
-                  neutral30: theme.palette.text.disabled,
-                  neutral40: theme.palette.text.secondary,
-                  neutral50: theme.palette.text.secondary,
-                  neutral60: theme.palette.text.primary,
-                  neutral70: theme.palette.text.primary,
-                  neutral80: theme.palette.text.primary,
-                  neutral90: theme.palette.text.primary
-                }
-              })}
-            />
-            {error && <FormHelperText error>{error.message}</FormHelperText>}
-          </>
-        )}
+                  if (onChange) {
+                    onChange({ label: option?.label, value: option?.value })
+                  }
+                }}
+                value={value}
+                styles={customSelectStyles}
+                placeholder='Seleccionar...'
+                noOptionsMessage={() => 'No se encontraron opciones'}
+                loadingMessage={() => 'Cargando...'}
+                isClearable
+                isSearchable
+                theme={selectTheme => ({
+                  ...selectTheme,
+                  borderRadius: theme.shape.borderRadius,
+                  colors: {
+                    ...selectTheme.colors,
+                    primary: theme.palette.primary.main,
+                    primary75: theme.palette.primary.light,
+                    primary50: theme.palette.primary.light + '80',
+                    primary25: theme.palette.primary.light + '40',
+                    danger: theme.palette.error.main,
+                    dangerLight: theme.palette.error.light,
+                    neutral0: theme.palette.background.paper,
+                    neutral5: theme.palette.action.hover,
+                    neutral10: theme.palette.action.selected,
+                    neutral20: theme.palette.divider,
+                    neutral30: theme.palette.text.disabled,
+                    neutral40: theme.palette.text.secondary,
+                    neutral50: theme.palette.text.secondary,
+                    neutral60: theme.palette.text.primary,
+                    neutral70: theme.palette.text.primary,
+                    neutral80: theme.palette.text.primary,
+                    neutral90: theme.palette.text.primary
+                  }
+                })}
+              />
+              {error && <FormHelperText error>{error.message}</FormHelperText>}
+            </>
+          )
+        }}
       />
     </FormControl>
   )

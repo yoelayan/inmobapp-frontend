@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, { useRef, useState, useEffect, useCallback } from 'react'
 
 import { DragDropContext, Droppable, Draggable, type DropResult } from '@hello-pangea/dnd'
 
@@ -17,6 +17,7 @@ import {
   useTheme,
   CircularProgress
 } from '@mui/material'
+import { styled } from '@mui/material/styles'
 import CloseIcon from '@mui/icons-material/Close'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -73,19 +74,8 @@ export const PropertyImage = ({
   // Detectar si estamos en modo edición
   const isEditMode = !!propertyId
 
-  // Cargar imágenes existentes del backend si estamos en modo edición
-  useEffect(() => {
-    if (isEditMode && propertyId) {
-      fetchExistingImages()
-    } else {
-      // En modo creación, limpiar imágenes del backend y errores
-      setBackendImages([])
-      setValidationError('')
-    }
-  }, [isEditMode, propertyId])
-
   // Obtener imágenes existentes del backend usando useProperties
-  const fetchExistingImages = async () => {
+  const fetchExistingImages = useCallback(async () => {
     if (!propertyId) return
 
     // Limpiar errores previos antes de hacer la petición
@@ -104,6 +94,7 @@ export const PropertyImage = ({
       const sortedImages = images.sort((a: any, b: any) => {
         const orderA = a.order || 0
         const orderB = b.order || 0
+
         return orderA - orderB
       })
 
@@ -124,7 +115,18 @@ export const PropertyImage = ({
       // Limpiar las imágenes del backend para evitar errores de UI
       setBackendImages([])
     }
-  }
+  }, [propertyId, getAllImages])
+
+  // Cargar imágenes existentes del backend si estamos en modo edición
+  useEffect(() => {
+    if (isEditMode && propertyId) {
+      fetchExistingImages()
+    } else {
+      // En modo creación, limpiar imágenes del backend y errores
+      setBackendImages([])
+      setValidationError('')
+    }
+  }, [isEditMode, propertyId])
 
   // Subir imágenes al backend usando useProperties
   const handleUploadImages = async (files: File[]) => {
@@ -198,6 +200,7 @@ export const PropertyImage = ({
     // No permitir mover la primera imagen (portada) a otra posición
     if (source.index === 0) {
       notify('La imagen de portada no puede ser movida', 'warning')
+
       return
     }
 
@@ -393,92 +396,152 @@ export const PropertyImage = ({
   // Solo mostrar drag & drop para reordenar si hay imágenes del backend
   const showReorderDragDrop = isEditMode && backendImages.length > 1
 
+  // Styled components for theme-dependent styles
+  const StyledDragDropPaper = styled(Paper, {
+    shouldForwardProp: (prop) => prop !== 'isDragOver'
+  })<{ isDragOver: boolean }>(({ theme, isDragOver }) => ({
+    border: '1px dashed',
+    borderColor: isDragOver
+      ? theme.palette.primary.main
+      : theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.12)'
+        : 'rgba(0, 0, 0, 0.08)',
+    backgroundColor: isDragOver
+      ? theme.palette.primary.light + '20'
+      : theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.05)'
+        : 'rgba(0, 0, 0, 0.02)',
+    transition: 'all 0.2s ease-in-out',
+    cursor: 'pointer',
+    '&:hover': {
+      borderColor: theme.palette.primary.main,
+      backgroundColor: theme.palette.primary.light + '20'
+    }
+  }))
+
+  const StyledImagesContainer = styled(Box)(({ theme }) => ({
+    display: 'flex',
+    gap: theme.spacing(2),
+    overflowX: 'auto',
+    overflowY: 'hidden',
+    paddingBottom: theme.spacing(2),
+    width: '100%',
+    '&::-webkit-scrollbar': {
+      height: 8,
+    },
+    '&::-webkit-scrollbar-track': {
+      backgroundColor: theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.1)'
+        : 'rgba(0, 0, 0, 0.1)',
+      borderRadius: 4,
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.3)'
+        : 'rgba(0, 0, 0, 0.3)',
+      borderRadius: 4,
+      '&:hover': {
+        backgroundColor: theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, 0.5)'
+          : 'rgba(0, 0, 0, 0.5)',
+      },
+    },
+  }))
+
+  const StyledImageCard = styled(Card, {
+    shouldForwardProp: (prop) => prop !== 'isDragging' && prop !== 'canDrag'
+  })<{ isDragging: boolean, canDrag: boolean }>(({ theme, isDragging, canDrag }) => ({
+    width: '100%',
+    height: '100%',
+    cursor: canDrag ? 'grab' : 'pointer',
+    overflow: 'hidden',
+    border: '1px solid',
+    borderColor: isDragging
+      ? theme.palette.primary.main
+      : theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.12)'
+        : 'rgba(0, 0, 0, 0.08)',
+    borderRadius: theme.shape.borderRadius,
+    transition: 'all 0.2s ease-in-out',
+    transform: isDragging ? 'rotate(5deg)' : 'none',
+    boxShadow: isDragging ? theme.shadows[8] : 'none',
+    '&:hover': {
+      transform: isDragging ? 'rotate(5deg)' : 'scale(1.02)',
+      boxShadow: isDragging ? theme.shadows[8] : theme.shadows[4],
+      '& .image-preview': {
+        filter: 'brightness(0.8)'
+      }
+    }
+  }))
+
+  const DraggableContainer = styled('div')({
+    flexShrink: 0,
+  })
+
         return (
-          <Box width="100%">
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
+          <div className="w-full">
+            <Typography variant="subtitle1" className="mb-4 font-semibold">
               {label} {required && <span className="text-red-500">*</span>}
             </Typography>
 
       {/* Loading indicator */}
       {isLoading && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <Box display="flex" alignItems="center" gap={1}>
+        <Alert severity="info" className="mb-4">
+          <div className="flex items-center gap-2">
             <CircularProgress size={16} />
             Cargando imágenes...
-          </Box>
+          </div>
         </Alert>
       )}
 
       {/* Uploading indicator */}
       {isUploading && (
-              <Alert severity="info" sx={{ mb: 2 }}>
-          <Box display="flex" alignItems="center" gap={1}>
+              <Alert severity="info" className="mb-4">
+          <div className="flex items-center gap-2">
             <CircularProgress size={16} />
             Subiendo imágenes...
-          </Box>
+          </div>
         </Alert>
       )}
 
       {/* Reordering indicator */}
       {isReordering && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          <Box display="flex" alignItems="center" gap={1}>
+        <Alert severity="info" className="mb-4">
+          <div className="flex items-center gap-2">
             <CircularProgress size={16} />
             Reordenando imágenes...
-          </Box>
+          </div>
         </Alert>
       )}
 
       {/* Validation error */}
       {validationError && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" className="mb-4">
           {validationError}
               </Alert>
             )}
 
             {/* Drag & Drop Area */}
-            {/* Todo: usar styled para el paper */}
-            <Paper
+            <StyledDragDropPaper
               elevation={isDragOver ? 8 : 1}
-              sx={{
-          border: '1px dashed',
-                borderColor: isDragOver
-                  ? 'primary.main'
-                  : theme.palette.mode === 'dark'
-              ? 'rgba(255, 255, 255, 0.12)'
-              : 'rgba(0, 0, 0, 0.08)',
-          borderRadius: 1,
-                p: 4,
-                mb: 3,
-                textAlign: 'center',
-                bgcolor: isDragOver
-                  ? 'primary.50'
-                  : theme.palette.mode === 'dark'
-                    ? 'rgba(255, 255, 255, 0.05)'
-                    : 'rgba(0, 0, 0, 0.02)',
-                transition: 'all 0.2s ease-in-out',
-                cursor: 'pointer',
-                '&:hover': {
-                  borderColor: 'primary.main',
-                  bgcolor: 'primary.50'
-                }
-              }}
+              isDragOver={isDragOver}
+              className="p-8 mb-6 text-center rounded-lg"
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
         onDrop={handleDrop}
               onClick={() => inputRef.current?.click()}
             >
               <CloudUploadIcon
+                className="mb-4"
                 sx={{
                   fontSize: 48,
                   color: isDragOver ? 'primary.main' : theme.palette.text.secondary,
-                  mb: 2
                 }}
               />
-              <Typography variant="h6" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+              <Typography variant="h6" className="mb-4" sx={{ color: theme.palette.text.secondary }}>
                 Arrastra y suelta imágenes aquí
               </Typography>
-              <Typography variant="body2" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+              <Typography variant="body2" className="mb-4" sx={{ color: theme.palette.text.secondary }}>
                 O haz clic para seleccionar archivos
               </Typography>
 
@@ -486,7 +549,7 @@ export const PropertyImage = ({
                 variant="contained"
                 startIcon={<AddIcon />}
                 size="large"
-                sx={{ minWidth: 200 }}
+                className="min-w-48"
           disabled={disabled || isLoading || isUploading}
               >
                 Seleccionar Imágenes
@@ -501,22 +564,19 @@ export const PropertyImage = ({
           disabled={disabled || isLoading || isUploading}
           onChange={handleFileSelect}
               />
-            </Paper>
+            </StyledDragDropPaper>
 
             {/* Images Grid with Drag & Drop Reordering */}
             {allImages.length > 0 && (
-              <Box sx={{ mb: 3 }}>
-                <Typography variant="h6" sx={{ mb: 2 }}>
+              <div className="mb-6">
+                <Typography variant="h6" className="mb-4">
                   Imágenes ({allImages.length})
                   {showReorderDragDrop && (
                     <Typography
                       component="span"
                       variant="body2"
-                      sx={{
-                        ml: 2,
-                        color: 'text.secondary',
-                        fontStyle: 'italic'
-                      }}
+                      className="ml-4 italic"
+                      sx={{ color: 'text.secondary' }}
                     >
                       • Arrastra las imágenes para reordenarlas
                     </Typography>
@@ -524,49 +584,15 @@ export const PropertyImage = ({
                 </Typography>
 
                 {/* Contenedor principal que ocupa las 12 columnas */}
-                <Box
-                  sx={{
-                    width: '100%', // Ocupa todo el ancho disponible del padre
-                    maxWidth: '100%', // No exceder el ancho del padre
-                    overflow: 'hidden', // Oculta el overflow del contenedor principal
-                  }}
-                >
+                <div className="w-full max-w-full overflow-hidden">
                   {/* Drag & Drop Context para reordenar imágenes */}
                   <DragDropContext onDragEnd={handleDragEnd}>
                     <Droppable droppableId="images" direction="horizontal">
                       {(provided) => (
-                        <Box
+                        <StyledImagesContainer
                           ref={provided.innerRef}
                           {...provided.droppableProps}
-                          sx={{
-                            display: 'flex',
-                            gap: 2,
-                            overflowX: 'auto', // Scroll horizontal automático
-                            overflowY: 'hidden', // Sin scroll vertical
-                            pb: 2, // Padding bottom para el scrollbar
-                            minHeight: previewSize + 60, // Altura mínima para evitar saltos
-                            width: '100%', // Ocupa todo el ancho disponible (12 columnas)
-                            '&::-webkit-scrollbar': {
-                              height: 8,
-                            },
-                            '&::-webkit-scrollbar-track': {
-                              backgroundColor: theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.1)'
-                                : 'rgba(0, 0, 0, 0.1)',
-                              borderRadius: 4,
-                            },
-                            '&::-webkit-scrollbar-thumb': {
-                              backgroundColor: theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.3)'
-                                : 'rgba(0, 0, 0, 0.3)',
-                              borderRadius: 4,
-                              '&:hover': {
-                                backgroundColor: theme.palette.mode === 'dark'
-                                  ? 'rgba(255, 255, 255, 0.5)'
-                                  : 'rgba(0, 0, 0, 0.5)',
-                              },
-                            },
-                          }}
+                          sx={{ minHeight: previewSize + 60 }}
                         >
                           {allImages.map((imageData, index) => {
                             const previewUrl = getPreviewUrl(imageData.file)
@@ -584,85 +610,40 @@ export const PropertyImage = ({
                                 isDragDisabled={!canDrag}
                               >
                                 {(provided, snapshot) => (
-                                  <Box
+                                  <DraggableContainer
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     sx={{
-                                      flexShrink: 0, // CRÍTICO: Evita que las imágenes se compriman
-                                      width: previewSize, // Ancho fijo igual al previewSize
-                                      height: previewSize + 40, // Altura fija para el contenedor
+                                      width: previewSize,
+                                      height: previewSize + 40,
                                     }}
                                   >
-                                    <Box position="relative">
-                                      <Card
-                                        sx={{
-                                          width: '100%',
-                                          height: '100%',
-                                          cursor: canDrag ? 'grab' : 'pointer',
-                                          overflow: 'hidden',
-                                          border: '1px solid',
-                                          borderColor: snapshot.isDragging
-                                            ? 'primary.main'
-                                            : theme.palette.mode === 'dark'
-                                              ? 'rgba(255, 255, 255, 0.12)'
-                                              : 'rgba(0, 0, 0, 0.08)',
-                                          borderRadius: 1,
-                                          transition: 'all 0.2s ease-in-out',
-                                          transform: snapshot.isDragging ? 'rotate(5deg)' : 'none',
-                                          boxShadow: snapshot.isDragging ? theme.shadows[8] : 'none',
-                                          '&:hover': {
-                                            transform: snapshot.isDragging ? 'rotate(5deg)' : 'scale(1.02)',
-                                            boxShadow: snapshot.isDragging ? theme.shadows[8] : theme.shadows[4],
-                                            '& .image-preview': {
-                                              filter: 'brightness(0.8)'
-                                            }
-                                          }
-                                        }}
+                                    <div className="relative">
+                                      <StyledImageCard
+                                        isDragging={snapshot.isDragging}
+                                        canDrag={canDrag}
                                         onClick={() => {
                                           setSelectedImageIndex(index)
                                           setIsFullScreenOpen(true)
                                         }}
                                       >
-                                        <Box position="relative">
+                                        <div className="relative">
                                           <CardMedia
                                             component="img"
                                             image={previewUrl}
                                             alt={`${label} ${index + 1}`}
-                                            className="image-preview"
-                                            sx={{
-                                              width: '100%',
-                                              height: previewSize,
-                                              objectFit: 'cover',
-                                              borderRadius: 1,
-                                              transition: 'filter 0.2s ease-in-out'
-                                            }}
+                                            className="image-preview w-full object-cover rounded transition-all duration-200"
+                                            sx={{ height: previewSize }}
                                           />
 
                                           {/* Drag handle para reordenar */}
                                           {canDrag && (
-                                            <Box
+                                            <div
                                               {...provided.dragHandleProps}
-                                              sx={{
-                                                position: 'absolute',
-                                                top: 8,
-                                                left: 8,
-                                                bgcolor: 'rgba(0, 0, 0, 0.7)',
-                                                color: 'white',
-                                                borderRadius: '50%',
-                                                width: 24,
-                                                height: 24,
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'center',
-                                                cursor: 'grab',
-                                                '&:active': {
-                                                  cursor: 'grabbing'
-                                                },
-                                                zIndex: 2
-                                              }}
+                                              className="absolute top-2 left-2 bg-black/70 text-white rounded-full w-6 h-6 flex items-center justify-center cursor-grab active:cursor-grabbing z-[2]"
                                             >
                                               <DragIndicatorIcon sx={{ fontSize: 16 }} />
-                                            </Box>
+                                            </div>
                                           )}
 
                                           {/* Uploading indicator */}
@@ -670,13 +651,10 @@ export const PropertyImage = ({
                                             <Chip
                                               label="Subiendo..."
                                               size="small"
+                                              className="absolute top-2 left-2 text-xs"
                                               sx={{
-                                                position: 'absolute',
-                                                top: 8,
-                                                left: 8,
                                                 bgcolor: 'primary.main',
                                                 color: 'white',
-                                                fontSize: '0.7rem'
                                               }}
                                             />
                                           )}
@@ -687,10 +665,8 @@ export const PropertyImage = ({
                                               e.stopPropagation()
                                               handleDeleteImage(imageData)
                                             }}
+                                            className="absolute top-2 right-2"
                                             sx={{
-                                              position: 'absolute',
-                                              top: 8,
-                                              right: 8,
                                               bgcolor: 'error.main',
                                               color: 'white',
                                               '&:hover': {
@@ -700,23 +676,13 @@ export const PropertyImage = ({
                                           >
                                             <DeleteIcon />
                                           </IconButton>
-                                        </Box>
-                                      </Card>
+                                        </div>
+                                      </StyledImageCard>
 
                                       {/* Image index */}
                                       <Typography
                                         variant="caption"
-                                        sx={{
-                                          position: 'absolute',
-                                          bottom: 8,
-                                          left: 8,
-                                          bgcolor: 'rgba(0, 0, 0, 0.7)',
-                                          color: 'white',
-                                          px: 1,
-                                          py: 0.5,
-                                          borderRadius: theme.shape.borderRadius,
-                                          fontSize: '0.7rem'
-                                        }}
+                                        className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs"
                                       >
                                         {index + 1}
                                       </Typography>
@@ -726,43 +692,34 @@ export const PropertyImage = ({
                                         <Chip
                                           label="Portada"
                                           size="small"
+                                          className="absolute bottom-2 right-2 text-xs font-bold"
                                           sx={{
-                                            position: 'absolute',
-                                            bottom: 8,
-                                            right: 8,
                                             bgcolor: 'success.main',
                                             color: 'white',
-                                            fontSize: '0.7rem',
-                                            fontWeight: 'bold'
                                           }}
                                         />
                                       )}
-                                    </Box>
-                                  </Box>
+                                    </div>
+                                  </DraggableContainer>
                                 )}
                               </Draggable>
                             )
                           })}
                           {provided.placeholder}
-                        </Box>
+                        </StyledImagesContainer>
                       )}
                     </Droppable>
                   </DragDropContext>
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
 
             {/* Helper Text */}
             {helperText && (
-              <Typography variant="body2" sx={{ mt: 1, color: theme.palette.text.secondary, fontStyle: 'italic' }}>
+              <Typography variant="body2" className="mt-2 italic" sx={{ color: theme.palette.text.secondary }}>
                 {helperText}
               </Typography>
             )}
-
-            {/* Portada info */}
-            <Typography variant="body2" sx={{ mt: 1, color: 'success.main', fontStyle: 'italic' }}>
-              💡 La primera imagen será la imagen de portada de la propiedad
-            </Typography>
 
             {/* Full Screen Dialog */}
             <Dialog
@@ -777,20 +734,10 @@ export const PropertyImage = ({
                 }
               }}
             >
-              <DialogContent sx={{ p: 0, position: 'relative' }}>
+              <DialogContent className="p-0 relative">
                 <IconButton
                   onClick={() => setIsFullScreenOpen(false)}
-                  sx={{
-                    position: 'absolute',
-                    top: 16,
-                    right: 16,
-                    color: 'white',
-                    bgcolor: 'rgba(0, 0, 0, 0.5)',
-                    '&:hover': {
-                      bgcolor: 'rgba(0, 0, 0, 0.7)'
-                    },
-                    zIndex: 1
-                  }}
+                  className="absolute top-4 right-4 text-white bg-black/50 hover:bg-black/70 z-10"
                 >
                   <CloseIcon />
                 </IconButton>
@@ -800,35 +747,13 @@ export const PropertyImage = ({
                   <>
                     <IconButton
                       onClick={() => setSelectedImageIndex(prev => prev > 0 ? prev - 1 : allImages.length - 1)}
-                      sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        left: 16,
-                        transform: 'translateY(-50%)',
-                        color: 'white',
-                        bgcolor: 'rgba(0, 0, 0, 0.5)',
-                        '&:hover': {
-                          bgcolor: 'rgba(0, 0, 0, 0.7)'
-                        },
-                        zIndex: 1
-                      }}
+                      className="absolute top-1/2 left-4 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 z-10"
                     >
                       <i className="tabler-chevron-left" />
                     </IconButton>
                     <IconButton
                       onClick={() => setSelectedImageIndex(prev => prev < allImages.length - 1 ? prev + 1 : 0)}
-                      sx={{
-                        position: 'absolute',
-                        top: '50%',
-                        right: 16,
-                        transform: 'translateY(-50%)',
-                        color: 'white',
-                        bgcolor: 'rgba(0, 0, 0, 0.5)',
-                        '&:hover': {
-                          bgcolor: 'rgba(0, 0, 0, 0.7)'
-                        },
-                        zIndex: 1
-                      }}
+                      className="absolute top-1/2 right-4 -translate-y-1/2 text-white bg-black/50 hover:bg-black/70 z-10"
                     >
                       <i className="tabler-chevron-right" />
                     </IconButton>
@@ -839,17 +764,7 @@ export const PropertyImage = ({
                 {allImages.length > 1 && (
                   <Typography
                     variant="h6"
-                    sx={{
-                      position: 'absolute',
-                      top: 16,
-                      left: 16,
-                      color: 'white',
-                      bgcolor: 'rgba(0, 0, 0, 0.5)',
-                      px: 2,
-                      py: 1,
-                      borderRadius: theme.shape.borderRadius,
-                      zIndex: 1
-                    }}
+                    className="absolute top-4 left-4 text-white bg-black/50 px-4 py-2 rounded z-10"
                   >
                     {selectedImageIndex + 1} / {allImages.length}
                   </Typography>
@@ -857,20 +772,14 @@ export const PropertyImage = ({
 
                 {/* Current image */}
                 {allImages[selectedImageIndex] && (
-                  <Box
-                    component="img"
+                  <img
                     src={getPreviewUrl(allImages[selectedImageIndex].file) || ''}
                     alt={`${label} ${selectedImageIndex + 1}`}
-                    sx={{
-                      width: '100%',
-                      height: 'auto',
-                      maxHeight: '90vh',
-                      objectFit: 'contain'
-                    }}
+                    className="w-full h-auto max-h-[90vh] object-contain"
                   />
                 )}
               </DialogContent>
             </Dialog>
-          </Box>
+          </div>
   )
 }

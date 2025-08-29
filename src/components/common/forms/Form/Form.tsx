@@ -109,8 +109,15 @@ export const Form = <T extends FieldValues>({
   // Detectar si hay valores object con label y value, extraer el value y setearlo en el campo
   const handleObjectValues = (data: Record<string, any>) => {
     Object.keys(data).forEach(key => {
-      if (typeof data[key] === 'object' && 'label' in data[key] && 'value' in data[key]) {
-        methods.setValue(key as Path<T>, data[key].value)
+      const value = data[key]
+
+      if (
+        value !== null &&
+        typeof value === 'object' &&
+        'label' in value &&
+        'value' in value
+      ) {
+        methods.setValue(key as Path<T>, value.value)
       }
     })
   }

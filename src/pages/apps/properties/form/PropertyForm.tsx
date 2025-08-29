@@ -337,7 +337,12 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
   const [newlyCreatedClient, setNewlyCreatedClient] = useState<any>(null)
-  const [charToSave, setCharToSave] = useState<IPropertyCharacteristic[]>([])
+  const charToSave = useRef<IPropertyCharacteristic[]>([])
+
+  const setCharToSave = (characteristics: IPropertyCharacteristic[]) => {
+    charToSave.current = characteristics
+  }
+
 
   const {
     updateCharacteristic
@@ -439,13 +444,15 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const schema = getFormSchema()
 
   const handleSaveCharacteristics = async () => {
-    if (!propertyId) return
+    if (!propertyId ) return
 
     try {
-      const characteristicsToUpdate = charToSave.map((char: IPropertyCharacteristic) => ({
+      const characteristicsToUpdate = charToSave.current.map((char: IPropertyCharacteristic) => ({
         id: char.id,
         value: char.value
       }))
+
+      console.log('characteristicsToUpdate', characteristicsToUpdate)
 
       await updateCharacteristic(propertyId, characteristicsToUpdate)
       notify('Características actualizadas exitosamente', 'success')
@@ -455,19 +462,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     }
   }
 
-  // Función para asegurar que la primera imagen sea la portada
-  const ensureCoverImage = (images: any[]) => {
-    if (images.length === 0) return images
-
-    // Si la primera imagen no tiene order 1, reordenar
-    const sortedImages = [...images].sort((a, b) => {
-      const orderA = a.order || 0
-      const orderB = b.order || 0
-      return orderA - orderB
-    })
-
-    return sortedImages
-  }
 
   const handleSuccess = (property: CreatePropertyFormData | EditPropertyFormData) => {
     console.log(`Propiedad ${mode === 'edit' ? 'actualizada' : 'creada'}:`, property)
@@ -622,6 +616,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
                     {/* Columna Izquierda: Descripción e Imágenes */}
           <Grid size={{ xs: 12, md: 8 }}>
             <EditorField
+
               name='description'
               label='Descripción'
               placeholder='Describe las características de la propiedad...'

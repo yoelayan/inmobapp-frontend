@@ -4,7 +4,8 @@ export type User = {
   url: string
   name: string
   franchise: number
-  id: number
+  id: number,
+  user_permissions: string[]
 }
 
 export type Session = {

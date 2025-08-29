@@ -135,6 +135,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({ p
 
     // Actualizar características
     setCharacteristics(prev => prev.map(char => (char.id === characteristicId ? { ...char, value } : char)))
+
   }
 
   // Add new optional characteristic

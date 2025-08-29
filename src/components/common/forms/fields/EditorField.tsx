@@ -41,33 +41,41 @@ export const EditorField = <T extends FieldValues>({
     <Controller
       name={name}
       control={control}
-      render={({ field, fieldState: { error } }) => (
-        <Box>
-          <Typography variant='h6' sx={{ mb: 2 }}>
-            {label}
-            {required && <span className="text-red-500">*</span>}
-          </Typography>
-          <EditorComponent
-            value={field.value || ''}
-            onChange={field.onChange}
-            placeholder={placeholder}
-            disabled={disabled}
-            minHeight={minHeight}
-            maxHeight={maxHeight}
-            {...props}
-          />
-          {error && (
-            <FormHelperText error sx={{ mt: 1 }}>
-              {error.message}
-            </FormHelperText>
-          )}
-        </Box>
-      )}
+      render={({ field, fieldState: { error } }) => {
+        const editorId = `editor-${name}`
+
+        return (
+          <Box>
+            <Box component="label" htmlFor={editorId} sx={{ mb: 2, display: 'block' }}>
+              <Typography variant='h6' component="span">
+                {label}
+                {required && <span className="text-red-500">*</span>}
+              </Typography>
+            </Box>
+            <EditorComponent
+              id={editorId}
+              value={field.value || ''}
+              onChange={field.onChange}
+              placeholder={placeholder}
+              disabled={disabled}
+              minHeight={minHeight}
+              maxHeight={maxHeight}
+              {...props}
+            />
+            {error && (
+              <FormHelperText error sx={{ mt: 1 }}>
+                {error.message}
+              </FormHelperText>
+            )}
+          </Box>
+        )
+      }}
     />
   )
 }
 
 interface EditorComponentProps {
+  id?: string
   value: string
   onChange: (value: string) => void
   placeholder?: string

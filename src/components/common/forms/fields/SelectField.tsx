@@ -30,8 +30,33 @@ export const SelectField = <T extends FieldValues, V extends MUITextFieldProps>(
       control={control}
       name={name}
       render={({ field, fieldState: { error } }) => {
+        // Handle multiple selection
+        const isMultiple = props.SelectProps?.multiple || props.multiple
+
         // Ensure the value is always defined to prevent controlled/uncontrolled switching
-        const fieldValue = field.value === null || field.value === undefined ? '' : field.value
+        let fieldValue
+
+        if (isMultiple) {
+          // For multiple selection, value should be an array
+          const currentValue = field.value as any
+
+          if (Array.isArray(currentValue)) {
+            // Filter out any values that don't exist in options
+            fieldValue = currentValue.filter((val: string | number | undefined) =>
+              options.some(option => option.value === val)
+            )
+          } else {
+            // If not an array, initialize as empty array
+            fieldValue = []
+          }
+        } else {
+          // For single selection, value should be a string/number
+          const hasValidValue = field.value !== null &&
+                               field.value !== undefined &&
+            options.some(option => option.value === field.value)
+
+          fieldValue = hasValidValue ? field.value : ''
+        }
 
         return (
           <MUITextField
@@ -51,9 +76,11 @@ export const SelectField = <T extends FieldValues, V extends MUITextFieldProps>(
             }}
             {...props}
           >
-            <MenuItem key='placeholder' value='' disabled selected={fieldValue === ''}>
-              {placeholder}
-            </MenuItem>
+            {!isMultiple && (
+              <MenuItem key='placeholder' value='' disabled>
+                {placeholder}
+              </MenuItem>
+            )}
             {options.map(option => (
               <MenuItem key={option.value} value={option.value}>
                 {option.label}

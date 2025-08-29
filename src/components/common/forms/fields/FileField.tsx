@@ -32,9 +32,11 @@ export const FileField = <T extends FieldValues>({
       control={control}
       render={({ field, fieldState: { error } }) => (
         <Box>
-          <Typography variant="subtitle1" mb={0.5}>
-            {label} {required && <span className="text-red-600">*</span>}
-          </Typography>
+          <Box component="label" htmlFor={`file-input-${name}`} sx={{ mb: 0.5, display: 'block' }}>
+            <Typography variant="subtitle1" component="span">
+              {label} {required && <span className="text-red-600">*</span>}
+            </Typography>
+          </Box>
           <Button
             variant="outlined"
             component="label"
@@ -45,6 +47,7 @@ export const FileField = <T extends FieldValues>({
             {multiple ? 'Seleccionar archivos' : 'Seleccionar archivo'}
             <input
               {...props}
+              id={`file-input-${name}`}
               type="file"
               hidden
               accept={accept}

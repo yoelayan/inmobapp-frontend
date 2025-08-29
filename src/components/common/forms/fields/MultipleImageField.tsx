@@ -115,9 +115,11 @@ export const MultipleImageField = <T extends FieldValues>({
 
         return (
           <Box width="100%">
-            <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 600 }}>
-              {label} {required && <span style={{ color: theme.palette.error.main }}>*</span>}
-            </Typography>
+            <Box component="label" htmlFor={`multiple-image-input-${name}`} sx={{ mb: 2, display: 'block' }}>
+              <Typography variant="subtitle1" component="span" sx={{ fontWeight: 600 }}>
+                {label} {required && <span style={{ color: theme.palette.error.main }}>*</span>}
+              </Typography>
+            </Box>
 
             {/* Max images warning */}
             {hasReachedMax && (
@@ -183,6 +185,7 @@ export const MultipleImageField = <T extends FieldValues>({
 
               <input
                 ref={inputRef}
+                id={`multiple-image-input-${name}`}
                 type="file"
                 hidden
                 accept={accept}

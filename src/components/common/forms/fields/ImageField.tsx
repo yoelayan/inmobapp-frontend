@@ -59,9 +59,11 @@ export const ImageField = <T extends FieldValues>({
 
         return (
           <Box width="100%">
-            <Typography variant="subtitle1" mb={1}>
-              {label} {required && <span className="text-red-600">*</span>}
-            </Typography>
+            <Box component="label" htmlFor={`image-input-${name}`} sx={{ mb: 1, display: 'block' }}>
+              <Typography variant="subtitle1" component="span">
+                {label} {required && <span className="text-red-600">*</span>}
+              </Typography>
+            </Box>
 
             {/* Image Preview */}
             {previewUrl && (
@@ -165,6 +167,7 @@ export const ImageField = <T extends FieldValues>({
               {previewUrl ? (isUrlFromBackend ? 'Cambiar imagen actual' : 'Cambiar imagen') : 'Seleccionar imagen'}
               <input
                 ref={inputRef}
+                id={`image-input-${name}`}
                 type="file"
                 hidden
                 accept={accept}

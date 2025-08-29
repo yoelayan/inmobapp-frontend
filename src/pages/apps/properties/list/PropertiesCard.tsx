@@ -5,9 +5,6 @@ import React, { useState, useEffect } from 'react'
 
 // MUI Imports
 import Grid from '@mui/material/Grid2'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
 
 import HorizontalWithBorder from '@/components/common/card-statistics/HorizontalWithBorder'
 
@@ -101,8 +98,10 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
 
   useEffect(() => {
     fetchTotalProperties()
+
     // Al cargar el componente, aplicar el filtro de la card activa por defecto
     const defaultStatusFilter = statusMapping[cardActive]
+
     if (defaultStatusFilter) {
       onStatusChange(defaultStatusFilter)
     }
@@ -135,7 +134,9 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
     // Si se hace clic en la card ya activa, deseleccionarla
     if (cardActive === key) {
       setCardActive('')
-      onStatusChange('') // Pasar string vacío para mostrar todas las propiedades
+      onStatusChange('') // Pasar string vacío para mostrar todas las propiedade
+      // s
+
       return
     }
 
@@ -150,36 +151,7 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
 
   return (
     <Grid container spacing={6}>
-      {/* Indicador de filtro activo */}
-      {cardActive && (
-        <Grid size={{ xs: 12 }}>
-          <Box
-            sx={{
-              p: 2,
-              bgcolor: 'primary.50',
-              borderRadius: 1,
-              border: '1px solid',
-              borderColor: 'primary.200',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
-            }}
-          >
-            <i className="tabler-filter" style={{ color: 'var(--mui-palette-primary-main)' }} />
-            <Typography variant="body2" color="primary.main">
-              Filtrado por: <strong>{cardsData.find(card => card.key === cardActive)?.title}</strong>
-            </Typography>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() => handleChangeCard(cardActive)}
-              sx={{ ml: 'auto' }}
-            >
-              Limpiar filtro
-            </Button>
-          </Box>
-        </Grid>
-      )}
+
 
       {cardsData.map((item, index) => (
         <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>

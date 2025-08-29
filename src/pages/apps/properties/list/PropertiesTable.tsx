@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 
 import { useRouter } from 'next/navigation'
 
-import { Button, Typography } from '@mui/material';
+import { Button } from '@mui/material';
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -12,6 +12,8 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
 import Tooltip from '@mui/material/Tooltip'
+
+import ImageIcon from '@mui/icons-material/Image'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -61,20 +63,7 @@ const columns: ColumnDef<IRealProperty>[] = [
 
       if (!coverImage) {
         return (
-          <Box
-            sx={{
-              width: 50,
-              height: 50,
-              bgcolor: 'grey.200',
-              borderRadius: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'text.secondary'
-            }}
-          >
-            <i className="tabler-image" style={{ fontSize: '20px' }} />
-          </Box>
+            <ImageIcon fontSize="small" />
         )
       }
 
@@ -83,14 +72,7 @@ const columns: ColumnDef<IRealProperty>[] = [
           component="img"
           src={coverImage.image}
           alt="Portada"
-          sx={{
-            width: 50,
-            height: 50,
-            borderRadius: 1,
-            objectFit: 'cover',
-            border: '2px solid',
-            borderColor: 'success.main'
-          }}
+          className="w-[50px] h-[50px] rounded border border-primary-200 object-cover"
         />
       )
     }
@@ -211,6 +193,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
       // Si no hay status seleccionado, mostrar todas las propiedades
       if (!status) {
         await fetchProperties()
+
         return
       }
 
@@ -268,27 +251,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
             <Box className='flex gap-4 w-full'>
-              {/* Mostrar filtro de status activo */}
-              {statusFilter && (
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1,
-                    px: 2,
-                    py: 1,
-                    bgcolor: 'primary.50',
-                    borderRadius: 1,
-                    border: '1px solid',
-                    borderColor: 'primary.200'
-                  }}
-                >
-                  <i className="tabler-filter" style={{ color: 'var(--mui-palette-primary-main)' }} />
-                  <Typography variant="body2" color="primary.main">
-                    Status: <strong>{statusFilter}</strong>
-                  </Typography>
-                </Box>
-              )}
+
 
                             <Button
                 variant='outlined'
