@@ -13,6 +13,7 @@ class AuthService {
     return data
   }
   async me(): Promise<IProfile> {
+    this.apiClient.setToken(JSON.parse(localStorage.getItem('session') || '{}').access)
     const data: IProfile = await this.apiClient.get<IProfile>('/users/me/')
 
     return data
