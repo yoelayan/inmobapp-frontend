@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 
 import RoleForm from '@/pages/apps/roles/form/RoleForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 import type { CreateRoleFormData, EditRoleFormData } from '@/validations/roleSchema'
 
 const CreateRole: React.FC = () => {
@@ -19,10 +20,10 @@ const CreateRole: React.FC = () => {
   }
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['add_role']}>
       <BreadcrumbWrapper />
       <RoleForm onSuccess={handleSuccess} />
-    </>
+    </PermissionGuard>
   )
 }
 

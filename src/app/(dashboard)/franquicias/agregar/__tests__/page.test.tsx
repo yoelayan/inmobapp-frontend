@@ -16,15 +16,15 @@ beforeEach(() => {
 describe('Add Franchise Page', () => {
   it('should render without crashing', () => {
     render(<AddFranchise />)
-    expect(screen.getByTestId('mock-sectionheader')).toBeInTheDocument()
+    expect(screen.getByTestId('mock-breadcrumb-wrapper')).toBeInTheDocument()
     expect(screen.getByTestId('mock-franchiseform')).toBeInTheDocument()
   })
 
-  it('should render section header with correct title', () => {
+  it('should render breadcrumb wrapper', () => {
     render(<AddFranchise />)
-    const sectionHeader = screen.getByTestId('mock-sectionheader')
+    const breadcrumbWrapper = screen.getByTestId('mock-breadcrumb-wrapper')
 
-    expect(sectionHeader).toBeInTheDocument()
+    expect(breadcrumbWrapper).toBeInTheDocument()
   })
 
   it('should render franchise form component', () => {
@@ -54,7 +54,7 @@ describe('Add Franchise Page - Different States', () => {
 
   it('should render all required components', () => {
     render(<AddFranchise />)
-    expect(screen.getByTestId('mock-sectionheader')).toBeInTheDocument()
+    expect(screen.getByTestId('mock-breadcrumb-wrapper')).toBeInTheDocument()
     expect(screen.getByTestId('mock-franchiseform')).toBeInTheDocument()
   })
 

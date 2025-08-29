@@ -6,10 +6,11 @@ import { Card, CardContent, CardHeader } from '@mui/material'
 
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 const ClientPage: React.FC = () => {
   return (
-    <>
+    <PermissionGuard requiredPermissions={['add_client']}>
       <BreadcrumbWrapper />
       <Card className='h-screen mt-4'>
         <CardHeader title='Crear Cliente' />
@@ -21,7 +22,7 @@ const ClientPage: React.FC = () => {
           />
         </CardContent>
       </Card>
-    </>
+    </PermissionGuard>
   )
 }
 

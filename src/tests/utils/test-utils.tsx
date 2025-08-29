@@ -32,6 +32,11 @@ const MockThemeProvider = ({ children }: PropsWithChildren) => {
   return <div data-theme-provider="true">{children}</div>
 }
 
+// Mock AuthProvider for testing
+const MockAuthProvider = ({ children }: PropsWithChildren) => {
+  return <div data-auth-provider="true">{children}</div>
+}
+
 // Custom render function that includes providers
 interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
   /**
@@ -46,9 +51,11 @@ interface CustomRenderOptions extends Omit<RenderOptions, 'wrapper'> {
 
 const AllTheProviders = ({ children, customTheme = mockTheme }: PropsWithChildren<{ customTheme?: any }>) => {
   return (
-    <MockThemeProvider>
-      {children}
-    </MockThemeProvider>
+    <MockAuthProvider>
+      <MockThemeProvider>
+        {children}
+      </MockThemeProvider>
+    </MockAuthProvider>
   )
 }
 
@@ -116,12 +123,12 @@ export const createMockComponent = (name: string) => {
 }
 
 // Helper to create mock hook
-export const createMockHook = <T>(defaultValue: T) => {
+export const createMockHook = <T extends any>(defaultValue: T) => {
   return jest.fn(() => defaultValue)
 }
 
 // Helper to create mock API response
-export const createMockApiResponse = <T>(data: T, loading = false, error = null) => ({
+export const createMockApiResponse = <T extends any>(data: T, loading = false, error = null) => ({
   data,
   loading,
   error,
@@ -131,7 +138,7 @@ export const createMockApiResponse = <T>(data: T, loading = false, error = null)
 })
 
 // Helper to create mock table data
-export const createMockTableData = <T>(items: T[], total = items.length) => ({
+export const createMockTableData = <T extends any>(items: T[], total = items.length) => ({
   results: items,
   count: total,
   next: null,
@@ -205,7 +212,7 @@ export const waitForElement = async (selector: string) => {
 }
 
 // Helper to mock async operations
-export const mockAsyncOperation = <T>(data: T, delay = 100) => {
+export const mockAsyncOperation = <T extends any>(data: T, delay = 100) => {
   return jest.fn().mockImplementation(() =>
     new Promise(resolve => setTimeout(() => resolve(data), delay))
   )

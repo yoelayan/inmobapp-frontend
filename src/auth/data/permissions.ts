@@ -12,24 +12,24 @@ export type GroupPermission = {
 
 export const permissions: GroupPermission[] = [
   {
-    name: 'Grupos',
-    codename: 'groups',
+    name: 'Roles',
+    codename: 'roles',
     permissions: [
       {
-        codename: 'add_group',
-        name: 'Agregar grupo',
+        codename: 'add_role',
+        name: 'Agregar rol',
       },
       {
-        codename: 'change_group',
-        name: 'Cambiar grupo',
+        codename: 'change_role',
+        name: 'Cambiar rol',
       },
       {
-        codename: 'delete_group',
-        name: 'Eliminar grupo',
+        codename: 'delete_role',
+        name: 'Eliminar rol',
       },
       {
-        codename: 'view_group',
-        name: 'Ver grupo',
+        codename: 'view_role',
+        name: 'Ver rol',
       },
     ]
   },

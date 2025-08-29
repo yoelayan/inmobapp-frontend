@@ -2,7 +2,6 @@
 import React from 'react'
 
 import { useQuery } from '@tanstack/react-query'
-import { useWatch } from 'react-hook-form'
 
 import {
   Grid2, Alert
@@ -32,7 +31,7 @@ interface UserFormProps {
 const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
 
 
-  const { user: currentUser } = useAuth()
+  const { user: currentUser, logout } = useAuth()
   const { fetchData: fetchFranchises } = useFranchises()
   const { fetchData: fetchRoles } = useRoles()
 
@@ -51,6 +50,11 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
 
   const handleSuccess = (userData: CreateUserFormData | EditUserFormData) => {
     console.log(`Usuario ${mode === 'edit' ? 'actualizado' : 'creado'}:`, userData)
+
+    if (isEditingCurrentUser) {
+      logout()
+    }
+
     onSuccess?.(userData)
   }
 
@@ -65,6 +69,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
       if (key === 'image' && typeof value === 'string') {
         // Store the current image URL for display purposes
         setCurrentImageUrl(value)
+
         // Don't set the image field in the form to avoid conflicts
         return
       }
@@ -100,6 +105,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
     }
 
     console.log('Final formatted data:', formattedData)
+
     return formattedData
   }
 

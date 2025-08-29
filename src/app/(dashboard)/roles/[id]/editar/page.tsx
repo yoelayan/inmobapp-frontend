@@ -10,6 +10,7 @@ import type { EditRoleFormData } from '@validations/roleSchema'
 
 import RoleForm from '@/pages/apps/roles/form/RoleForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 type EditRoleProps = {
   params: Promise<{
@@ -29,10 +30,10 @@ const EditRole: React.FC<EditRoleProps> = ({ params }) => {
   const roleId = Number(id)
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['change_role']}>
       <BreadcrumbWrapper />
       <RoleForm roleId={roleId} mode='edit' onSuccess={handleSuccess} />
-    </>
+    </PermissionGuard>
   )
 }
 

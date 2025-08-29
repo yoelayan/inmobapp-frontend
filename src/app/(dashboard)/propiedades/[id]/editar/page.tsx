@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 // Component Imports
 import PropertyForm from '@/pages/apps/properties/form/PropertyForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 import type { EditPropertyFormData } from '@/validations/propertySchema'
 
@@ -29,14 +30,14 @@ const EditProperty: React.FC<EditPropertyProps> = ({ params }) => {
   const propertyId = Number(id)
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['change_realproperty']}>
       <BreadcrumbWrapper />
       <PropertyForm
         propertyId={propertyId}
         mode='edit'
         onSuccess={handleSuccess}
       />
-    </>
+    </PermissionGuard>
   )
 }
 

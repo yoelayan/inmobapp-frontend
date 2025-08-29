@@ -8,13 +8,14 @@ import { Card, CardContent, CardHeader } from '@mui/material'
 
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 const ClientPage: React.FC = () => {
   const params = useParams()
   const clientId = params?.id ? String(params.id) : undefined // Obtiene el ID de la URL si existe
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['change_client']}>
       <BreadcrumbWrapper />
       {/* TODO: Enviar card al componente de formulario */}
       <Card className="h-full mt-4">
@@ -28,7 +29,7 @@ const ClientPage: React.FC = () => {
           />
         </CardContent>
       </Card>
-    </>
+    </PermissionGuard>
   )
 }
 

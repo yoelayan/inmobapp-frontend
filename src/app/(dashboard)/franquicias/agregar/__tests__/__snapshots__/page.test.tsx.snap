@@ -2,15 +2,21 @@
 
 exports[`Add Franchise Page should match snapshot 1`] = `
 <div
-  data-theme-provider="true"
+  data-auth-provider="true"
 >
   <div
-    data-testid="mock-sectionheader"
-    subtitle="Crear una nueva franquicia en el sistema"
-    title="Agregar Franquicia"
-  />
-  <div
-    data-testid="mock-franchiseform"
-  />
+    data-theme-provider="true"
+  >
+    <div
+      data-testid="mock-permission-guard"
+    >
+      <div
+        data-testid="mock-breadcrumb-wrapper"
+      />
+      <div
+        data-testid="mock-franchiseform"
+      />
+    </div>
+  </div>
 </div>
 `;

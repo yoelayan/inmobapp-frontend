@@ -6,7 +6,7 @@ import React from 'react'
 // Component Imports
 import Grid from '@mui/material/Grid2'
 
-import PermissionGuard from '@auth/hocs/PermissionGuard'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 import PropertiesTable from '@/pages/apps/properties/list/PropertiesTable'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'

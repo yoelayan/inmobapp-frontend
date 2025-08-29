@@ -2,17 +2,14 @@
 
 // React Imports
 import React from 'react'
+
 import { useRouter } from 'next/navigation'
 
 // Component Imports
 import PropertyForm from '@/pages/apps/properties/form/PropertyForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
-// Types
-import type { CreatePropertyFormData } from '@/validations/propertySchema'
-
-// Tipo para la respuesta del backend que incluye el ID
-type CreatedProperty = CreatePropertyFormData & { id?: number }
 
 const PropertyAdd: React.FC = () => {
   const router = useRouter()
@@ -28,19 +25,18 @@ const PropertyAdd: React.FC = () => {
       router.push(`/propiedades/${property.id}/editar`)
     } else {
       console.log('⚠️ No se encontró ID, redirigiendo a lista de propiedades')
-      // Fallback: redirigir a la lista de propiedades
       router.push('/propiedades')
     }
   }
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['add_realproperty']}>
       <BreadcrumbWrapper />
       <PropertyForm
         mode='create'
         onSuccess={handleSuccess}
       />
-    </>
+    </PermissionGuard>
   )
 }
 

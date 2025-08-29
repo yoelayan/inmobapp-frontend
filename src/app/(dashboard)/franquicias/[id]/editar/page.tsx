@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 // Component Imports
 import FranchiseForm from '@/pages/apps/franchises/form/FranchiseForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
+import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
 import type { EditFranchiseFormData } from '@/validations/franchiseSchema'
 
@@ -31,10 +32,10 @@ const EditFranchise: React.FC<EditFranchiseProps> = ({ params }) => {
   const franchiseId = Number(id)
 
   return (
-    <>
+    <PermissionGuard requiredPermissions={['change_franchise']}>
       <BreadcrumbWrapper />
       <FranchiseForm franchiseId={franchiseId} mode='edit' onSuccess={handleSuccess} />
-    </>
+    </PermissionGuard>
   )
 }
 

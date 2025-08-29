@@ -50,6 +50,7 @@ const RoleForm = ({ mode = 'create', roleId, onSuccess }: RoleFormProps) => {
       if (key === 'permissions' && Array.isArray(value)) {
         // Extract codename values from backend permission objects
         const rawPermissions = value.map((permission: any) => permission.codename)
+
         methods.setValue(key, rawPermissions)
       } else {
         methods.setValue(key, value)

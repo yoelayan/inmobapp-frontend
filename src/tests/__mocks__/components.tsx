@@ -2,6 +2,36 @@ import React from 'react'
 
 import { createMockComponent } from '../utils/test-utils'
 
+// Mock useAuth hook
+const mockUseAuth = jest.fn(() => ({
+  user: {
+    id: 1,
+    name: 'Test User',
+    email: 'test@example.com',
+    user_permissions: ['add_franchise', 'view_franchise', 'change_franchise', 'delete_franchise']
+  },
+  isAuthenticated: true,
+  loading: false,
+  session: { access: 'mock-token', refresh: 'mock-refresh' },
+  login: jest.fn(),
+  logout: jest.fn()
+}))
+
+// Mock AuthProvider
+const MockAuthProvider = ({ children }: any) => (
+  <div data-testid="mock-auth-provider">{children}</div>
+)
+
+// Mock PermissionGuard
+const MockPermissionGuard = ({ children }: any) => (
+  <div data-testid="mock-permission-guard">{children}</div>
+)
+
+// Mock BreadcrumbWrapper
+const MockBreadcrumbWrapper = (props: any) => (
+  <div data-testid="mock-breadcrumb-wrapper" {...props} />
+)
+
 // Mock GenericTable Component
 export const MockGenericTable = createMockComponent('GenericTable')
 
@@ -49,7 +79,7 @@ jest.mock('@/pages/apps/users/form/UserForm', () => ({
 
 jest.mock('@/pages/apps/franchises/form/FranchiseForm', () => ({
   __esModule: true,
-  FranchiseForm: MockFranchiseForm,
+  default: MockFranchiseForm,
 }))
 
 jest.mock('@/pages/apps/clients/form/ClientForm', () => ({
@@ -60,6 +90,39 @@ jest.mock('@/pages/apps/clients/form/ClientForm', () => ({
 jest.mock('@/components/layout/horizontal/SectionHeader', () => ({
   __esModule: true,
   default: MockSectionHeader,
+}))
+
+// Mock auth-related modules
+jest.mock('@auth/hooks/useAuth', () => ({
+  useAuth: mockUseAuth,
+}))
+
+jest.mock('@auth/context/AuthContext', () => ({
+  AuthProvider: MockAuthProvider,
+  useAuthContext: mockUseAuth,
+}))
+
+jest.mock('@auth/hocs/PermissionGuard', () => ({
+  __esModule: true,
+  default: MockPermissionGuard,
+}))
+
+jest.mock('@components/common/Breadcrumb', () => ({
+  BreadcrumbWrapper: MockBreadcrumbWrapper,
+}))
+
+// Mock Next.js router
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    replace: jest.fn(),
+    prefetch: jest.fn(),
+    back: jest.fn(),
+    forward: jest.fn(),
+    refresh: jest.fn(),
+  })),
+  usePathname: jest.fn(() => '/test-path'),
+  useSearchParams: jest.fn(() => new URLSearchParams()),
 }))
 
 // Mock ALL Material-UI components used in the project
@@ -243,4 +306,8 @@ export default {
   Grid2: MockGrid2,
   UsersTable: MockUsersTable,
   FranchisesTable: MockFranchisesTable,
+  AuthProvider: MockAuthProvider,
+  PermissionGuard: MockPermissionGuard,
+  BreadcrumbWrapper: MockBreadcrumbWrapper,
+  useAuth: mockUseAuth,
 }
