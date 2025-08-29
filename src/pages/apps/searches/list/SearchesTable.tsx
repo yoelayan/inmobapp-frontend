@@ -31,7 +31,6 @@ import {
 } from '@/components/common/Table';
 
 // Component Imports
-import AddSearchCharacteristicModal from '../form/AddSearchCharacteristicModal'
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
 import ObservationsLogModal from '../form/ObservationsLogModal'
 
@@ -93,8 +92,9 @@ const SearchesTable = () => {
       createTableStore<ISearch>({
         data: data,
         loading: loading,
-        refresh: async (params) => {
+        refresh: async () => {
           await refreshData()
+
           return data
         }
       }),
@@ -196,7 +196,7 @@ const SearchesTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        console.log('Eliminar', row)
+        handleSearchDeleted(row.id)
 
         // TODO: Implementar confirmación y eliminación
       },
@@ -214,6 +214,7 @@ const SearchesTable = () => {
   useEffect(() => {
     console.log('📊 Datos de búsquedas cargados:', data)
     console.log('📊 Cantidad de búsquedas:', data?.results?.length || 0)
+
     if (data?.results) {
       data.results.forEach((search: any, index: number) => {
         console.log(`📊 Búsqueda ${index + 1}:`, {
@@ -274,14 +275,7 @@ const SearchesTable = () => {
         </Table>
       </Grid>
 
-      {characteristicModalOpen && (
-        <AddSearchCharacteristicModal
-          open={characteristicModalOpen}
-          onClose={handleCloseCharacteristicModal}
-          searchId={selectedSearchId ?? null}
-          onSuccess={handleCharacteristicAdded}
-        />
-      )}
+
 
       {observationModalOpen && (
         <AddSearchObservationModal

@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 
 // MUI Imports
 import {
@@ -12,9 +12,7 @@ import {
   CardContent,
   Typography,
   IconButton,
-  MenuItem,
-  Button,
-  CircularProgress
+  Button
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
@@ -23,6 +21,7 @@ import { Form, PageContainer, TextField, FormField } from '@/components/common/f
 
 // Hook Imports
 import { useFormContext } from 'react-hook-form'
+
 import { useNotification } from '@/hooks/useNotification'
 
 // Type Imports
@@ -31,7 +30,9 @@ import type { ISearch, IClient } from '@/types/apps/ClientesTypes'
 import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
+
 import type { UseFormReturn } from 'react-hook-form'
+
 
 // Components Imports
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
@@ -221,6 +222,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
       searchId: searchId
     })
     const errorMessage = error instanceof Error ? error.message : error.message || 'Error desconocido'
+
     notify(errorMessage, 'error')
   }
 
@@ -246,6 +248,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     }
 
     console.log('🔧 formatData - Datos formateados:', formattedData)
+
     return formattedData
   }
 
@@ -262,6 +265,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     }
 
     console.log('🚀 handleSubmit - Datos transformados:', transformedData)
+
     return transformedData
   }
 
