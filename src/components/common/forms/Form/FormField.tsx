@@ -16,6 +16,7 @@ import { CheckboxField } from '@components/common/forms/fields/CheckboxField'
 import { FileField } from '@components/common/forms/fields/FileField'
 import { ImageField } from '@components/common/forms/fields/ImageField'
 import { AsyncSelectField } from '@components/common/forms/fields/AsyncSelectField'
+import AudioField from '@components/common/forms/fields/AudioField'
 
 type FormFieldProps<T extends FieldValues> =
   | ({ type?: 'text' | 'email' | 'password' | 'number' | 'tel' } & TextFieldProps<T>)
@@ -25,6 +26,7 @@ type FormFieldProps<T extends FieldValues> =
   | ({ type: 'file' } & FileFieldProps<T>)
   | ({ type: 'image' } & ImageFieldProps<T>)
   | ({ type: 'async-select' } & AsyncSelectFieldProps<T>)
+  | ({ type: 'audio' } & { name: string; label?: string; required?: boolean; disabled?: boolean })
 
 
 export const FormField = <T extends FieldValues>(props: FormFieldProps<T>) => {
@@ -44,6 +46,8 @@ export const FormField = <T extends FieldValues>(props: FormFieldProps<T>) => {
         return <ImageField {...props} />
       case 'async-select':
         return <AsyncSelectField {...props} />
+      case 'audio':
+        return <AudioField {...props} />
       default:
         return <TextField {...props} />
     }

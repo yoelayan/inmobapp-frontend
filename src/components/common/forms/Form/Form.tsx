@@ -111,6 +111,11 @@ export const Form = <T extends FieldValues>({
     Object.keys(data).forEach(key => {
       const value = data[key]
 
+      // No procesar campos async-select (client_id, franchise_id, etc.)
+      if (key.endsWith('_id')) {
+        return
+      }
+
       if (
         value !== null &&
         typeof value === 'object' &&
@@ -129,14 +134,11 @@ export const Form = <T extends FieldValues>({
 
       handleObjectValues(finalData)
 
-
       console.log('Submitting form:', finalData)
       console.log('Form data keys:', Object.keys(finalData))
       console.log('Form data values:', Object.values(finalData))
 
-      const values = methods.getValues()
-
-      submitForm(values as T)
+      submitForm(finalData as T)
     } else {
       // Si no hay repository, ejecutar onSuccess directamente
       onSuccess?.(data)

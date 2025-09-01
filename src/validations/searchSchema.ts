@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { asyncSelectValidation } from './common'
 
 // Base schema for search data
 const baseSearchSchema = z.object({
@@ -24,35 +25,12 @@ const baseSearchSchema = z.object({
 
 // Schema for creating searches (cliente requerido)
 export const createSearchSchema = baseSearchSchema.extend({
-  client_id: z.union([
-    z.number().min(1, { message: 'Debe seleccionar un cliente' }),
-    z.object({
-      value: z.number().min(1, { message: 'Debe seleccionar un cliente' }),
-      label: z.string()
-    })
-  ]).transform((val) => {
-    if (typeof val === 'object' && val !== null) {
-      return val.value
-    }
-    return val
-  })
+  client_id: asyncSelectValidation
 })
 
 // Schema for editing searches (todos los campos opcionales)
 export const editSearchSchema = baseSearchSchema.partial().extend({
-  client_id: z.union([
-    z.number().min(1, { message: 'El cliente debe ser válido' }),
-    z.object({
-      value: z.number().min(1, { message: 'El cliente debe ser válido' }),
-      label: z.string()
-    }),
-    z.undefined()
-  ]).transform((val) => {
-    if (typeof val === 'object' && val !== null) {
-      return val.value
-    }
-    return val
-  }).optional()
+  client_id: asyncSelectValidation.optional()
 })
 
 // Types

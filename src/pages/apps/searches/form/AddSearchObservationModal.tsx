@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useState } from 'react'
 
 // MUI Imports
 import {
@@ -12,22 +12,30 @@ import {
   CardContent,
   Button,
   IconButton,
-  CircularProgress,
   Divider,
-  TextField,
-  Typography,
-  Alert,
-  Stack
+  useTheme
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 import AddCommentIcon from '@mui/icons-material/AddComment'
-import MicIcon from '@mui/icons-material/Mic'
-import StopIcon from '@mui/icons-material/Stop'
-import DeleteIcon from '@mui/icons-material/Delete'
+
+// Form Imports
+import { Form, FormField } from '@/components/common/forms/Form'
+import { z } from 'zod'
 
 // Hook Imports
 import useSearches from '@/hooks/api/crm/useSearches'
 import { useNotification } from '@/hooks/useNotification'
+
+// Repositorio personalizado para el formulario de observaciones
+const ObservationFormRepository = {
+  base_url: '/searches/',
+  get: async () => ({}),
+  update: async () => ({}),
+  create: async (data: ObservationFormData) => {
+    // Esta función será reemplazada por la lógica real en formatData
+    return data
+  }
+}
 
 interface AddSearchObservationModalProps {
   open: boolean
@@ -36,278 +44,176 @@ interface AddSearchObservationModalProps {
   onSuccess: () => void
 }
 
+// Schema para el formulario de observaciones
+const observationFormSchema = z.object({
+  observation: z.string().min(1, { message: 'Debe proporcionar una observación de texto' }),
+  audioFile: z.any().optional() // Campo opcional para el archivo de audio
+})
+
+type ObservationFormData = z.infer<typeof observationFormSchema>
+
 const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
   open,
   onClose,
   searchId,
   onSuccess
 }) => {
-  // State management
-  const [observation, setObservation] = useState<string>('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isRecording, setIsRecording] = useState(false)
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
-  const [audioURL, setAudioURL] = useState<string | null>(null)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-
   // Hooks
   const { addObservation } = useSearches()
   const { notify } = useNotification()
+  const theme = useTheme()
 
-  // Refs
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-
-  // Reset audio recording when modal is reopened
-  useEffect(() => {
-    if (open) {
-      setAudioBlob(null)
-      setAudioURL(null)
-      setIsRecording(false)
-      setErrorMessage(null)
-    } else {
-      // Clean up recorded audio when modal closes
-      if (audioURL) {
-        URL.revokeObjectURL(audioURL)
-      }
-    }
-  }, [open, audioURL])
-
-  // Request microphone access
-  const requestMicrophonePermission = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
-
-      setErrorMessage(null)
-
-      return stream
-    } catch (error) {
-      console.error('Error accessing microphone:', error)
-      setErrorMessage('No se pudo acceder al micrófono. Por favor, conceda permisos e intente nuevamente.')
-
-      return null
-    }
+  const handleSuccess = (data: ObservationFormData) => {
+    console.log('Observación añadida exitosamente:', data)
+    notify('Observación añadida correctamente', 'success')
+    onSuccess()
+    onClose()
   }
 
-  // Start audio recording
-  const startRecording = async () => {
-    const stream = await requestMicrophonePermission()
-
-    if (!stream) {
-      return
-    }
-
-    audioChunksRef.current = []
-
-    const mediaRecorder = new MediaRecorder(stream)
-
-    mediaRecorderRef.current = mediaRecorder
-
-    // Handle data available event
-    mediaRecorder.ondataavailable = event => {
-      if (event.data.size > 0) {
-        audioChunksRef.current.push(event.data)
-      }
-    }
-
-    // Handle recording stopped
-    mediaRecorder.onstop = () => {
-      const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
-      const audioUrl = URL.createObjectURL(audioBlob)
-
-      setAudioBlob(audioBlob)
-      setAudioURL(audioUrl)
-      setIsRecording(false)
-
-      // Stop all tracks from the stream
-      stream.getTracks().forEach(track => track.stop())
-    }
-
-    // Start recording
-    mediaRecorder.start()
-    setIsRecording(true)
+  const handleError = (error: any) => {
+    console.error('Error al añadir observación:', error)
+    notify('Error al añadir la observación', 'error')
   }
 
-  // Stop audio recording
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop()
-    }
-  }
-
-  // Delete recorded audio
-  const deleteRecording = () => {
-    if (audioURL) {
-      URL.revokeObjectURL(audioURL)
+  // Función para formatear los datos antes de enviarlos
+  const formatData = async (data: ObservationFormData) => {
+    if (!searchId) {
+      throw new Error('No se puede añadir una observación sin un ID de búsqueda')
     }
 
-    setAudioBlob(null)
-    setAudioURL(null)
-  }
+    console.log('Submitting with values:', {
+      searchId,
+      observation: data.observation,
+      hasAudio: !!data.audioFile
+    })
 
-  // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    const hasObservation = observation.trim().length > 0
-
-    // validar observación
-    if (!hasObservation) {
-      notify('Debe proporcionar una observación de texto', 'error')
-
-      return
-    }
-
-    setIsSubmitting(true)
-
-    try {
-      let audioFile: File | undefined = undefined
-
-      if (audioBlob) {
-        audioFile = new File([audioBlob], 'audio-observation.wav', { type: 'audio/wav' })
-      }
-
-      if (!searchId) {
-        notify('No se puede añadir una observación sin un ID de búsqueda', 'error')
-        setIsSubmitting(false)
-
-        return
-      }
-
-      const response = await addObservation(searchId, observation, audioFile)
-
-      console.log('API response:', response)
-
-      notify('Observación añadida correctamente', 'success')
-      setObservation('')
-      setAudioBlob(null)
-
-      if (audioURL) {
-        URL.revokeObjectURL(audioURL)
-        setAudioURL(null)
-      }
-
-      onSuccess()
-      onClose()
-    } catch (error) {
-      console.error('Error al añadir observación:', error)
-      notify('Error al añadir la observación', 'error')
-    } finally {
-      setIsSubmitting(false)
-    }
+    // Llamar directamente a la función addObservation
+    const response = await addObservation(searchId, data.observation, data.audioFile)
+    console.log('API response:', response)
+    return response
   }
 
   // Handle modal close
   const handleClose = () => {
-    if (!isSubmitting) {
-      if (isRecording && mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop()
-      }
+    onClose()
+  }
 
-      if (audioURL) {
-        URL.revokeObjectURL(audioURL)
-      }
-
-      setObservation('')
-      setAudioBlob(null)
-      setAudioURL(null)
-      onClose()
-    }
+  const defaultValues: Partial<ObservationFormData> = {
+    observation: '',
+    audioFile: null
   }
 
   return (
-    <Modal open={open} onClose={handleClose} aria-labelledby='add-observation-modal-title'>
+    <Modal
+      open={open}
+      onClose={handleClose}
+      aria-labelledby='add-observation-modal-title'
+      className="flex items-center justify-center p-4"
+    >
       <Box
         sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: { xs: '90%', sm: '500px' },
-          maxHeight: '90vh',
-          overflow: 'auto',
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          borderRadius: 1
+          position: 'relative',
+          width: '100%',
+          maxWidth: 'md',
+          bgcolor: theme.palette.background.paper,
+          borderRadius: 2,
+          boxShadow: theme.shadows[24],
+          border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
+          overflow: 'hidden'
         }}
       >
-        <Card>
+        <Card sx={{ boxShadow: 'none', border: 0 }}>
           <CardHeader
             title='Añadir Observación'
+            sx={{
+              bgcolor: theme.palette.mode === 'dark'
+                ? 'rgba(255, 255, 255, 0.05)'
+                : 'rgba(25, 118, 210, 0.04)',
+              borderBottom: `1px solid ${theme.palette.divider}`,
+              '& .MuiTypography-root': {
+                color: theme.palette.text.primary,
+                fontWeight: 600
+              }
+            }}
             action={
-              <IconButton onClick={handleClose} disabled={isSubmitting}>
+              <IconButton
+                onClick={handleClose}
+                sx={{
+                  color: theme.palette.text.secondary,
+                  '&:hover': {
+                    color: theme.palette.text.primary
+                  },
+                  transition: 'color 0.2s ease-in-out'
+                }}
+              >
                 <CloseIcon />
               </IconButton>
             }
           />
-          <Divider />
-          <CardContent>
-            <form onSubmit={handleSubmit}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-                <TextField
-                  fullWidth
-                  label='Observación'
-                  multiline
-                  rows={4}
-                  value={observation}
-                  onChange={e => setObservation(e.target.value)}
-                  disabled={isSubmitting}
-                  placeholder='Escriba su observación aquí...'
-                />
-
-                {errorMessage && (
-                  <Alert severity='error' sx={{ mb: 2 }}>
-                    {errorMessage}
-                  </Alert>
-                )}
-
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <Typography variant='subtitle1'>Grabación de audio</Typography>
-
-                  {audioURL ? (
-                    <Stack direction='row' spacing={2} alignItems='center'>
-                      <audio src={audioURL} controls style={{ flexGrow: 1 }} />
-                      <IconButton color='error' onClick={deleteRecording} disabled={isSubmitting}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Stack>
-                  ) : (
-                    <Stack direction='row' spacing={2}>
-                      <Button
-                        variant='outlined'
-                        color={isRecording ? 'error' : 'primary'}
-                        startIcon={isRecording ? <StopIcon /> : <MicIcon />}
-                        onClick={isRecording ? stopRecording : startRecording}
-                        disabled={isSubmitting}
-                      >
-                        {isRecording ? 'Detener grabación' : 'Iniciar grabación'}
-                      </Button>
-
-                      {isRecording && (
-                        <Typography variant='body2' color='error' sx={{ display: 'flex', alignItems: 'center' }}>
-                          Grabando...
-                        </Typography>
-                      )}
-                    </Stack>
-                  )}
-                </Box>
-
-                <Typography variant='caption' color='text.secondary'>
-                  * Debe proporcionar una observación de texto o una grabación de audio
-                </Typography>
-
+          <Divider sx={{ borderColor: theme.palette.divider }} />
+          <CardContent sx={{ p: 3, bgcolor: theme.palette.background.paper }}>
+            <Form
+              schema={() => observationFormSchema}
+              defaultValues={defaultValues}
+              repository={ObservationFormRepository}
+              onSuccess={handleSuccess}
+              onError={handleError}
+              formatData={formatData}
+              actionsComponent={
                 <Button
                   type='submit'
                   variant='contained'
                   color='primary'
-                  disabled={isSubmitting || (!observation.trim() && !audioBlob)}
-                  startIcon={isSubmitting ? <CircularProgress size={20} /> : <AddCommentIcon />}
-                  fullWidth
+                  startIcon={<AddCommentIcon />}
+                  sx={{
+                    width: '100%',
+                    background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)'
+                    },
+                    fontWeight: 600,
+                    py: 1.5,
+                    px: 3,
+                    borderRadius: 2,
+                    transition: 'all 0.2s ease-in-out',
+                    transform: 'scale(1)',
+                    '&:hover:not(:disabled)': {
+                      transform: 'scale(1.02)',
+                      boxShadow: theme.shadows[8]
+                    },
+                    boxShadow: theme.shadows[4]
+                  }}
                 >
-                  {isSubmitting ? 'Añadiendo...' : 'Añadir Observación'}
+                  Añadir Observación
                 </Button>
+              }
+            >
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                <FormField
+                  name='observation'
+                  label='Observación'
+                  type='text'
+                  required
+                  multiline
+                  rows={4}
+                  placeholder='Escriba su observación aquí...'
+                />
+
+                <FormField
+                  name='audioFile'
+                  label='Grabación de audio (opcional)'
+                  type='audio'
+                />
+
+                <Box sx={{
+                  color: theme.palette.text.secondary,
+                  fontSize: '0.75rem',
+                  fontStyle: 'italic'
+                }}>
+                  * Debe proporcionar una observación de texto o una grabación de audio
+                </Box>
               </Box>
-            </form>
+            </Form>
           </CardContent>
         </Card>
       </Box>

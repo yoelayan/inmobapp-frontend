@@ -17,7 +17,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 
 // Component Imports
-import { Form, PageContainer, TextField, FormField } from '@/components/common/forms/Form'
+import { Form, PageContainer, FormField } from '@/components/common/forms/Form'
 
 // Hook Imports
 import { useFormContext } from 'react-hook-form'
@@ -33,7 +33,6 @@ import type { IUser } from '@/types/apps/UserTypes'
 
 import type { UseFormReturn } from 'react-hook-form'
 
-
 // Components Imports
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
 
@@ -44,38 +43,15 @@ import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 // Repositorio personalizado que intercepta los datos
 const CustomSearchesRepository = {
   ...SearchesRepository,
+  get: SearchesRepository.get,
   update: async (id: number, data: any) => {
-    console.log('🔧 CustomSearchesRepository.update - Datos originales:', data)
-
-    // Transformar client_id si es un objeto
-    const transformedData = {
-      ...data,
-      client_id: typeof data.client_id === 'object' && data.client_id !== null
-        ? data.client_id.value
-        : data.client_id
-    }
-
-    console.log('🔧 CustomSearchesRepository.update - Datos transformados:', transformedData)
-
-    // Llamar al repositorio original con datos transformados
-    return await SearchesRepository.update(id, transformedData)
+    console.log('🔧 CustomSearchesRepository.update - Datos:', data)
+    return await SearchesRepository.update(id, data)
   },
 
   create: async (data: any) => {
-    console.log('🔧 CustomSearchesRepository.create - Datos originales:', data)
-
-    // Transformar client_id si es un objeto
-    const transformedData = {
-      ...data,
-      client_id: typeof data.client_id === 'object' && data.client_id !== null
-        ? data.client_id.value
-        : data.client_id
-    }
-
-    console.log('🔧 CustomSearchesRepository.create - Datos transformados:', transformedData)
-
-    // Llamar al repositorio original con datos transformados
-    return await SearchesRepository.create(transformedData)
+    console.log('🔧 CustomSearchesRepository.create - Datos:', data)
+    return await SearchesRepository.create(data)
   }
 }
 
@@ -176,6 +152,9 @@ export const SearchForm: React.FC<SearchFormProps> = ({
   const schema = searchId ? editSearchSchema : createSearchSchema
   const mode = searchId ? 'edit' : 'create'
 
+  // Convertir schema a función para que coincida con el tipo esperado
+  const getSchema = () => schema
+
   console.log('🔍 Debug SearchForm:')
   console.log('  - searchId:', searchId)
   console.log('  - mode:', mode)
@@ -185,7 +164,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
 
   const defaultValues: Partial<CreateSearchFormData> = {
     description: '',
-    budget: 0,
+    budget: 0.01,
     client_id: undefined
   }
 
@@ -226,13 +205,22 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     notify(errorMessage, 'error')
   }
 
-  const setFormData = (data: ISearch, methods: UseFormReturn<EditSearchFormData>) => {
+    const setFormData = (data: ISearch, methods: UseFormReturn<EditSearchFormData>) => {
+    console.log('🔧 setFormData - Datos recibidos:', data)
+    console.log('🔧 setFormData - data.client:', data.client)
+    console.log('🔧 setFormData - data.client_id:', data.client_id)
+
     const formData: EditSearchFormData = {
       description: data.description,
       budget: data.budget,
-      client_id: data.client_id
+      client_id: data.client ? {
+        value: data.client.id,
+        label: data.client.name
+      } : undefined
     }
 
+    console.log('🔧 setFormData - Datos formateados para el formulario:', formData)
+    console.log('🔧 setFormData - formData.client_id:', formData.client_id)
     methods.reset(formData)
   }
 
@@ -243,96 +231,18 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     const formattedData = {
       ...data,
       client_id: typeof data.client_id === 'object' && data.client_id !== null
-        ? data.client_id.value
+        ? (data.client_id as any).value
         : data.client_id
     }
 
     console.log('🔧 formatData - Datos formateados:', formattedData)
-
     return formattedData
-  }
-
-  // Función personalizada para transformar datos justo antes del envío
-  const handleSubmit = (formData: any) => {
-    console.log('🚀 handleSubmit - Datos antes de transformar:', formData)
-
-    // Transformar client_id si es un objeto
-    const transformedData = {
-      ...formData,
-      client_id: typeof formData.client_id === 'object' && formData.client_id !== null
-        ? formData.client_id.value
-        : formData.client_id
-    }
-
-    console.log('🚀 handleSubmit - Datos transformados:', transformedData)
-
-    return transformedData
-  }
-
-  // Componente personalizado que intercepta el envío
-  const CustomForm = () => {
-    const { handleSubmit: formHandleSubmit, getValues } = useFormContext()
-
-    const onSubmit = async (e: React.FormEvent) => {
-      e.preventDefault()
-
-      const formData = getValues()
-      console.log('🚀 onSubmit - Datos del formulario:', formData)
-
-      // Transformar client_id antes de enviar
-      const transformedData = {
-        ...formData,
-        client_id: typeof formData.client_id === 'object' && formData.client_id !== null
-          ? formData.client_id.value
-          : formData.client_id
-      }
-
-      console.log('🚀 onSubmit - Datos transformados:', transformedData)
-
-      // Aquí enviaríamos los datos transformados
-      // Por ahora, solo logueamos
-    }
-
-    return (
-      <form onSubmit={onSubmit}>
-        <Grid container spacing={3} className="p-6">
-          <Grid size={{ xs: 12 }}>
-            <TextField
-              name='description'
-              label='Descripción'
-              fullWidth
-              required
-              multiline
-              rows={3}
-              placeholder='Describe lo que estás buscando...'
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
-              name='budget'
-              label='Presupuesto'
-              type='number'
-              fullWidth
-              required
-              placeholder='0.00'
-              inputProps={{
-                min: 0,
-                step: 0.01
-              }}
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ClientSelector />
-          </Grid>
-        </Grid>
-      </form>
-    )
   }
 
   return (
     <PageContainer title={searchId ? 'Editar Búsqueda' : 'Crear Búsqueda'}>
       <Form
-        schema={schema}
+        schema={getSchema}
         defaultValues={defaultValues}
         repository={CustomSearchesRepository}
         onSuccess={handleSuccess}
@@ -344,10 +254,10 @@ export const SearchForm: React.FC<SearchFormProps> = ({
       >
         <Grid container spacing={3} className="p-6">
           <Grid size={{ xs: 12 }}>
-            <TextField
+            <FormField
               name='description'
               label='Descripción'
-              fullWidth
+              type='text'
               required
               multiline
               rows={3}
@@ -355,17 +265,12 @@ export const SearchForm: React.FC<SearchFormProps> = ({
             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField
+            <FormField
               name='budget'
               label='Presupuesto'
               type='number'
-              fullWidth
               required
               placeholder='0.00'
-              inputProps={{
-                min: 0,
-                step: 0.01
-              }}
             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>

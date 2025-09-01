@@ -33,6 +33,7 @@ import {
 // Component Imports
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
 import ObservationsLogModal from '../form/ObservationsLogModal'
+import AddSearchCharacteristicModal from '../form/AddSearchCharacteristicModal'
 
 // Hooks Imports
 import useSearches from '@/hooks/api/crm/useSearches';
@@ -196,7 +197,7 @@ const SearchesTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        handleSearchDeleted(row.id)
+        handleSearchDeleted()
 
         // TODO: Implementar confirmación y eliminación
       },
@@ -293,6 +294,15 @@ const SearchesTable = () => {
           searchId={selectedSearchId ?? null}
           observations={selectedSearch.observations || []}
           onSuccess={handleObservationsLogAdded}
+        />
+      )}
+
+      {characteristicModalOpen && (
+        <AddSearchCharacteristicModal
+          open={characteristicModalOpen}
+          onClose={handleCloseCharacteristicModal}
+          searchId={selectedSearchId ?? null}
+          onSuccess={handleCharacteristicAdded}
         />
       )}
     </>
