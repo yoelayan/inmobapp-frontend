@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import AsyncSelect from 'react-select/async';
 import { useTheme } from '@mui/material/styles';
@@ -22,6 +22,7 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
 }: AsyncSelectFieldProps<T> & V) => {
   const { control } = useFormContext()
   const theme = useTheme()
+  const [isFocused, setIsFocused] = useState(false)
 
   const buildFilters = () => {
     // convertir la lista de filters en un objeto
@@ -60,7 +61,6 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
       borderRadius: theme.shape.borderRadius,
       borderWidth: '1px',
       minHeight: '56px',
-      marginTop: '16px', // Add margin for the label space
       fontSize: '1rem',
       fontFamily: theme.typography.fontFamily,
       backgroundColor: theme.palette.mode === 'dark'
@@ -163,7 +163,7 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
       <Controller
         control={control}
         name={name}
-        render={({ field: { onChange: onChangeField, value }, fieldState: { error } }) => {
+        render={({ field: { onChange: onChangeField, value}, fieldState: { error } }) => {
           const inputId = `async-select-${name}`
 
           return (
@@ -172,6 +172,12 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
                 htmlFor={inputId}
                 shrink={true}
                 error={!!error}
+                focused={isFocused}
+                sx={{
+                  background: theme.palette.background.paper,
+                  paddingLeft: theme.spacing(1),
+                  paddingRight: theme.spacing(1),
+                }}
               >
                 {label}
               </InputLabel>
@@ -190,6 +196,8 @@ export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldPr
                     onChange({ label: option?.label, value: option?.value })
                   }
                 }}
+                onFocus={() => setIsFocused(true)}
+                onBlur={() => setIsFocused(false)}
                 value={value}
                 styles={customSelectStyles}
                 placeholder='Seleccionar...'

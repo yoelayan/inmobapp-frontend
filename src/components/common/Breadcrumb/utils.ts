@@ -192,7 +192,7 @@ const isClickable = (segment: string, index: number, segments: string[], isLast:
   }
 
   // Make main sections clickable
-  const mainSections = ['clientes', 'franquicias', 'propiedades', 'usuarios', 'roles', 'home', 'about']
+  const mainSections = ['busquedas', 'clientes', 'franquicias', 'propiedades', 'usuarios', 'roles', 'home', 'about']
 
   return mainSections.includes(segment.toLowerCase())
 }

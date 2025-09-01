@@ -5,9 +5,10 @@ import { useCallback } from 'react'
 import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
 import type { ICharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
-import type { ResponseAPI } from '@/types/api/response'
+import type { ResponseAPI, FilterItem } from '@/types/api/response'
+import { type ISearchCharacteristic } from '@/types/apps/ClientesTypes'
 
-export default function useSearches(defaultFilters?: Record<string, any>) {
+export default function useSearches(defaultFilters?: FilterItem[]) {
   const baseHook = useBaseHookApi(SearchesRepository, defaultFilters)
   const repository = SearchesRepository
 
@@ -21,6 +22,13 @@ export default function useSearches(defaultFilters?: Record<string, any>) {
   const deleteCharacteristic = useCallback(
     async (id: number, characteristicId: number) => {
       return await repository.deleteCharacteristic(id, characteristicId)
+    },
+    [repository]
+  )
+
+  const updateCharacteristic = useCallback(
+    async (id: number, characteristics: ISearchCharacteristic[]) => {
+      return await repository.updateCharacteristic(id, characteristics)
     },
     [repository]
   )
@@ -57,6 +65,7 @@ export default function useSearches(defaultFilters?: Record<string, any>) {
     addObservation,
     deleteObservation,
     allCharacteristics,
-    getMatchedProperties
+    getMatchedProperties,
+    updateCharacteristic
   }
 }

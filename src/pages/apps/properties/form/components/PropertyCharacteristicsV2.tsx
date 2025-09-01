@@ -74,6 +74,7 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({ p
           // Si el valor es null, undefined o vacío, establecer valor por defecto
           if (newChar.value === null || newChar.value === undefined || newChar.value === '') {
             const defaultValue = newChar.characteristic ? getDefaultValueForType(newChar.characteristic.type_value) : ''
+
             return { ...newChar, value: defaultValue }
           }
 

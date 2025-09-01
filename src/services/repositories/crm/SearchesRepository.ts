@@ -1,9 +1,10 @@
-import type { ISearch } from '@/types/apps/ClientesTypes'
+
 import { ENDPOINTS } from '@/services/api/endpoints'
 import BaseRepository from '../BaseRepository'
-import type { ResponseAPI } from '../BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 
 import type { ICharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
+import type { ISearchCharacteristic, ISearch } from '@/types/apps/ClientesTypes'
 
 class SearchesRepository extends BaseRepository<ISearch> {
   private static instance: SearchesRepository
@@ -45,6 +46,11 @@ class SearchesRepository extends BaseRepository<ISearch> {
         value: value
       }
     })
+  }
+  public async updateCharacteristic(id: number, characteristics: ISearchCharacteristic[]): Promise<any> {
+    const url = ENDPOINTS.CRM.SEARCHES.CHARACTERISTICS.UPDATE(id)
+
+    return await this.apiClient.put(url, { characteristics: characteristics })
   }
 
   public async deleteCharacteristic(id: number, characteristicId: string | number): Promise<any> {

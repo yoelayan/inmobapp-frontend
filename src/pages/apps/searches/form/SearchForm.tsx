@@ -16,11 +16,15 @@ import {
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
 
+
+import { useFormContext } from 'react-hook-form'
+
+import type { UseFormReturn } from 'react-hook-form'
+
 // Component Imports
 import { Form, PageContainer, FormField } from '@/components/common/forms/Form'
 
 // Hook Imports
-import { useFormContext } from 'react-hook-form'
 
 import { useNotification } from '@/hooks/useNotification'
 
@@ -31,7 +35,6 @@ import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
 
-import type { UseFormReturn } from 'react-hook-form'
 
 // Components Imports
 import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
@@ -41,19 +44,6 @@ import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 
 // Repositorio personalizado que intercepta los datos
-const CustomSearchesRepository = {
-  ...SearchesRepository,
-  get: SearchesRepository.get,
-  update: async (id: number, data: any) => {
-    console.log('🔧 CustomSearchesRepository.update - Datos:', data)
-    return await SearchesRepository.update(id, data)
-  },
-
-  create: async (data: any) => {
-    console.log('🔧 CustomSearchesRepository.create - Datos:', data)
-    return await SearchesRepository.create(data)
-  }
-}
 
 // Schema Import
 import {
@@ -72,88 +62,114 @@ interface SearchFormProps {
   franchises?: ResponseAPI<IFranchise> | null
 }
 
-export const SearchForm: React.FC<SearchFormProps> = ({
-  searchId,
-  onSuccess
-}) => {
-  const { notify } = useNotification()
+// Component that contains form fields with access to form context
+const SearchFormFields: React.FC<{ mode: 'create' | 'edit' }> = ({ mode }) => {
   const [open, setOpen] = useState(false)
+  const { setValue } = useFormContext()
 
   const handleButtonModal = () => {
     setOpen(!open)
   }
 
-  // Componente interno que usa el contexto del formulario
-  const ClientSelector = () => {
-    const { setValue } = useFormContext()
+  const handleClientCreated = (response: IClient) => {
+    setValue('client_id', response.id)
+    handleButtonModal()
+  }
 
-    const handleClientCreated = (response: IClient) => {
-      setValue('client_id', response.id)
-      handleButtonModal()
-    }
-
-    const ModalClient = () => {
-      return (
-        <Modal
-          open={open}
-          onClose={handleButtonModal}
-          aria-labelledby='modal-modal-title'
-          aria-describedby='modal-modal-description'
-          className="flex items-center justify-center p-4"
-        >
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <CardContent className="p-6">
-              <Box className="space-y-6">
-                <Box className="flex justify-between items-center">
-                  <Typography variant='h5' component='h2' className="text-gray-900 dark:text-white">
-                    Crear Cliente
-                  </Typography>
-                  <IconButton
-                    onClick={handleButtonModal}
-                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-                  >
-                    <CloseIcon />
-                  </IconButton>
-                </Box>
-
-                <ClientForm
-                  onSuccess={handleClientCreated}
-                />
-              </Box>
-            </CardContent>
-          </Card>
-        </Modal>
-      )
-    }
-
+  const ModalClient = () => {
     return (
-      <div className="space-y-3">
-        <FormField
-          name='client_id'
-          label='Cliente'
-          required={mode === 'create'}
-          type='async-select'
-          repository={ClientsRepository}
-        />
-        <Button
-          onClick={handleButtonModal}
-          variant="outlined"
-          color="primary"
-          startIcon={<span className="tabler-user-plus" />}
-          className="w-full justify-start"
-        >
-          Crear un nuevo cliente
-        </Button>
-        <ModalClient />
-      </div>
+      <Modal
+        open={open}
+        onClose={handleButtonModal}
+        aria-labelledby='modal-modal-title'
+        aria-describedby='modal-modal-description'
+        className='flex items-center justify-center p-4'
+      >
+        <Card className='w-full max-w-4xl max-h-[90vh] overflow-y-auto'>
+          <CardContent className='p-6'>
+            <Box className='space-y-6'>
+              <Box className='flex justify-between items-center'>
+                <Typography variant='h5' component='h2' className='text-gray-900 dark:text-white'>
+                  Crear Cliente
+                </Typography>
+                <IconButton
+                  onClick={handleButtonModal}
+                  className='text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200'
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+
+              <ClientForm onSuccess={handleClientCreated} />
+            </Box>
+          </CardContent>
+        </Card>
+      </Modal>
     )
   }
+
+  return (
+    <>
+      <Grid container spacing={3}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <FormField fullWidth name='budget' label='Presupuesto' type='number' required placeholder='0.00' />
+        </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Box className='flex items-center gap-2'>
+            <Box className='flex-1'>
+              <FormField
+                name='client_id'
+                label='Cliente'
+                required={mode === 'create'}
+                type='async-select'
+                repository={ClientsRepository}
+              />
+            </Box>
+            <Button
+              sx={{
+                minWidth: 'auto',
+                height: '56px',
+                px: 2
+              }}
+              onClick={handleButtonModal}
+              variant='outlined'
+              color='primary'
+            >
+              <i className='tabler-plus text-[18px]' />
+            </Button>
+          </Box>
+        </Grid>
+        <Grid size={{ xs: 12 }}>
+          <FormField
+            fullWidth
+            name='description'
+            label='Descripción'
+            type='text'
+            required
+            multiline
+            rows={3}
+            placeholder='Describe lo que busca el cliente...'
+          />
+        </Grid>
+      </Grid>
+
+      <ModalClient />
+    </>
+  )
+}
+
+export const SearchForm: React.FC<SearchFormProps> = ({
+  searchId,
+  onSuccess
+}) => {
+  const { notify } = useNotification()
+
 
   const schema = searchId ? editSearchSchema : createSearchSchema
   const mode = searchId ? 'edit' : 'create'
 
   // Convertir schema a función para que coincida con el tipo esperado
-  const getSchema = () => schema
+
 
   console.log('🔍 Debug SearchForm:')
   console.log('  - searchId:', searchId)
@@ -236,15 +252,16 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     }
 
     console.log('🔧 formatData - Datos formateados:', formattedData)
+
     return formattedData
   }
 
   return (
     <PageContainer title={searchId ? 'Editar Búsqueda' : 'Crear Búsqueda'}>
       <Form
-        schema={getSchema}
+        schema={schema}
         defaultValues={defaultValues}
-        repository={CustomSearchesRepository}
+        repository={SearchesRepository}
         onSuccess={handleSuccess}
         onError={handleError}
         mode={mode}
@@ -252,31 +269,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
         setFormData={setFormData}
         formatData={formatData}
       >
-        <Grid container spacing={3} className="p-6">
-          <Grid size={{ xs: 12 }}>
-            <FormField
-              name='description'
-              label='Descripción'
-              type='text'
-              required
-              multiline
-              rows={3}
-              placeholder='Describe lo que estás buscando...'
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <FormField
-              name='budget'
-              label='Presupuesto'
-              type='number'
-              required
-              placeholder='0.00'
-            />
-          </Grid>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <ClientSelector />
-          </Grid>
-        </Grid>
+        <SearchFormFields mode={mode} />
       </Form>
     </PageContainer>
   )
