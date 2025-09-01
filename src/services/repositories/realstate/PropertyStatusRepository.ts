@@ -6,7 +6,7 @@ class PropertyStatusRepository extends BaseRepository<IStatus> {
   private static instance: PropertyStatusRepository
 
   private constructor() {
-    super(ENDPOINTS.REALSTATE.PROPERTY_STATUS.BASE, true)
+    super(ENDPOINTS.REALSTATE.PROPERTY_STATUS.BASE)
   }
 
   public static getInstance(): PropertyStatusRepository {

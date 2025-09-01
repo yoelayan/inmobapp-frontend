@@ -49,18 +49,7 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
   const [error, setError] = useState<string | null>(null)
 
   // Reset state when modal opens/closes
-  useEffect(() => {
-    if (open && franchise) {
-      loadValidParents()
-      setSelectedParentId(franchise.parent?.id || null)
-      setError(null)
-    } else {
-      // Reset state when closing
-      setValidParents([])
-      setSelectedParentId(null)
-      setError(null)
-    }
-  }, [open, franchise])
+
 
   // TODO: Deuda Tecnica: Enviar logica al hook useFranchises
   const loadValidParents = async () => {
@@ -80,6 +69,20 @@ const EditParentFranchiseModal: React.FC<EditParentFranchiseModalProps> = ({
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    if (open && franchise) {
+      loadValidParents()
+      setSelectedParentId(franchise.parent?.id || null)
+      setError(null)
+    } else {
+      // Reset state when closing
+      setValidParents([])
+      setSelectedParentId(null)
+      setError(null)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, franchise])
 
   // TODO: Fin Deuda Tecnica
 

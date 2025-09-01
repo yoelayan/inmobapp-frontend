@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -75,14 +75,13 @@ const RolesTable = () => {
     setOpen(true)
   }
 
-  const useRolesTableStore = useMemo(
+  const useRolesTableStore = (
     () =>
       createTableStore<IUserGroup>({
         data: data,
         loading: loading,
         refresh: fetchData
-      }),
-    []
+      })
   )
 
   const rolesTableStore = useRolesTableStore()
@@ -110,7 +109,7 @@ const RolesTable = () => {
           message: `¿Estás seguro que deseas eliminar el rol "${row.name}"? Esta acción no se puede deshacer.`,
           onConfirm: async () => {
             await deleteRole(row.id)
-            rolesTableStore.fetchData()
+            rolesTableStore.getState().fetchData()
           }
         })
       },
@@ -122,10 +121,10 @@ const RolesTable = () => {
     <>
       <Grid container spacing={2}>
         <SectionHeader title='Roles' subtitle='Gestión de Roles del Sistema' />
-        <Table columns={columns} state={rolesTableStore} actions={actions}>
+        <Table columns={columns} state={rolesTableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar roles...'>
             <Box className='flex gap-4 w-full'>
-              <Button variant='outlined' size='small' onClick={() => rolesTableStore.setFilters([])}>
+              <Button variant='outlined' size='small' onClick={() => rolesTableStore.getState().setFilters([])}>
                 Limpiar filtros
               </Button>
               <Button
@@ -133,7 +132,7 @@ const RolesTable = () => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => rolesTableStore.fetchData()}
+                onClick={() => rolesTableStore.getState().fetchData()}
               >
                 Actualizar
               </Button>

@@ -2,7 +2,7 @@ import type { ICharacteristic } from './RealtstateTypes'
 import type { IUser } from './UserTypes'
 
 export interface IClient {
-  id: number
+  id?: number
   name: string
   email?: string
   phone?: string

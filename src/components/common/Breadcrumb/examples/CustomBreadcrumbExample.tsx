@@ -150,7 +150,7 @@ const CustomBreadcrumbExample: React.FC = () => {
           6. Separador Personalizado
         </Typography>
         <Typography variant="body2" color="text.secondary" mb={2}>
-          Con separador de flecha en lugar de "/"
+          Con separador de flecha en lugar de &quot;/&quot;
         </Typography>
         <Breadcrumb
           customItems={customBreadcrumbs}

@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { useRouter } from 'next/navigation'
 
@@ -91,14 +91,13 @@ const UsersTable = () => {
   const router = useRouter()
   const { data, loading, fetchData } = useUsers()
 
-  const useUsersTableStore = useMemo(
+  const useUsersTableStore = (
     () =>
       createTableStore<IUser>({
         data: data,
         loading: loading,
         refresh: fetchData
-      }),
-    []
+      })
   )
 
   const actions: TableAction[] = [
@@ -143,10 +142,10 @@ const UsersTable = () => {
           title='Usuarios'
           subtitle='Gestión de Usuarios del Sistema'
         />
-        <Table columns={columns} state={tableStore} actions={actions}>
+        <Table columns={columns} state={tableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar usuarios...'>
             <Box className='flex gap-4 w-full'>
-              <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              <Button variant='outlined' size='small' onClick={() => tableStore.getState().setFilters([])}>
                 Limpiar filtros
               </Button>
               <Button
@@ -154,7 +153,7 @@ const UsersTable = () => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => tableStore.fetchData()}
+                onClick={() => tableStore.getState().fetchData()}
               >
                 Actualizar
               </Button>

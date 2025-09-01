@@ -173,7 +173,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
         })
       }
     },
-    [repository, defaultFilters]
+    [repository, defaultFilters, state.data]
   )
 
   const deleteData = useCallback(

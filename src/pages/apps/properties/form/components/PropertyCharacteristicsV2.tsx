@@ -288,46 +288,17 @@ const PropertyCharacteristicsV2: React.FC<PropertyCharacteristicsV2Props> = ({ p
   useEffect(() => {
     if (propertyId) {
       fetchPropertyCharacteristics()
-    } else {
-      // En modo creación (sin propertyId), cargar características requeridas por defecto
-      fetchRequiredCharacteristics()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId])
 
-  // Fetch required characteristics for new properties (creation mode)
-  const fetchRequiredCharacteristics = async () => {
-    setLoading(true)
-
-    try {
-      const response = await allCharacteristics()
-      const allChars = response.results || []
-
-      // Filtrar solo las características requeridas
-      const requiredChars = allChars.filter((char: ICharacteristic) => char.is_required)
-
-      // Crear características con valores por defecto
-      const characteristicsWithDefaults: IPropertyCharacteristic[] = requiredChars.map(
-        (char: ICharacteristic, index: number) => ({
-          id: -(index + 1), // ID temporal negativo para características nuevas
-          value: getDefaultValueForType(char.type_value),
-          characteristic: char
-        })
-      )
-
-      setCharacteristics(characteristicsWithDefaults)
-    } catch (error) {
-      console.error('Error fetching required characteristics:', error)
-      notify('Error al cargar las características requeridas', 'error')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   // Fetch available characteristics when characteristics change
   useEffect(() => {
     if (characteristics.length >= 0) {
       fetchAllCharacteristics()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [propertyId, characteristics.length])
 
   // Separate required and optional characteristics

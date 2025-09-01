@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -60,17 +60,16 @@ const FranchisesTable = () => {
   }
 
   const handleEditParentSuccess = () => {
-    tableStore.fetchData() // Refresh the table
+    tableStore.getState().fetchData() // Refresh the table
   }
 
-  const useFranchisesTableStore = useMemo(
+  const useFranchisesTableStore = (
     () =>
       createTableStore<IFranchise>({
         data: data,
         loading: loading,
         refresh: fetchData
-      }),
-    []
+      })
   )
 
   const tableStore = useFranchisesTableStore()
@@ -187,7 +186,7 @@ const columns: ColumnDef<IFranchise>[] = [
           message: `¿Estás seguro que deseas eliminar la franquicia "${row.name}"?`,
           onConfirm: async () => {
             await deleteFranchise(row.id)
-            tableStore.fetchData()
+            tableStore.getState().fetchData()
           }
         })
       },
@@ -200,10 +199,10 @@ const columns: ColumnDef<IFranchise>[] = [
     <>
       <Grid container spacing={2}>
         <SectionHeader title='Franquicias' subtitle='Gestión de Franquicias del Sistema' />
-        <Table columns={columns} state={tableStore} actions={actions}>
+        <Table columns={columns} state={tableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar franquicias...'>
             <Box className='flex gap-4 w-full'>
-              <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              <Button variant='outlined' size='small' onClick={() => tableStore.getState().setFilters([])}>
                 Limpiar filtros
               </Button>
               <Button
@@ -211,7 +210,7 @@ const columns: ColumnDef<IFranchise>[] = [
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => tableStore.fetchData()}
+                onClick={() => tableStore.getState().fetchData()}
               >
                 Actualizar
               </Button>

@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
+
 import { Box, Button, IconButton, useTheme } from '@mui/material'
 import MicIcon from '@mui/icons-material/Mic'
 import StopIcon from '@mui/icons-material/Stop'
@@ -21,19 +22,16 @@ const AudioField: React.FC<AudioFieldProps> = ({
   disabled = false
 }) => {
   const [isRecording, setIsRecording] = useState(false)
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
   const [audioURL, setAudioURL] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const theme = useTheme()
-  const { control, setValue, watch } = useFormContext()
+  const { control, setValue } = useFormContext()
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
 
-  // Watch the field value
-  const fieldValue = watch(name)
 
   // Cleanup audio URL when component unmounts
   useEffect(() => {
@@ -48,11 +46,14 @@ const AudioField: React.FC<AudioFieldProps> = ({
   const requestMicrophonePermission = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
       setErrorMessage(null)
+
       return stream
     } catch (error) {
       console.error('Error accessing microphone:', error)
       setErrorMessage('No se pudo acceder al micrófono. Por favor, conceda permisos e intente nuevamente.')
+
       return null
     }
   }
@@ -67,6 +68,7 @@ const AudioField: React.FC<AudioFieldProps> = ({
 
     audioChunksRef.current = []
     const mediaRecorder = new MediaRecorder(stream)
+
     mediaRecorderRef.current = mediaRecorder
 
     // Handle data available event
@@ -81,12 +83,12 @@ const AudioField: React.FC<AudioFieldProps> = ({
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' })
       const audioUrl = URL.createObjectURL(audioBlob)
 
-      setAudioBlob(audioBlob)
       setAudioURL(audioUrl)
       setIsRecording(false)
 
       // Create a File object and set it as the field value
       const audioFile = new File([audioBlob], 'audio-recording.wav', { type: 'audio/wav' })
+
       setValue(name, audioFile)
 
       // Stop all tracks from the stream
@@ -111,7 +113,6 @@ const AudioField: React.FC<AudioFieldProps> = ({
       URL.revokeObjectURL(audioURL)
     }
 
-    setAudioBlob(null)
     setAudioURL(null)
     setValue(name, null)
   }
@@ -121,7 +122,7 @@ const AudioField: React.FC<AudioFieldProps> = ({
       name={name}
       control={control}
       rules={{ required: required ? 'Este campo es requerido' : false }}
-      render={({ field, fieldState }) => (
+      render={({ fieldState }) => (
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           {label && (
             <Box sx={{
@@ -130,7 +131,7 @@ const AudioField: React.FC<AudioFieldProps> = ({
               fontSize: '1rem'
             }}>
               {label}
-              {required && <span style={{ color: theme.palette.error.main }}> *</span>}
+              {required && <span className="text-red-500"> *</span>}
             </Box>
           )}
 
@@ -161,7 +162,7 @@ const AudioField: React.FC<AudioFieldProps> = ({
               <audio
                 src={audioURL}
                 controls
-                style={{ flexGrow: 1 }}
+
               />
               <IconButton
                 color='error'

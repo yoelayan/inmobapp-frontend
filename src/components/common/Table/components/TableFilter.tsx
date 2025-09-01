@@ -1,16 +1,27 @@
 "use client"
 
-import React, { useState, useCallback } from 'react'
+import React, { useState } from 'react'
 
-import { Box, TextField, InputAdornment, IconButton, Toolbar, debounce, Modal, Button, Card, CardHeader, CardContent } from '@mui/material'
+import {
+  useMediaQuery,
+  Box,
+  TextField,
+  InputAdornment,
+  IconButton,
+  Toolbar,
+  debounce,
+  Modal,
+  Button,
+  Card,
+  CardHeader,
+  CardContent
+} from '@mui/material'
 
 
 import SettingsIcon from '@mui/icons-material/Settings'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
 
-// useMediaQuery
-import { useMediaQuery } from '@mui/material'
 
 import { useTableContext } from '../TableContext'
 
@@ -27,15 +38,14 @@ const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', se
   const [isModalOpen, setIsModalOpen] = useState(false)
   const isMobile = useMediaQuery('(max-width: 600px)')
 
-  const debouncedSearch = useCallback(
+  const debouncedSearch = (
     debounce((value: string) => {
       if (value) {
         state.addFilter({ field: searchField, value })
       } else {
         state.removeFilter(searchField)
       }
-    }, 300),
-    [searchField, state.addFilter, state.removeFilter]
+    }, 300)
   )
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

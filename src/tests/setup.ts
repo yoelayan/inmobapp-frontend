@@ -11,10 +11,10 @@ configure({
   asyncUtilTimeout: 2000,
 
   // Show suggestions for better queries
-  getElementError: (message, container) => {
+  getElementError: (message) => {
     const prettierMessage = message + '\n\nTip: Use screen.debug() to see the current DOM structure.'
 
-    
+
 return new Error(prettierMessage)
   },
 })
@@ -163,7 +163,7 @@ class MockMutationObserver {
   observe = jest.fn();
   disconnect = jest.fn();
   takeRecords = jest.fn(() => []);
-  constructor(callback: any) {}
+  constructor() {}
 }
 
 Object.defineProperty(global, 'MutationObserver', {
@@ -187,7 +187,7 @@ global.fetch = jest.fn(() =>
     type: 'basic',
     url: '',
     clone: jest.fn(),
-  } as Response)
+  } as unknown as Response)
 )
 
 // Enhanced HTMLElement methods
@@ -210,7 +210,7 @@ Object.defineProperty(HTMLElement.prototype, 'scroll', {
 const createStorageMock = () => {
   let store: Record<string, string> = {}
 
-  
+
 return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
@@ -248,7 +248,7 @@ Object.defineProperty(global, 'crypto', {
         array[i] = Math.floor(Math.random() * 256)
       }
 
-      
+
 return array
     }),
     subtle: {

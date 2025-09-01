@@ -5,6 +5,7 @@ export interface IGeoItem {
 }
 
 export interface IState extends IGeoItem {
+
   // State no tiene relaciones adicionales
 }
 

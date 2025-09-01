@@ -5,7 +5,7 @@ import type { IClient } from './ClientesTypes'
 import type { IStatus } from './CatalogTypes'
 
 export interface IRealProperty {
-  id: number
+  id?: number
   created_by?: IUser
   updated_by?: IUser
   assigned_to?: IUser

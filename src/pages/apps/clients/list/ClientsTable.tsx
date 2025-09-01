@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo } from 'react';
+import React from 'react';
 
 import { useRouter } from 'next/navigation'
 
@@ -70,9 +70,9 @@ const columns: ColumnDef<IClient>[] = [
     cell: ({ getValue }) => {
       const status = getValue()
 
-      
+
 return (
-        <span style={{ color: status === 'Activo' ? 'green' : 'red' }}>
+        <span className={`${status === 'Activo' ? 'text-green-500' : 'text-red-500'}`}>
           {status === 'Activo' ? 'Activo' : 'Inactivo'}
         </span>
       )
@@ -103,14 +103,13 @@ const ClientsTable = () => {
   const router = useRouter()
   const { data, loading, fetchData } = useClients()
 
-  const useClientsTableStore = useMemo(
+  const useClientsTableStore = (
     () =>
       createTableStore<IClient>({
         data: data,
         loading: loading,
         refresh: fetchData
-      }),
-    []
+      })
   )
 
   const actions: TableAction[] = [
@@ -138,9 +137,9 @@ const ClientsTable = () => {
     <>
       <Grid container spacing={2}>
         <SectionHeader title='Clientes' subtitle='Listado de Clientes' />
-        <Table columns={columns} state={tableStore} actions={actions}>
+        <Table columns={columns} state={tableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar clientes...'>
-            <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+            <Button variant='outlined' size='small' onClick={() => tableStore.getState().setFilters([])}>
               Limpiar filtros
             </Button>
             <Button key='add' variant='contained' color='primary' onClick={() => router.push('/clientes/agregar/')}>

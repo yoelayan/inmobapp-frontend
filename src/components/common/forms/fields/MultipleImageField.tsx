@@ -19,7 +19,6 @@ import {
   Paper,
   useTheme
 } from '@mui/material'
-import ImageIcon from '@mui/icons-material/Image'
 import CloseIcon from '@mui/icons-material/Close'
 import DeleteIcon from '@mui/icons-material/Delete'
 import AddIcon from '@mui/icons-material/Add'
@@ -50,13 +49,12 @@ export const MultipleImageField = <T extends FieldValues>({
     if (!value) return null
     if (typeof value === 'string') return value
     if (value instanceof File) return URL.createObjectURL(value)
+
     return null
   }
 
   // Helper to check if the value is a URL from backend
-  const isBackendUrl = (value: File | string | null | undefined) => {
-    return typeof value === 'string' && (value.startsWith('http://') || value.startsWith('https://'))
-  }
+
 
   // Helper to get all images (current + new)
   const getAllImages = (fieldValue: any, currentUrls: string[]) => {
@@ -101,6 +99,7 @@ export const MultipleImageField = <T extends FieldValues>({
       const currentValue = field.value || []
       const updatedValue = [...currentValue, ...files]
       const limitedValue = updatedValue.slice(0, maxImages)
+
       field.onChange(limitedValue)
     }
   }
@@ -193,9 +192,11 @@ export const MultipleImageField = <T extends FieldValues>({
                 disabled={disabled || hasReachedMax}
                 onChange={e => {
                   const files = e.target.files
+
                   if (!files) return
 
                   const newFiles = Array.from(files)
+
                   console.log('MultipleImageField onChange:', { name, newFiles })
 
                   // Initialize field value as array if it doesn't exist
@@ -204,6 +205,7 @@ export const MultipleImageField = <T extends FieldValues>({
 
                   // Limit to maxImages
                   const limitedValue = updatedValue.slice(0, maxImages)
+
                   field.onChange(limitedValue)
                 }}
                 onBlur={field.onBlur}
@@ -220,6 +222,7 @@ export const MultipleImageField = <T extends FieldValues>({
                 <Grid container spacing={2}>
                   {allImages.map((imageData, index) => {
                     const previewUrl = getPreviewUrl(imageData.file)
+
                     if (!previewUrl) return null
 
                     return (
@@ -287,12 +290,15 @@ export const MultipleImageField = <T extends FieldValues>({
 
                                   if (imageData.isBackend) {
                                     console.log('Backend image cannot be deleted directly')
+
                                     return
                                   }
 
                                   const currentValue = field.value as File[] | undefined
+
                                   if (Array.isArray(currentValue)) {
                                     const newFiles = currentValue.filter((_: File, i: number) => i !== (imageData.index - currentImageUrls.length))
+
                                     field.onChange(newFiles)
                                   }
                                 }}

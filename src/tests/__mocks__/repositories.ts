@@ -103,10 +103,15 @@ jest.mock('@/services/repositories/crm/ClientsRepository', () => ({
   default: mockClientsRepository,
 }))
 
-export default {
+
+
+const mockRepositories = {
   users: mockUsersRepository,
   franchises: mockFranchisesRepository,
   clients: mockClientsRepository,
   setup: setupRepositoryMocks,
-  reset: resetRepositoryMocks,
+  reset: resetRepositoryMocks
 }
+
+export default mockRepositories
+

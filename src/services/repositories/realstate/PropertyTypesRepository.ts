@@ -6,7 +6,7 @@ class PropertyTypesRepository extends BaseRepository<IStatus> {
   private static instance: PropertyTypesRepository
 
   private constructor() {
-    super(ENDPOINTS.REALSTATE.PROPERTY_TYPES.BASE, false)
+    super(ENDPOINTS.REALSTATE.PROPERTY_TYPES.BASE)
   }
 
   public static getInstance(): PropertyTypesRepository {

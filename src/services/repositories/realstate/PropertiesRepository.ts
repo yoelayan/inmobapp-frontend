@@ -1,4 +1,4 @@
-import type { ResponseAPI } from '@services/repositories/BaseRepository'
+import type { ResponseAPI } from '@/types/api/response'
 
 import { ENDPOINTS } from '@/services/api/endpoints'
 

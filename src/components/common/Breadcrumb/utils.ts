@@ -200,7 +200,7 @@ const isClickable = (segment: string, index: number, segments: string[], isLast:
 /**
  * Adds context-specific badges to breadcrumb items
  */
-const getBadge = (segment: string, index: number, segments: string[]): string | undefined => {
+const getBadge = (segment: string): string | undefined => {
   const lowerSegment = segment.toLowerCase()
 
   // Add "Nuevo" badge for create actions
@@ -241,7 +241,7 @@ export const getBreadcrumbItems = (pathname: string): BreadcrumbItem[] => {
     const label = getSegmentLabel(segment, index, segments)
     const icon = getSegmentIcon(segment, index, segments)
     const href = isClickable(segment, index, segments, isLast) ? buildHref(segments, index) : undefined
-    const badge = getBadge(segment, index, segments)
+    const badge = getBadge(segment)
 
     return {
       label,
@@ -277,28 +277,28 @@ export const createCommonBreadcrumbs = {
 
   clients: () => createBreadcrumbItem('Clientes', '/clientes', 'tabler-users'),
   clientDetail: (id: string) => createBreadcrumbItem(`Cliente #${id}`, undefined, 'tabler-user'),
-  clientEdit: (id: string) => createBreadcrumbItem('Editar', undefined, 'tabler-edit', 'Editar'),
+  clientEdit: (id: string) => createBreadcrumbItem(`Editar #${id}`, undefined, 'tabler-edit', 'Editar'),
   clientNew: () => createBreadcrumbItem('Nuevo Cliente', undefined, 'tabler-plus', 'Nuevo'),
 
   franchises: () => createBreadcrumbItem('Franquicias', '/franquicias', 'tabler-building-store'),
   franchiseDetail: (id: string) => createBreadcrumbItem(`Franquicia #${id}`, undefined, 'tabler-building-store'),
-  franchiseEdit: (id: string) => createBreadcrumbItem('Editar', undefined, 'tabler-edit', 'Editar'),
-  franchiseView: (id: string) => createBreadcrumbItem('Ver', undefined, 'tabler-eye', 'Ver'),
+  franchiseEdit: (id: string) => createBreadcrumbItem(`Editar #${id}`, undefined, 'tabler-edit', 'Editar'),
+  franchiseView: (id: string) => createBreadcrumbItem(`Ver #${id}`, undefined, 'tabler-eye', 'Ver'),
 
   properties: () => createBreadcrumbItem('Propiedades', '/propiedades', 'tabler-home-2'),
   propertyDetail: (id: string) => createBreadcrumbItem(`Propiedad #${id}`, undefined, 'tabler-home-2'),
-  propertyEdit: (id: string) => createBreadcrumbItem('Editar', undefined, 'tabler-edit', 'Editar'),
+  propertyEdit: (id: string) => createBreadcrumbItem(`Editar #${id}`, undefined, 'tabler-edit', 'Editar'),
   propertyNew: () => createBreadcrumbItem('Nueva Propiedad', undefined, 'tabler-plus', 'Nuevo'),
 
   users: () => createBreadcrumbItem('Usuarios', '/usuarios', 'tabler-user'),
   userDetail: (id: string) => createBreadcrumbItem(`Usuario #${id}`, undefined, 'tabler-user'),
-  userEdit: (id: string) => createBreadcrumbItem('Editar', undefined, 'tabler-edit', 'Editar'),
-  userView: (id: string) => createBreadcrumbItem('Ver', undefined, 'tabler-eye', 'Ver'),
+  userEdit: (id: string) => createBreadcrumbItem(`Editar #${id}`, undefined, 'tabler-edit', 'Editar'),
+  userView: (id: string) => createBreadcrumbItem(`Ver #${id}`, undefined, 'tabler-eye', 'Ver'),
 
   roles: () => createBreadcrumbItem('Roles', '/roles', 'tabler-user'),
   roleDetail: (id: string) => createBreadcrumbItem(`Rol #${id}`, undefined, 'tabler-user'),
-  roleEdit: (id: string) => createBreadcrumbItem('Editar', undefined, 'tabler-edit', 'Editar'),
-  roleView: (id: string) => createBreadcrumbItem('Ver', undefined, 'tabler-eye', 'Ver'),
+  roleEdit: (id: string) => createBreadcrumbItem(`Editar #${id}`, undefined, 'tabler-edit', 'Editar'),
+  roleView: (id: string) => createBreadcrumbItem(`Ver #${id}`, undefined, 'tabler-eye', 'Ver'),
 
   searches: () => createBreadcrumbItem('Búsquedas', '/busquedas', 'tabler-search'),
   searchDetail: (id: string) => createBreadcrumbItem(`Búsqueda #${id}`, undefined, 'tabler-search'),

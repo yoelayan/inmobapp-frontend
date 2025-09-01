@@ -126,6 +126,7 @@ export const PropertyImage = ({
       setBackendImages([])
       setValidationError('')
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditMode, propertyId])
 
   // Subir imágenes al backend usando useProperties

@@ -17,6 +17,7 @@ interface TableProps<T> {
 export function Table<T>({ columns, state, actions, children }: TableProps<T>) {
   useEffect(() => {
     state.fetchData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (

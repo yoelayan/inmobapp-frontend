@@ -198,6 +198,7 @@ const SearchesTable = () => {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
         handleSearchDeleted()
+        console.log('Eliminar', row)
 
         // TODO: Implementar confirmación y eliminación
       },

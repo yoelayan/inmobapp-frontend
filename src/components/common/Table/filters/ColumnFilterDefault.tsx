@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import type { Column } from '@tanstack/react-table'
 
@@ -22,7 +22,7 @@ const ColumnFilterDefault = ({ column }: ColumnFilterDefaultProps) => {
 
 
   // Función debounced para aplicar el filtro al store
-  const debouncedAddFilter = useCallback(debounce((...args: unknown[]) => {
+  const debouncedAddFilter = debounce((...args: unknown[]) => {
     const value = String(args[0])
 
     if (value.trim() === '') {
@@ -33,7 +33,7 @@ const ColumnFilterDefault = ({ column }: ColumnFilterDefaultProps) => {
         value: value.trim()
       })
     }
-  }, 500), [state.filters, column.id])
+  }, 500)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value

@@ -15,7 +15,7 @@ import type { z } from 'zod'
 
 import type { InterfaceRepositoryAPI } from '@/services/repositories/BaseRepository'
 
-import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response.ts'
+import type { FilterItem } from '@/types/api/response.ts'
 
 export type FormRepository = {
   base_url: string

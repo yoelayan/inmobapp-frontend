@@ -7,8 +7,11 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 import { createPropertySchema, editPropertySchema } from '@/validations/propertySchema'
 
+type PropertyFormData = IRealProperty
+type PropertyPayload = IRealProperty
+
 // Define los valores iniciales del formulario
-const defaultPropertyValues: Partial<IRealProperty> = {
+const defaultPropertyValues: Partial<PropertyFormData> = {
   name: '',
   code: '',
   description: '',
@@ -28,7 +31,7 @@ const defaultPropertyValues: Partial<IRealProperty> = {
 }
 
 // Transforma los datos del backend para que sean compatibles con el formulario
-const transformPropertyDataForForm = (property: IRealProperty): Partial<IRealProperty> => {
+const transformPropertyDataForForm = (property: IRealProperty): Partial<PropertyFormData> => {
   return {
     ...property
   }
@@ -46,7 +49,7 @@ export const usePropertyForm = (propertyId?: string) => {
   }
 
   // Usa el hook base para manejar la lógica del formulario
-  const baseForm = useBaseForm<IRealProperty, Partial<IRealProperty>, string>({
+  const baseForm = useBaseForm<IRealProperty, PropertyFormData, string, PropertyPayload>({
     id: propertyId,
     repository: PropertiesRepository, // Repositorio para manejar las propiedades
     defaultValues: defaultPropertyValues,
@@ -75,6 +78,7 @@ export const usePropertyForm = (propertyId?: string) => {
 
       // Use Zod schema for validation (partial validation for first step)
       const schema = propertyId ? editPropertySchema : createPropertySchema
+
       const partialSchema = schema.pick({
         name: true,
         status_id: true,
@@ -85,6 +89,7 @@ export const usePropertyForm = (propertyId?: string) => {
       })
 
       partialSchema.parse(firstStepData)
+
       return true
 
     } catch (error: any) {
@@ -96,6 +101,7 @@ export const usePropertyForm = (propertyId?: string) => {
           })
         })
       }
+
       return false
     }
   }
@@ -117,6 +123,7 @@ export const usePropertyForm = (propertyId?: string) => {
 
       // Use Zod schema for validation (partial validation for second step)
       const schema = propertyId ? editPropertySchema : createPropertySchema
+
       const partialSchema = schema.pick({
         franchise_id: true,
         assigned_to_id: true,
@@ -137,6 +144,7 @@ export const usePropertyForm = (propertyId?: string) => {
           type: 'validation',
           message: 'Debe ingresar un precio de venta o alquiler'
         })
+
         return false
       }
 
@@ -151,6 +159,7 @@ export const usePropertyForm = (propertyId?: string) => {
           })
         })
       }
+
       return false
     }
   }

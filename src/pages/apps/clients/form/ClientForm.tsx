@@ -51,7 +51,7 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
     fetchStatuses()
     fetchUsers()
     fetchFranchises()
-  }, [])
+  }, [fetchStatuses, fetchUsers, fetchFranchises])
 
 
   // --- Renderizado Condicional (Carga Inicial) ---

@@ -82,15 +82,7 @@ const TableBody = React.memo<TableBodyProps>(({
     setOpenRow(prev => (prev === rowId ? null : rowId))
   }
 
-  const handleRowClick = (row: any) => {
 
-    handleToggleRow(row.id)
-
-    if (onRowClick) {
-      onRowClick(row.original)
-    }
-
-  }
 
   // Separate columns into priority and non-priority for mobile
   const { priorityCells, nonPriorityCells } = useMemo(() => {
@@ -131,6 +123,14 @@ const TableBody = React.memo<TableBodyProps>(({
   const tableRows = table.getRowModel().rows
 
   const renderedRows = useMemo(() => {
+    const handleRowClick = (row: any) => {
+      handleToggleRow(row.id)
+
+      if (onRowClick) {
+        onRowClick(row.original)
+      }
+    }
+
     return tableRows.map(row => {
       // Render actions component
       const actionsElement = (actions && showActions) ? (
