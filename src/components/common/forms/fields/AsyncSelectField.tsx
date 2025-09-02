@@ -4,7 +4,7 @@ import AsyncSelect from 'react-select/async';
 import { useTheme } from '@mui/material/styles';
 
 import { Controller, useFormContext } from 'react-hook-form';
-import { type TextFieldProps as MUITextFieldProps, FormHelperText, InputLabel, FormControl } from '@mui/material'
+import { FormHelperText, InputLabel, FormControl } from '@mui/material'
 
 import type { FieldValues } from 'react-hook-form'
 
@@ -12,14 +12,14 @@ import debounce from '@/utils/debounce'
 
 import type { AsyncSelectFieldProps } from '@/types/common/forms.types'
 
-export const AsyncSelectField = <T extends FieldValues, V extends MUITextFieldProps>({
+export const AsyncSelectField = <T extends FieldValues>({
   name,
   label,
   repository,
   onChange,
   filters,
   disabled
-}: AsyncSelectFieldProps<T> & V) => {
+}: AsyncSelectFieldProps<T>) => {
   const { control } = useFormContext()
   const theme = useTheme()
   const [isFocused, setIsFocused] = useState(false)

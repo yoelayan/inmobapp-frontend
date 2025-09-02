@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material'
 
 import { Form, FormField, PageContainer } from '@components/common/forms/Form'
-import { PermissionsField } from '@/pages/apps/users/form/components/UserPermissionsField'
+import PermissionsField from '@/pages/apps/users/form/components/UserPermissionsField'
 
 import RolesRepository from '@services/repositories/roles/RolesRepository'
 

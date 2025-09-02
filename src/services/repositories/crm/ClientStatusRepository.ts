@@ -6,7 +6,7 @@ class ClientStatusRepository extends BaseRepository<IStatus> {
   private static instance: ClientStatusRepository
 
   private constructor() {
-    super(ENDPOINTS.CRM.CLIENT_STATUS.BASE, false)
+    super(ENDPOINTS.CRM.CLIENT_STATUS.BASE)
   }
 
   public static getInstance(): ClientStatusRepository {

@@ -11,7 +11,7 @@ const NotFoundPage = () => {
   return (
     <Providers direction={direction}>
       <BlankLayout systemMode={defaultSystemMode}>
-        <NotFound mode={defaultSystemMode} />
+        <NotFound />
       </BlankLayout>
     </Providers>
   )

@@ -1,5 +1,7 @@
 
 
+import type { RowData } from '@tanstack/react-table'
+
 import type { FilterItem, SortingItem } from '@/types/api/response'
 
 // Interface for table actions
@@ -22,7 +24,8 @@ export interface TableAction {
 
 // Extend TanStack Table ColumnDef to include our custom meta
 declare module '@tanstack/react-table' {
-  export interface ColumnMeta {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  export interface ColumnMeta<TData extends RowData, TValue> {
     priority?: number
     hideInMobile?: boolean
   }

@@ -41,7 +41,7 @@ interface PropertyImageProps {
   propertyId?: number // Para detectar si estamos en modo edición
 }
 
-export const PropertyImage = ({
+const PropertyImage = ({
   label = 'Imágenes',
   accept = 'image/*',
   disabled = false,
@@ -784,3 +784,5 @@ export const PropertyImage = ({
           </div>
   )
 }
+
+export default PropertyImage

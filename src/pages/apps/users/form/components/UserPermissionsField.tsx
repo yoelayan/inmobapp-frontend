@@ -34,7 +34,7 @@ import {
 import { permissions, type Permission, type GroupPermission } from '@/auth/data/permissions'
 import type { PermissionsFieldProps } from '@/types/common/forms.types'
 
-export const PermissionsField = <T extends Record<string, any>>({
+const PermissionsField = <T extends Record<string, any>>({
   name,
   label,
   disabled = false,
@@ -97,7 +97,7 @@ export const PermissionsField = <T extends Record<string, any>>({
       totalPermissions: permissions.reduce((acc, group) => acc + group.permissions.length, 0),
       selectedCount: selectedPermissions.length
     }),
-    [permissions, selectedPermissions]
+    [selectedPermissions]
   )
 
   // Handlers
@@ -382,3 +382,5 @@ export const PermissionsField = <T extends Record<string, any>>({
     </div>
   )
 }
+
+export default PermissionsField

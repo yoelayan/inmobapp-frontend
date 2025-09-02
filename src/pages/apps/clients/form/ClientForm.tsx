@@ -33,7 +33,7 @@ interface ClientFormProps {
   onSuccess?: (response: IClient) => void // Callback opcional para después de un envío exitoso
 }
 
-export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
+const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
   const { notify } = useNotification()
 
   // --- Cargar datos directamente en el componente (como PropertyForm) ---
@@ -142,3 +142,5 @@ export const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) =
     </Form>
   )
 }
+
+export default ClientForm

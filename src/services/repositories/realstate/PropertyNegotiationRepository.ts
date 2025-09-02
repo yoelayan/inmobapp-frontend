@@ -8,7 +8,7 @@ class PropertyNegotiationRepository extends BaseRepository<IStatus> {
   private static instance: PropertyNegotiationRepository
 
   private constructor() {
-    super(ENDPOINTS.REALSTATE.TYPE_NEGOTIATIONS.BASE, true)
+    super(ENDPOINTS.REALSTATE.TYPE_NEGOTIATIONS.BASE)
   }
 
   public static getInstance(): PropertyNegotiationRepository {

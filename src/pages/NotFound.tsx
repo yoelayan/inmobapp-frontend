@@ -13,7 +13,6 @@ import Typography from '@mui/material/Typography'
 import classnames from 'classnames'
 
 // Type Imports
-import type { SystemMode } from '@core/types'
 
 // Hook Imports
 import { useImageVariant } from '@core/hooks/useImageVariant'
@@ -28,7 +27,7 @@ const MaskImg = styled('img')({
   zIndex: -1
 })
 
-const NotFound = ({ mode }: { mode: SystemMode }) => {
+const NotFound = () => {
   // Vars
   const darkImg = '/images/pages/misc-mask-dark.png'
   const lightImg = '/images/pages/misc-mask-light.png'
@@ -36,7 +35,7 @@ const NotFound = ({ mode }: { mode: SystemMode }) => {
   // Hooks
   const theme = useTheme()
   const hidden = useMediaQuery(theme.breakpoints.down('md'))
-  const miscBackground = useImageVariant(mode, lightImg, darkImg)
+  const miscBackground = useImageVariant('light', lightImg, darkImg)
 
   return (
     <div className='flex items-center justify-center min-bs-[100dvh] relative p-6 overflow-x-hidden'>

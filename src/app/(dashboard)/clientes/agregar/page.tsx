@@ -4,7 +4,7 @@ import React from 'react'
 
 import { Card, CardContent, CardHeader } from '@mui/material'
 
-import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
+import ClientForm from '@/pages/apps/clients/form/ClientForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 import PermissionGuard from '@/auth/hocs/PermissionGuard'
 
