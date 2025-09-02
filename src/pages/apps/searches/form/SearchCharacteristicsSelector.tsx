@@ -76,11 +76,12 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
 
     try {
       const selectedChar = availableCharacteristics.find(char => char.id === selectedCharacteristic)
+
       if (!selectedChar) return
 
       const defaultValue = getDefaultValueForType(selectedChar.type_value)
 
-      await addCharacteristic(searchId, selectedCharacteristic, defaultValue)
+      await addCharacteristic(searchId, Number(selectedCharacteristic), defaultValue)
 
       setSelectedCharacteristic('')
       notify('Característica agregada exitosamente', 'success')
