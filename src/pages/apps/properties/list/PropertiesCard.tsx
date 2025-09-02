@@ -97,6 +97,29 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
   const { getTotalProperties } = useProperties()
 
   useEffect(() => {
+    const fetchTotalProperties = async () => {
+      try {
+        const response = await getTotalProperties()
+
+        if (response && response.results && response.results.status_counts) {
+          const statusCounts = response.results.status_counts
+
+          const updatedData = cardsData.map(card => {
+            const statusKey = statusMapping[card.key]
+
+            return {
+              ...card,
+              stats: statusCounts[statusKey as keyof typeof statusCounts]?.toString() || '0'
+            }
+          })
+
+          setCardsData(updatedData)
+        }
+      } catch (error) {
+        console.error('Error fetching total properties', error)
+      }
+    }
+
     fetchTotalProperties()
 
     // Al cargar el componente, aplicar el filtro de la card activa por defecto
@@ -105,30 +128,9 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
     if (defaultStatusFilter) {
       onStatusChange(defaultStatusFilter)
     }
-  }, [])
+  }, [cardActive, onStatusChange, cardsData, getTotalProperties])
 
-  const fetchTotalProperties = async () => {
-    try {
-      const response = await getTotalProperties()
 
-      if (response && response.results && response.results.status_counts) {
-        const statusCounts = response.results.status_counts
-
-        const updatedData = cardsData.map(card => {
-          const statusKey = statusMapping[card.key]
-
-          return {
-            ...card,
-            stats: statusCounts[statusKey as keyof typeof statusCounts]?.toString() || '0'
-          }
-        })
-
-        setCardsData(updatedData)
-      }
-    } catch (error) {
-      console.error('Error fetching total properties', error)
-    }
-  }
 
     const handleChangeCard = (key: string) => {
     // Si se hace clic en la card ya activa, deseleccionarla
