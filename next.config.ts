@@ -18,16 +18,17 @@ const nextConfig = {
   // Disable pages router since we're using app router
   pageExtensions: ['page.tsx', 'page.ts', 'page.jsx', 'page.js'],
 
-  redirects: async () => {
-    return [
-      {
-        source: '/',
-        destination: '/home',
-        permanent: true,
-        locale: false
-      }
-    ]
-  }
+  // Redirects are now handled in the root page component
+  // redirects: async () => {
+  //   return [
+  //     {
+  //       source: '/',
+  //       destination: '/home',
+  //       permanent: true,
+  //       locale: false
+  //     }
+  //   ]
+  // }
 }
 
 export default nextConfig
