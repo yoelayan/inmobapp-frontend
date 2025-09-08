@@ -55,7 +55,7 @@ const columns: ColumnDef<IClient>[] = [
     }
   },
   {
-    accessorKey: 'assigned_to_name',
+    accessorKey: 'assigned_to.name',
     header: 'Usuario Asignado',
     enableColumnFilter: false,
     meta: {
@@ -64,7 +64,7 @@ const columns: ColumnDef<IClient>[] = [
   },
 
   {
-    accessorKey: 'franchise_name',
+    accessorKey: 'franchise.name',
     header: 'Franquicia',
     enableColumnFilter: true,
     meta: {
