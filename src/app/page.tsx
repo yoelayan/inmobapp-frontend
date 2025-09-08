@@ -1,14 +1,21 @@
 'use client'
 
 // React Imports
-import { useEffect } from 'react'
+import { useEffect, Suspense } from 'react'
 
 import { useRouter } from 'next/navigation'
 
 // Auth Imports
 import { useAuth } from '@auth/hooks/useAuth'
 
-const RootPage = () => {
+// Loading Component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-screen">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+  </div>
+)
+
+const RootPageContent = () => {
   const router = useRouter()
   const { user, loading } = useAuth()
 
@@ -25,10 +32,14 @@ const RootPage = () => {
   }, [user, loading, router])
 
   // Show loading while determining authentication status
+  return <LoadingSpinner />
+}
+
+const RootPage = () => {
   return (
-    <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-    </div>
+    <Suspense fallback={<LoadingSpinner />}>
+      <RootPageContent />
+    </Suspense>
   )
 }
 
