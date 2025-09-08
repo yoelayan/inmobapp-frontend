@@ -97,29 +97,6 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
   const { getTotalProperties } = useProperties()
 
   useEffect(() => {
-    const fetchTotalProperties = async () => {
-      try {
-        const response = await getTotalProperties()
-
-        if (response && response.results && response.results.status_counts) {
-          const statusCounts = response.results.status_counts
-
-          const updatedData = cardsData.map(card => {
-            const statusKey = statusMapping[card.key]
-
-            return {
-              ...card,
-              stats: statusCounts[statusKey as keyof typeof statusCounts]?.toString() || '0'
-            }
-          })
-
-          setCardsData(updatedData)
-        }
-      } catch (error) {
-        console.error('Error fetching total properties', error)
-      }
-    }
-
     fetchTotalProperties()
 
     // Al cargar el componente, aplicar el filtro de la card activa por defecto
@@ -128,11 +105,33 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
     if (defaultStatusFilter) {
       onStatusChange(defaultStatusFilter)
     }
-  }, [cardActive, onStatusChange, cardsData, getTotalProperties])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
+  const fetchTotalProperties = async () => {
+    try {
+      const response = await getTotalProperties()
 
+      if (response && response.results && response.results.status_counts) {
+        const statusCounts = response.results.status_counts
 
-    const handleChangeCard = (key: string) => {
+        const updatedData = cardsData.map(card => {
+          const statusKey = statusMapping[card.key]
+
+          return {
+            ...card,
+            stats: statusCounts[statusKey as keyof typeof statusCounts]?.toString() || '0'
+          }
+        })
+
+        setCardsData(updatedData)
+      }
+    } catch (error) {
+      console.error('Error fetching total properties', error)
+    }
+  }
+
+  const handleChangeCard = (key: string) => {
     // Si se hace clic en la card ya activa, deseleccionarla
     if (cardActive === key) {
       setCardActive('')
@@ -153,8 +152,6 @@ const PropertiesCard = ({ onStatusChange }: PropertiesCardProps) => {
 
   return (
     <Grid container spacing={6}>
-
-
       {cardsData.map((item, index) => (
         <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
           <HorizontalWithBorder
