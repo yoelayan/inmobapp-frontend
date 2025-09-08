@@ -48,7 +48,8 @@ export default function Page() {
 
   useEffect(() => {
     getMetrics()
-  }, [getMetrics])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleDateChange = (field: 'date_start' | 'date_end') => (event: React.ChangeEvent<HTMLInputElement>) => {
     setFilters({ ...filters, [field]: event.target.value })
