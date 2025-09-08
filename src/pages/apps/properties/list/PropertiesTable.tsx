@@ -1,9 +1,9 @@
-"use client"
-import React, { useMemo, useState } from 'react';
+'use client'
+import React, { useMemo, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material';
+import { Button } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -17,7 +17,7 @@ import ImageIcon from '@mui/icons-material/Image'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
-import SectionHeader from '@/components/layout/horizontal/SectionHeader';
+import SectionHeader from '@/components/layout/horizontal/SectionHeader'
 
 import {
   Table,
@@ -27,29 +27,31 @@ import {
   TablePagination,
   TableFilter,
   createTableStore,
-  type TableAction,
-} from '@/components/common/Table';
+  type TableAction
+} from '@/components/common/Table'
 
 import useConfirmDialog from '@/hooks/useConfirmDialog'
-import type { IRealProperty } from '@/types/apps/RealtstateTypes';
+import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'
-import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response';
+import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response'
 
 interface TableProps {
   properties: any
   loading: boolean
-  fetchProperties: (
-    params?: { page: number, pageSize: number, filters: FilterItem[], sorting: SortingItem[] }
-  ) => Promise<ResponseAPI<IRealProperty>>
+  fetchProperties: (params?: {
+    page: number
+    pageSize: number
+    filters: FilterItem[]
+    sorting: SortingItem[]
+  }) => Promise<ResponseAPI<IRealProperty>>
 
   deleteProperty: (id: string) => Promise<void>
   title?: string
   subtitle?: string
   onStatusFilterChange?: (status: string | null) => void
 }
-
 
 const columns: ColumnDef<IRealProperty>[] = [
   {
@@ -62,17 +64,15 @@ const columns: ColumnDef<IRealProperty>[] = [
       const coverImage = images.length > 0 ? images[0] : null
 
       if (!coverImage) {
-        return (
-            <ImageIcon fontSize="small" />
-        )
+        return <ImageIcon fontSize='small' />
       }
 
       return (
         <Box
-          component="img"
+          component='img'
           src={coverImage.image}
-          alt="Portada"
-          className="w-[50px] h-[50px] rounded border border-primary-200 object-cover"
+          alt='Portada'
+          className='w-[50px] h-[50px] rounded border border-primary-200 object-cover'
         />
       )
     }
@@ -156,9 +156,7 @@ const columns: ColumnDef<IRealProperty>[] = [
       return (
         <Box>
           <Tooltip title={priceType}>
-            <Box className="font-bold">
-              ${Number(displayPrice).toLocaleString()}
-            </Box>
+            <Box className='font-bold'>${Number(displayPrice).toLocaleString()}</Box>
           </Tooltip>
         </Box>
       )
@@ -171,26 +169,30 @@ const columns: ColumnDef<IRealProperty>[] = [
   }
 ]
 
-const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle, deleteProperty, onStatusFilterChange }: TableProps) => {
+const PropertiesTable = ({
+  properties,
+  loading,
+  fetchProperties,
+  title,
+  subtitle,
+  deleteProperty,
+  onStatusFilterChange
+}: TableProps) => {
   const router = useRouter()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
   const usePropertiesTableStore = useMemo(
-    () => {
-      // Ensure properties has a default structure to prevent destructuring errors during SSR
-      const safeProperties = properties || { results: [], count: 0, page_number: 1, num_pages: 0, next: null, previous: null }
-
-      return createTableStore<IRealProperty>({
-        data: safeProperties,
+    () =>
+      createTableStore<IRealProperty>({
+        data: properties,
         loading: loading,
         refresh: fetchProperties
-      })
-    },
+      }),
     [properties, loading, fetchProperties]
   )
 
-    const handleStatusChange = async (status: string) => {
+  const handleStatusChange = async (status: string) => {
     setStatusFilter(status)
 
     try {
@@ -221,7 +223,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
       onClick: (row: Record<string, any>) => {
         router.push(`/propiedades/${row.id}/editar/`)
       },
-      icon: <EditIcon fontSize="small" />
+      icon: <EditIcon fontSize='small' />
     },
     {
       label: 'Eliminar',
@@ -235,11 +237,11 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
           }
         })
       },
-      icon: <DeleteIcon fontSize="small" />
+      icon: <DeleteIcon fontSize='small' />
     }
   ]
 
-  const tableStore = usePropertiesTableStore();
+  const tableStore = usePropertiesTableStore()
 
   return (
     <>
@@ -255,9 +257,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
             <Box className='flex gap-4 w-full'>
-
-
-                            <Button
+              <Button
                 variant='outlined'
                 size='small'
                 onClick={() => {
@@ -282,15 +282,15 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
               </Button>
 
               {/* <Can permission='add_property'> */}
-                <Button
-                  key='add'
-                  startIcon={<AddIcon />}
-                  variant='contained'
-                  color='primary'
-                  onClick={() => router.push('/propiedades/agregar')}
-                >
-                  Agregar
-                </Button>
+              <Button
+                key='add'
+                startIcon={<AddIcon />}
+                variant='contained'
+                color='primary'
+                onClick={() => router.push('/propiedades/agregar')}
+              >
+                Agregar
+              </Button>
               {/* </Can> */}
             </Box>
           </TableFilter>
@@ -306,6 +306,6 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
       <ConfirmDialog />
     </>
   )
-};
+}
 
-export default React.memo(PropertiesTable);
+export default React.memo(PropertiesTable)
