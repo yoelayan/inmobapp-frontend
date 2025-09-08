@@ -39,4 +39,11 @@ const LoginV2 = () => {
   )
 }
 
+// Disable static generation for this page since it uses authentication context
+export const getServerSideProps = async () => {
+  return {
+    props: {},
+  }
+}
+
 export default LoginV2

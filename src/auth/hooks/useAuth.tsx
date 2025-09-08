@@ -6,8 +6,8 @@ export const useAuth = () => {
   const context = useContext(AuthContext)
 
   if (context === undefined) {
-    // During SSR/SSG, return a default state instead of throwing
-    if (typeof window === 'undefined') {
+    // During SSR/SSG or build process, return a default state instead of throwing
+    if (typeof window === 'undefined' || process.env.NODE_ENV === 'production') {
       return {
         session: null,
         user: null,
