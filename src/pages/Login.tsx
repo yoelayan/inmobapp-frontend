@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography'
 import Link from '@components/common/Link'
 import Logo from '@components/layout/shared/Logo'
 import LoginForm from '@auth/components/LoginForm'
+import ClientOnlyWrapper from '@components/ClientOnlyWrapper'
 
 // Config Imports
 import themeConfig from '@configs/themeConfig'
@@ -23,7 +24,15 @@ const LoginV2 = () => {
             <Typography variant='h4'>{`Bienvenido a ${themeConfig.templateName}! 👋🏻`}</Typography>
             <Typography>Por favor, inicia sesión para continuar.</Typography>
           </div>
-          <LoginForm />
+          <ClientOnlyWrapper
+            fallback={
+              <div className="flex justify-center items-center p-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            }
+          >
+            <LoginForm />
+          </ClientOnlyWrapper>
         </div>
       </div>
     </div>

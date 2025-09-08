@@ -31,7 +31,16 @@ const LoginForm = () => {
     apiClient.setNotificationCallback(notify)
   }, [apiClient, notify])
 
-  const { login } = authContext
+  const { login, loading } = authContext
+
+  // Show loading state during SSR or initial client load
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-6">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    )
+  }
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isPasswordShown, setIsPasswordShown] = useState(false)

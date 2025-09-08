@@ -38,29 +38,39 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     const sessionData = await AuthService.login(email, password)
 
-    localStorage.setItem('session', JSON.stringify(sessionData))
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('session', JSON.stringify(sessionData))
+    }
 
     if (sessionData?.access) {
       const userData = await AuthService.me()
 
-      localStorage.setItem('user', JSON.stringify(userData))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(userData))
+      }
 
       setUser(userData)
-
-    setSession(sessionData)
+      setSession(sessionData)
     }
-
-
   }
 
   const logout = useCallback(async () => {
-    localStorage.removeItem('session')
-    localStorage.removeItem('user')
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('session')
+      localStorage.removeItem('user')
+    }
     setSession(null)
+    setUser(null)
     router.push('/login')
   }, [router])
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      setLoading(false)
+      return
+    }
+
     const session = localStorage.getItem('session')
     const user = localStorage.getItem('user')
 
