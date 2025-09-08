@@ -10,7 +10,7 @@ import {
 
 
 import { Form, FormField, PageContainer } from '@components/common/forms/Form'
-import PermissionsField from './components/UserPermissionsField'
+import PermissionsField from '@/components/forms/PermissionsField'
 
 import UsersRepository from '@services/repositories/users/UsersRepository'
 
