@@ -12,8 +12,6 @@ export const createTableStore = <T>(params: {
   // Safely destructure with fallback values to prevent SSR errors
   const { results = [], count = 0, num_pages = 1, page_number = 1 } = params.data || {}
 
-  console.log("createTableStore")
-
   return create<TableState<T>>((set, get) => ({
     data: results,
     loading: params.loading,
