@@ -15,6 +15,9 @@ const nextConfig = {
   // Enable static optimization and standalone output
   output: 'standalone',
 
+  // Disable pages router since we're using app router
+  pageExtensions: ['page.tsx', 'page.ts', 'page.jsx', 'page.js'],
+
   redirects: async () => {
     return [
       {

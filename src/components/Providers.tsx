@@ -3,8 +3,6 @@
 // React Imports
 import { useId } from 'react'
 
-import dynamic from 'next/dynamic'
-
 // React Query Imports
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -91,10 +89,5 @@ const ProvidersImpl = (props: Props) => {
   )
 }
 
-// The main export - a dynamic component with SSR disabled
-// This is the key to solving hydration issues
-const Providers = dynamic(() => Promise.resolve(ProvidersImpl), {
-  ssr: false
-})
-
-export default Providers as unknown as (props: Props) => JSX.Element
+// Export the providers directly - we need them during SSR for build to work
+export default ProvidersImpl

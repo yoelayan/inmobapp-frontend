@@ -4,6 +4,9 @@ import 'react-perfect-scrollbar/dist/css/styles.css'
 // Type Imports
 import type { ChildrenType } from '@core/types'
 
+// Component Imports
+import Providers from '@components/Providers'
+
 // Style Imports
 import '@/app/globals.css'
 
@@ -23,7 +26,9 @@ const RootLayout = ({ children }: ChildrenType) => {
   return (
     <html id='__next' lang='en' dir={direction}>
       <body className='flex is-full min-bs-full flex-auto flex-col' suppressHydrationWarning={true}>
-        {children}
+        <Providers direction={direction}>
+          {children}
+        </Providers>
       </body>
     </html>
   )

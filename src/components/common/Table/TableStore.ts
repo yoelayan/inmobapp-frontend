@@ -9,7 +9,8 @@ export const createTableStore = <T>(params: {
   loading: boolean,
   refresh: (params: { page: number, pageSize: number, filters: FilterItem[], sorting: SortingItem[] }) => Promise<ResponseAPI<T>>
 }) => {
-  const { results, count, num_pages, page_number } = params.data
+  // Safely destructure with fallback values to prevent SSR errors
+  const { results = [], count = 0, num_pages = 1, page_number = 1 } = params.data || {}
 
   console.log("createTableStore")
 

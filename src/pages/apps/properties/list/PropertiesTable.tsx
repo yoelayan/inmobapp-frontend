@@ -177,12 +177,16 @@ const PropertiesTable = ({ properties, loading, fetchProperties, title, subtitle
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
   const usePropertiesTableStore = useMemo(
-    () =>
-      createTableStore<IRealProperty>({
-        data: properties,
+    () => {
+      // Ensure properties has a default structure to prevent destructuring errors during SSR
+      const safeProperties = properties || { results: [], count: 0, page_number: 1, num_pages: 0, next: null, previous: null }
+
+      return createTableStore<IRealProperty>({
+        data: safeProperties,
         loading: loading,
         refresh: fetchProperties
-      }),
+      })
+    },
     [properties, loading, fetchProperties]
   )
 

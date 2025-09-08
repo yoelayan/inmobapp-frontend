@@ -10,6 +10,11 @@ import themeConfig from '@configs/themeConfig'
 // Client-side implementations - for use only in Client Components
 export const getSettingsFromCookieClient = (): Settings => {
   try {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined') {
+      return {}
+    }
+
     const cookieName = themeConfig.settingsCookieName
 
     // Try to get from localStorage first
@@ -46,6 +51,11 @@ export const getModeClient = (): string => {
 
 export const getSystemModeClient = (): SystemMode => {
   const mode = getModeClient()
+
+  // Check if we're in a browser environment
+  if (typeof window === 'undefined') {
+    return 'light'
+  }
 
   // Get color preference from localStorage or cookie
   let colorPref = localStorage.getItem('colorPref') || 'light'

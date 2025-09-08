@@ -14,6 +14,8 @@ import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 // Hooks
 import useProperties from '@/hooks/api/realstate/useProperties'
 
+// Disable static generation for this page since it uses context providers
+export const dynamic = 'force-dynamic'
 
 // MUI Imports
 

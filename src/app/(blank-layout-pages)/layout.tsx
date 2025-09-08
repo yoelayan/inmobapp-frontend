@@ -2,20 +2,19 @@
 import type { ChildrenType } from '@core/types'
 
 // Component Imports
-import Providers from '@components/Providers'
 import BlankLayout from '@layouts/BlankLayout'
+
+// Disable static generation for blank layout pages since they use context providers
+export const dynamic = 'force-dynamic'
 
 type Props = ChildrenType
 
 const Layout = ({ children }: Props) => {
   // Vars
-  const direction = 'ltr'
   const defaultSystemMode = 'light'
 
   return (
-    <Providers direction={direction}>
-      <BlankLayout systemMode={defaultSystemMode}>{children}</BlankLayout>
-    </Providers>
+    <BlankLayout systemMode={defaultSystemMode}>{children}</BlankLayout>
   )
 }
 
