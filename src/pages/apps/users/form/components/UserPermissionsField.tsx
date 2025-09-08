@@ -43,8 +43,7 @@ const PermissionsField = <T extends Record<string, any>>({
   showFilters = true,
   collapsible = false
 }: Omit<PermissionsFieldProps<T>, 'control'>) => {
-  const formContext = useFormContext()
-  const control = formContext?.control
+  const { control } = useFormContext()
 
   const {
     field: { value, onChange },

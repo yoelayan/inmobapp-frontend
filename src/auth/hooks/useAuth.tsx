@@ -17,6 +17,7 @@ export const useAuth = () => {
         isAuthenticated: false
       }
     }
+
     throw new Error('useAuth solo puede ser usado dentro de un AuthProvider')
   }
 

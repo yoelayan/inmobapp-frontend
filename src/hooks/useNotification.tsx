@@ -12,6 +12,7 @@ export const useNotification = () => {
         notify: () => {} // No-op function during SSR
       }
     }
+
     throw new Error('useNotification must be used within a NotificationProvider')
   }
 

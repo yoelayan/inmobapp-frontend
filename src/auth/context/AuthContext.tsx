@@ -59,6 +59,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.removeItem('session')
       localStorage.removeItem('user')
     }
+
     setSession(null)
     setUser(null)
     router.push('/login')
@@ -68,6 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Only run on client side
     if (typeof window === 'undefined') {
       setLoading(false)
+
       return
     }
 

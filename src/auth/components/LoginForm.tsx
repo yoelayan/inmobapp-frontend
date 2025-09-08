@@ -27,6 +27,15 @@ const LoginForm = () => {
   const { notify } = useNotification()
   const apiClient = ApiClient.getInstance()
 
+  // Move all useState hooks to the top
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isPasswordShown, setIsPasswordShown] = useState(false)
+
+  const router = useRouter()
+
+  const searchParams = useSearchParams()
+
   useEffect(() => {
     // Only set notification callback on client side
     if (typeof window !== 'undefined') {
@@ -44,11 +53,14 @@ const LoginForm = () => {
       </div>
     )
   }
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [isPasswordShown, setIsPasswordShown] = useState(false)
-  const searchParams = useSearchParams()
-  const router = useRouter()
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value)
+  }
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -62,6 +74,10 @@ const LoginForm = () => {
     setIsPasswordShown(!isPasswordShown)
   }
 
+  const handleMouseDown = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+  }
+
   return (
     <form noValidate autoComplete='off' onSubmit={handleSubmit} className='flex flex-col gap-5'>
       <CustomTextField
@@ -70,7 +86,7 @@ const LoginForm = () => {
         label='Correo electrónico'
         placeholder='Ingresa tu correo electrónico'
         value={email}
-        onChange={e => setEmail(e.target.value)}
+        onChange={handleEmailChange}
         required
       />
       <CustomTextField
@@ -80,12 +96,12 @@ const LoginForm = () => {
         id='outlined-adornment-password'
         type={isPasswordShown ? 'text' : 'password'}
         value={password}
-        onChange={e => setPassword(e.target.value)}
+        onChange={handlePasswordChange}
         required
         InputProps={{
           endAdornment: (
             <InputAdornment position='end'>
-              <IconButton edge='end' onClick={handleClickShowPassword} onMouseDown={e => e.preventDefault()}>
+              <IconButton edge='end' onClick={handleClickShowPassword} onMouseDown={handleMouseDown}>
                 <i className={isPasswordShown ? 'tabler-eye-off' : 'tabler-eye'} />
               </IconButton>
             </InputAdornment>
