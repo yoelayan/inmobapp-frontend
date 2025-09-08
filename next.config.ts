@@ -15,6 +15,9 @@ const nextConfig = {
   // Enable standalone output for Railway deployment
   output: 'standalone',
 
+  // Fix workspace root detection warning
+  outputFileTracingRoot: __dirname,
+
   // Remove pageExtensions restriction to allow standard Next.js app router
   // pageExtensions: ['page.tsx', 'page.ts', 'page.jsx', 'page.js'],
 

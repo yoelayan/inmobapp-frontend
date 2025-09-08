@@ -4,8 +4,8 @@ import type { ChildrenType } from '@core/types'
 // Component Imports
 import BlankLayout from '@layouts/BlankLayout'
 
-// Allow static generation for blank layout pages when possible
-// export const dynamic = 'force-dynamic'
+// Disable static generation for blank layout pages since they use context providers
+export const dynamic = 'force-dynamic'
 
 type Props = ChildrenType
 

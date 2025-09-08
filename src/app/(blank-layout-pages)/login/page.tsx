@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: 'Login to your account'
 }
 
-// Allow static generation for login page when possible
-// export const dynamic = 'force-dynamic'
+// Disable static generation for this page since it uses context providers
+export const dynamic = 'force-dynamic'
 
 const LoginPage = () => {
   return <Login />
