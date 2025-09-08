@@ -28,13 +28,16 @@ const LoginForm = () => {
   const apiClient = ApiClient.getInstance()
 
   useEffect(() => {
-    apiClient.setNotificationCallback(notify)
+    // Only set notification callback on client side
+    if (typeof window !== 'undefined') {
+      apiClient.setNotificationCallback(notify)
+    }
   }, [apiClient, notify])
 
   const { login, loading } = authContext
 
   // Show loading state during SSR or initial client load
-  if (loading) {
+  if (loading || typeof window === 'undefined') {
     return (
       <div className="flex justify-center items-center p-6">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>

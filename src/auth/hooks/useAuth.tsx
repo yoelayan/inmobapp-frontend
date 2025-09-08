@@ -6,6 +6,17 @@ export const useAuth = () => {
   const context = useContext(AuthContext)
 
   if (context === undefined) {
+    // During SSR/SSG, return a default state instead of throwing
+    if (typeof window === 'undefined') {
+      return {
+        session: null,
+        user: null,
+        login: async () => {},
+        logout: async () => {},
+        loading: true,
+        isAuthenticated: false
+      }
+    }
     throw new Error('useAuth solo puede ser usado dentro de un AuthProvider')
   }
 
