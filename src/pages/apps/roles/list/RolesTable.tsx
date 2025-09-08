@@ -141,7 +141,7 @@ const RolesTable = () => {
                 startIcon={<AddIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => router.push('/roles/crear/')}
+                onClick={() => router.push('/roles/agregar/')}
               >
                 Crear Rol
               </Button>
