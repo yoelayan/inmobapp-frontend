@@ -664,6 +664,21 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     }
   }
 
+  const formatData = (data: CreatePropertyFormData | EditPropertyFormData) => {
+    // Extraer id de los async-select
+    const { franchise_id, assigned_to_id, state_id, municipality_id, parish_id, owner_id } = data
+
+    return {
+      ...data,
+      franchise_id: franchise_id?.value,
+      assigned_to_id: assigned_to_id?.value,
+      state_id: state_id?.value,
+      municipality_id: municipality_id?.value,
+      parish_id: parish_id?.value,
+      owner_id: owner_id?.value,
+    }
+  }
+
   return (
     <>
       <Card className="mt-2 min-h-screen">
@@ -728,7 +743,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               <Typography>Cargando datos...</Typography>
             </Box>
           ) : (
-            <Form
+                <Form
+                  formatData={formatData}
               schema={schema}
               defaultValues={defaultPropertyValues}
               repository={PropertiesRepository}

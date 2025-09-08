@@ -79,6 +79,16 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
     notify('Error al procesar el formulario', 'error')
   }
 
+  const formatData = (data: CreateClientFormData | EditClientFormData) => {
+    const { franchise_id, assigned_to_id } = data
+
+    return {
+      ...data,
+      franchise_id: franchise_id?.value,
+      assigned_to_id: assigned_to_id?.value,
+    }
+  }
+
   return (
     <Form
       schema={schema}
@@ -88,6 +98,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
       entityId={clientId ? Number(clientId) : undefined}
       onSuccess={handleSuccess}
       onError={handleError}
+      formatData={formatData}
     >
       <Grid container spacing={3}>
         {/* --- Campo Nombre (Usando FormField) --- */}

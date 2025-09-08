@@ -62,25 +62,7 @@ const columns: ColumnDef<IClient>[] = [
       priority: 5 // Medium priority - show in collapse on mobile
     }
   },
-  {
-    accessorKey: 'status_name',
-    header: 'Estado',
-    enableColumnFilter: true,
-    filterFn: 'arrIncludes',
-    cell: ({ getValue }) => {
-      const status = getValue()
 
-
-return (
-        <span className={`${status === 'Activo' ? 'text-green-500' : 'text-red-500'}`}>
-          {status === 'Activo' ? 'Activo' : 'Inactivo'}
-        </span>
-      )
-    },
-    meta: {
-      priority: 6 // Medium priority - show in collapse on mobile
-    }
-  },
   {
     accessorKey: 'franchise_name',
     header: 'Franquicia',
