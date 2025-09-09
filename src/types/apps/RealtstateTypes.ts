@@ -24,12 +24,16 @@ export interface IRealProperty {
   type_negotiation: IStatus
   type_property: IStatus
   state: IGeoItem
+  municipality?: IGeoItem
+  parish?: IGeoItem
   city: IGeoItem
   franchise?: IFranchise
   franchise_id: number
   type_negotiation_id: number
   type_property_id: number
   state_id: number
+  municipality_id: number
+  parish_id: number
   city_id: number
   status_id: number
   assigned_to_id: number
