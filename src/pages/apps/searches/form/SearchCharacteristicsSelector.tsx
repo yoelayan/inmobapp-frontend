@@ -5,15 +5,22 @@ import {
   Box,
   Button,
   CircularProgress,
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  Typography
+  Typography,
+  Card,
+  CardContent,
+  IconButton,
+  TextField as MUITextField,
+  FormControlLabel,
+  Checkbox
 } from '@mui/material'
 
 // Icons
 import AddIcon from '@mui/icons-material/Add'
+import CloseIcon from '@mui/icons-material/Close'
+
+// Form components
+import { useForm, FormProvider } from 'react-hook-form'
+import { FormField } from '@/components/common/forms/Form/FormField'
 
 // API hooks
 import { useNotification } from '@/hooks/useNotification'
@@ -27,6 +34,15 @@ interface SearchCharacteristicsSelectorProps {
   onCharacteristicAdded?: () => void
 }
 
+interface FormData {
+  selectedCharacteristic: string | number
+}
+
+interface PendingCharacteristic {
+  characteristic: ICharacteristic
+  value: any
+}
+
 const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps> = ({
   searchId,
   onCharacteristicAdded
@@ -36,7 +52,17 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
 
   const [loadingAll, setLoadingAll] = useState<boolean>(false)
   const [availableCharacteristics, setAvailableCharacteristics] = useState<ICharacteristic[]>([])
-  const [selectedCharacteristic, setSelectedCharacteristic] = useState<string | number>('')
+  const [pendingCharacteristic, setPendingCharacteristic] = useState<PendingCharacteristic | null>(null)
+
+  // Form setup for characteristic selection
+  const methods = useForm<FormData>({
+    defaultValues: {
+      selectedCharacteristic: ''
+    }
+  })
+
+  const { handleSubmit, reset, watch } = methods
+  const selectedCharacteristic = watch('selectedCharacteristic')
 
   // Fetch all available characteristics
   const fetchAllCharacteristics = async () => {
@@ -70,20 +96,32 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
     }
   }
 
-  // Add new characteristic
-  const handleAddCharacteristic = async () => {
-    if (!selectedCharacteristic || !searchId) return
+  // Handle adding characteristic to pending list
+  const onAddToPending = (data: FormData) => {
+    if (!data.selectedCharacteristic) return
+
+    const selectedChar = availableCharacteristics.find(char => char.id === data.selectedCharacteristic)
+
+    if (!selectedChar) return
+
+    const defaultValue = getDefaultValueForType(selectedChar.type_value)
+
+    setPendingCharacteristic({
+      characteristic: selectedChar,
+      value: defaultValue
+    })
+
+    reset({ selectedCharacteristic: '' })
+  }
+
+  // Handle saving pending characteristic
+  const onSavePendingCharacteristic = async () => {
+    if (!pendingCharacteristic || !searchId) return
 
     try {
-      const selectedChar = availableCharacteristics.find(char => char.id === selectedCharacteristic)
+      await addCharacteristic(searchId, Number(pendingCharacteristic.characteristic.id), pendingCharacteristic.value)
 
-      if (!selectedChar) return
-
-      const defaultValue = getDefaultValueForType(selectedChar.type_value)
-
-      await addCharacteristic(searchId, Number(selectedCharacteristic), defaultValue)
-
-      setSelectedCharacteristic('')
+      setPendingCharacteristic(null)
       notify('Característica agregada exitosamente', 'success')
 
       // Callback para notificar que se agregó una característica
@@ -94,10 +132,31 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
     }
   }
 
+  // Handle canceling pending characteristic
+  const onCancelPendingCharacteristic = () => {
+    setPendingCharacteristic(null)
+  }
+
+  // Handle value change for pending characteristic
+  const onPendingValueChange = (value: any) => {
+    if (pendingCharacteristic) {
+      setPendingCharacteristic({
+        ...pendingCharacteristic,
+        value
+      })
+    }
+  }
+
   // Initial load
   useEffect(() => {
     fetchAllCharacteristics()
   }, [])
+
+  // Prepare options for FormField
+  const characteristicOptions = availableCharacteristics.map((char: ICharacteristic) => ({
+    value: char.id,
+    label: char.name
+  }))
 
   return (
     <Box>
@@ -105,34 +164,89 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
         Agregar Característica
       </Typography>
 
-      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-        <FormControl fullWidth>
-          <InputLabel id='add-characteristic-label'>Seleccionar Característica</InputLabel>
-          <Select
-            labelId='add-characteristic-label'
-            value={selectedCharacteristic}
-            onChange={e => setSelectedCharacteristic(e.target.value)}
-            label='Seleccionar Característica'
-            disabled={loadingAll || availableCharacteristics.length === 0}
+      <FormProvider {...methods}>
+        <Box component="form" onSubmit={handleSubmit(onAddToPending)} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={{ flex: 1 }}>
+            <FormField
+              name="selectedCharacteristic"
+              type="select"
+              label="Seleccionar Característica"
+              options={characteristicOptions}
+              disabled={loadingAll || availableCharacteristics.length === 0}
+              placeholder="Selecciona una característica"
+              fullWidth
+            />
+          </Box>
+          <Button
+            type="submit"
+            variant='contained'
+            color='primary'
+            startIcon={<AddIcon />}
+            disabled={!selectedCharacteristic || loadingAll}
+            sx={{ minWidth: 'auto', px: 3 }}
           >
-            {availableCharacteristics.map((char: ICharacteristic) => (
-              <MenuItem key={char.id} value={char.id}>
-                {char.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <Button
-          variant='contained'
-          color='primary'
-          startIcon={<AddIcon />}
-          onClick={handleAddCharacteristic}
-          disabled={!selectedCharacteristic || loadingAll}
-          sx={{ minWidth: 'auto', px: 3 }}
-        >
-          Agregar
-        </Button>
-      </Box>
+            Agregar
+          </Button>
+        </Box>
+      </FormProvider>
+
+      {/* Pending Characteristic Input - Using MUI components directly */}
+      {pendingCharacteristic && (
+        <Card sx={{ mt: 2, border: '1px solid', borderColor: 'primary.main' }}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant='subtitle2' color='primary'>
+                Configurar: {pendingCharacteristic.characteristic.name}
+              </Typography>
+              <IconButton size="small" onClick={onCancelPendingCharacteristic}>
+                <CloseIcon />
+              </IconButton>
+            </Box>
+
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+              <Box sx={{ flex: 1 }}>
+                {pendingCharacteristic.characteristic.type_value === 'boolean' ? (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={pendingCharacteristic.value}
+                        onChange={(e) => onPendingValueChange(e.target.checked)}
+                      />
+                    }
+                    label={pendingCharacteristic.characteristic.name}
+                  />
+                ) : (
+                  <MUITextField
+                    label={`Valor para ${pendingCharacteristic.characteristic.name}`}
+                    value={pendingCharacteristic.value}
+                    onChange={(e) => onPendingValueChange(e.target.value)}
+                    type={pendingCharacteristic.characteristic.type_value === 'integer' || pendingCharacteristic.characteristic.type_value === 'decimal' ? 'number' : 'text'}
+                    fullWidth
+                    variant="outlined"
+                    inputProps={
+                      pendingCharacteristic.characteristic.type_value === 'integer' ||
+                      pendingCharacteristic.characteristic.type_value === 'decimal'
+                        ? {
+                            min: 0,
+                            step: pendingCharacteristic.characteristic.type_value === 'decimal' ? 0.01 : 1
+                          }
+                        : undefined
+                    }
+                  />
+                )}
+              </Box>
+              <Button
+                variant='contained'
+                color='success'
+                onClick={onSavePendingCharacteristic}
+                sx={{ minWidth: 'auto', px: 3 }}
+              >
+                Guardar
+              </Button>
+            </Box>
+          </CardContent>
+        </Card>
+      )}
 
       {availableCharacteristics.length === 0 && !loadingAll && (
         <Typography variant='body2' color='text.secondary' sx={{ mt: 2, fontStyle: 'italic' }}>
