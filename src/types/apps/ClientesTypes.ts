@@ -26,6 +26,9 @@ export interface ISearchCharacteristic {
   search: ISearch
   characteristic: ICharacteristic
   value: string
+  characteristic_name?: string
+  characteristic_type?: string
+  search_id?: number
 }
 
 export interface IClientObservation {

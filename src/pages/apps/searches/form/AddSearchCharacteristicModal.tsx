@@ -14,7 +14,6 @@ import {
   Divider,
   useTheme,
   Typography,
-  Chip,
   CircularProgress,
   Alert,
   Button,
@@ -125,7 +124,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
       id: char.id,
       characteristic_name: char.characteristic_name || '',
       value: char.value,
-      type_value: char.type_value || 'text'
+      type_value: char.characteristic_type || 'text'
     })
     setEditValue(char.value)
   }
@@ -143,9 +142,11 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
     setSaving(true)
 
     try {
-      // Formatear la característica en el formato que espera el backend
-      const characteristicData = [{
+      // Crear el objeto con la estructura correcta para el backend
+      const characteristicData: ISearchCharacteristic[] = [{
         id: editingCharacteristic.id,
+        search: {} as any, // Se completará en el backend
+        characteristic: {} as any, // Se completará en el backend
         value: editValue
       }]
 
@@ -287,7 +288,6 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
                             color: 'primary.main',
                             '&:hover': {
                               color: 'primary.dark',
-                              backgroundColor: 'primary.light',
                               backgroundColor: 'rgba(25, 118, 210, 0.04)'
                             }
                           }}
@@ -301,7 +301,6 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
                             color: 'error.main',
                             '&:hover': {
                               color: 'error.dark',
-                              backgroundColor: 'error.light',
                               backgroundColor: 'rgba(211, 47, 47, 0.04)'
                             }
                           }}
@@ -325,6 +324,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
             <SearchCharacteristicsSelector
               searchId={searchId}
               onCharacteristicAdded={handleCharacteristicAdded}
+              excludedCharacteristics={existingCharacteristics}
             />
           </CardContent>
         </Card>

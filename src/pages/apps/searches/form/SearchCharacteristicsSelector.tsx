@@ -20,6 +20,7 @@ import CloseIcon from '@mui/icons-material/Close'
 
 // Form components
 import { useForm, FormProvider } from 'react-hook-form'
+
 import { FormField } from '@/components/common/forms/Form/FormField'
 
 // API hooks
@@ -28,10 +29,12 @@ import useSearches from '@/hooks/api/crm/useSearches'
 
 // Type definitions
 import type { ICharacteristic } from '@/types/apps/RealtstateTypes'
+import type { ISearchCharacteristic } from '@/types/apps/ClientesTypes'
 
 interface SearchCharacteristicsSelectorProps {
   searchId?: number | null
   onCharacteristicAdded?: () => void
+  excludedCharacteristics?: ISearchCharacteristic[]
 }
 
 interface FormData {
@@ -45,7 +48,8 @@ interface PendingCharacteristic {
 
 const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps> = ({
   searchId,
-  onCharacteristicAdded
+  onCharacteristicAdded,
+  excludedCharacteristics = []
 }) => {
   const { notify } = useNotification()
   const { allCharacteristics, addCharacteristic } = useSearches()
@@ -72,7 +76,17 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
       const response = await allCharacteristics()
       const availableChars = response.results || []
 
-      setAvailableCharacteristics(availableChars)
+      // Filtrar las características excluyendo las que ya están agregadas
+      // Comparar por nombre en lugar de por ID
+      const filteredChars = availableChars.filter(char => {
+        const isExcluded = excludedCharacteristics.some(excluded => {
+          return excluded.characteristic_name === char.name
+        })
+
+        return !isExcluded
+      })
+
+      setAvailableCharacteristics(filteredChars)
     } catch (error) {
       console.error('Error fetching all characteristics:', error)
       notify('Error al cargar las características disponibles', 'error')
@@ -147,10 +161,10 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
     }
   }
 
-  // Initial load
+  // Initial load and when excluded characteristics change
   useEffect(() => {
     fetchAllCharacteristics()
-  }, [])
+  }, [excludedCharacteristics])
 
   // Prepare options for FormField
   const characteristicOptions = availableCharacteristics.map((char: ICharacteristic) => ({
@@ -250,7 +264,10 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
 
       {availableCharacteristics.length === 0 && !loadingAll && (
         <Typography variant='body2' color='text.secondary' sx={{ mt: 2, fontStyle: 'italic' }}>
-          No hay características disponibles para agregar
+          {excludedCharacteristics.length > 0
+            ? 'Todas las características disponibles ya han sido agregadas'
+            : 'No hay características disponibles para agregar'
+          }
         </Typography>
       )}
 
