@@ -58,14 +58,22 @@ export default function useSearches(defaultFilters?: FilterItem[]) {
     [repository]
   )
 
+  const getCharacteristics = useCallback(
+    async (searchId: number): Promise<ResponseAPI<ISearchCharacteristic>> => {
+      return await repository.getCharacteristics(searchId)
+    },
+    [repository]
+  )
+
   return {
     ...baseHook,
     addCharacteristic,
     deleteCharacteristic,
+    updateCharacteristic,
     addObservation,
     deleteObservation,
     allCharacteristics,
     getMatchedProperties,
-    updateCharacteristic
+    getCharacteristics,
   }
 }

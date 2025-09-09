@@ -64,6 +64,7 @@ export const ENDPOINTS = {
       BY_ID: (id: number) => `/searches/${id}/`,
       PROPERTIES_MATCHED: (id: number) => `/searches/${id}/properties_matched/`,
       CHARACTERISTICS: {
+        GET: (id: number) => `/searches/${id}/characteristics/`,
         ADD: (id: number) => `/searches/${id}/add-characteristic/`,
         DELETE: (id: number) => `/searches/${id}/delete-characteristic/`,
         UPDATE: (id: number) => `/searches/${id}/update-characteristic/`,

@@ -88,6 +88,12 @@ class SearchesRepository extends BaseRepository<ISearch> {
       observation_id: observationId
     })
   }
+
+  public async getCharacteristics(searchId: number): Promise<ResponseAPI<ISearchCharacteristic>> {
+    const url = ENDPOINTS.CRM.SEARCHES.CHARACTERISTICS.GET(searchId)
+
+    return await this.apiClient.get<ResponseAPI<ISearchCharacteristic>>(url)
+  }
 }
 
 export default SearchesRepository.getInstance()

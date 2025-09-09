@@ -3,7 +3,8 @@ import { useBaseForm } from '@/hooks/useBaseForm'
 
 import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 
-import type { ISearch } from '@/types/apps/ClientesTypes'
+import type { ISearch, ISearchCharacteristic } from '@/types/apps/ClientesTypes'
+import type { ResponseAPI } from '@/types/api/response'
 
 // Form data type
 type SearchFormData = ISearch
@@ -54,6 +55,14 @@ export const useSearchForm = (searchId?: number, onSuccess?: (response: ISearch)
     }
   })
 
-  // Return the result from the base hook
-  return baseForm
+  // Agregar método para obtener características
+  const getCharacteristics = async (id: number): Promise<ResponseAPI<ISearchCharacteristic>> => {
+    return await SearchesRepository.getCharacteristics(id)
+  }
+
+  // Return the result from the base hook plus the new method
+  return {
+    ...baseForm,
+    getCharacteristics
+  }
 }
