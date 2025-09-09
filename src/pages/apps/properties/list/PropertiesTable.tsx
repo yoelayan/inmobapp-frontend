@@ -11,6 +11,7 @@ import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import Tooltip from '@mui/material/Tooltip'
 
 import ImageIcon from '@mui/icons-material/Image'
@@ -53,7 +54,7 @@ interface TableProps {
   onStatusFilterChange?: (status: string | null) => void
 }
 
-const columns: ColumnDef<IRealProperty>[] = [
+const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   {
     accessorKey: 'images',
     header: 'Imagen',
@@ -82,7 +83,28 @@ const columns: ColumnDef<IRealProperty>[] = [
     header: 'Nombre',
     enableColumnFilter: true,
     enableSorting: true,
-    sortingFn: 'alphanumeric'
+    sortingFn: 'alphanumeric',
+    cell: ({ row }) => {
+      return (
+        <Button
+          variant="text"
+          sx={{
+            textAlign: 'left',
+            justifyContent: 'flex-start',
+            textTransform: 'none',
+            fontWeight: 'normal',
+            color: 'primary.main',
+            '&:hover': {
+              backgroundColor: 'transparent',
+              textDecoration: 'underline'
+            }
+          }}
+          onClick={() => router.push(`/propiedades/${row.original.id}`)}
+        >
+          {row.original.name}
+        </Button>
+      )
+    }
   },
   {
     accessorKey: 'assigned_to.email',
@@ -219,6 +241,13 @@ const PropertiesTable = ({
 
   const actions: TableAction[] = [
     {
+      label: 'Ver',
+      onClick: (row: Record<string, any>) => {
+        router.push(`/propiedades/${row.id}`)
+      },
+      icon: <VisibilityIcon fontSize='small' />
+    },
+    {
       label: 'Editar',
       onClick: (row: Record<string, any>) => {
         router.push(`/propiedades/${row.id}/editar/`)
@@ -242,6 +271,7 @@ const PropertiesTable = ({
   ]
 
   const tableStore = usePropertiesTableStore()
+  const columns = getColumns(router)
 
   return (
     <>
