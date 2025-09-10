@@ -11,12 +11,14 @@ import {
   IconButton,
   TextField as MUITextField,
   FormControlLabel,
-  Checkbox
+  Checkbox,
+  Stack
 } from '@mui/material'
 
 // Icons
 import AddIcon from '@mui/icons-material/Add'
-import CloseIcon from '@mui/icons-material/Close'
+import SaveIcon from '@mui/icons-material/Save'
+import DeleteIcon from '@mui/icons-material/Delete'
 
 // Form components
 import { useForm, FormProvider } from 'react-hook-form'
@@ -42,6 +44,7 @@ interface FormData {
 }
 
 interface PendingCharacteristic {
+  id: string
   characteristic: ICharacteristic
   value: any
 }
@@ -56,7 +59,8 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
 
   const [loadingAll, setLoadingAll] = useState<boolean>(false)
   const [availableCharacteristics, setAvailableCharacteristics] = useState<ICharacteristic[]>([])
-  const [pendingCharacteristic, setPendingCharacteristic] = useState<PendingCharacteristic | null>(null)
+  const [pendingCharacteristics, setPendingCharacteristics] = useState<PendingCharacteristic[]>([])
+  const [saving, setSaving] = useState<boolean>(false)
 
   // Form setup for characteristic selection
   const methods = useForm<FormData>({
@@ -76,14 +80,17 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
       const response = await allCharacteristics()
       const availableChars = response.results || []
 
-      // Filtrar las características excluyendo las que ya están agregadas
-      // Comparar por nombre en lugar de por ID
+      // Filtrar las características excluyendo las que ya están agregadas y las pendientes
       const filteredChars = availableChars.filter(char => {
         const isExcluded = excludedCharacteristics.some(excluded => {
           return excluded.characteristic_name === char.name
         })
 
-        return !isExcluded
+        const isPending = pendingCharacteristics.some(pending => {
+          return pending.characteristic.id === char.id
+        })
+
+        return !isExcluded && !isPending
       })
 
       setAvailableCharacteristics(filteredChars)
@@ -120,51 +127,61 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
 
     const defaultValue = getDefaultValueForType(selectedChar.type_value)
 
-    setPendingCharacteristic({
+    const newPendingCharacteristic: PendingCharacteristic = {
+      id: `pending_${Date.now()}_${Math.random()}`,
       characteristic: selectedChar,
       value: defaultValue
-    })
+    }
 
+    setPendingCharacteristics(prev => [...prev, newPendingCharacteristic])
     reset({ selectedCharacteristic: '' })
   }
 
-  // Handle saving pending characteristic
-  const onSavePendingCharacteristic = async () => {
-    if (!pendingCharacteristic || !searchId) return
-
-    try {
-      await addCharacteristic(searchId, Number(pendingCharacteristic.characteristic.id), pendingCharacteristic.value)
-
-      setPendingCharacteristic(null)
-      notify('Característica agregada exitosamente', 'success')
-
-      // Callback para notificar que se agregó una característica
-      onCharacteristicAdded?.()
-    } catch (error) {
-      console.error('Error adding characteristic:', error)
-      notify('Error al agregar la característica', 'error')
-    }
+  // Handle removing a pending characteristic
+  const onRemovePendingCharacteristic = (id: string) => {
+    setPendingCharacteristics(prev => prev.filter(pending => pending.id !== id))
   }
 
-  // Handle canceling pending characteristic
-  const onCancelPendingCharacteristic = () => {
-    setPendingCharacteristic(null)
+  // Handle saving all pending characteristics
+  const onSaveAllPendingCharacteristics = async () => {
+    if (!pendingCharacteristics.length || !searchId) return
+
+    setSaving(true)
+
+    try {
+      // Guardar todas las características pendientes
+      const savePromises = pendingCharacteristics.map(pending =>
+        addCharacteristic(searchId, Number(pending.characteristic.id), pending.value)
+      )
+
+      await Promise.all(savePromises)
+
+      setPendingCharacteristics([])
+      notify(`${pendingCharacteristics.length} características agregadas exitosamente`, 'success')
+
+      // Callback para notificar que se agregaron características
+      onCharacteristicAdded?.()
+    } catch (error) {
+      console.error('Error adding characteristics:', error)
+      notify('Error al agregar las características', 'error')
+    } finally {
+      setSaving(false)
+    }
   }
 
   // Handle value change for pending characteristic
-  const onPendingValueChange = (value: any) => {
-    if (pendingCharacteristic) {
-      setPendingCharacteristic({
-        ...pendingCharacteristic,
-        value
-      })
-    }
+  const onPendingValueChange = (id: string, value: any) => {
+    setPendingCharacteristics(prev =>
+      prev.map(pending =>
+        pending.id === id ? { ...pending, value } : pending
+      )
+    )
   }
 
-  // Initial load and when excluded characteristics change
+  // Initial load and when excluded characteristics or pending characteristics change
   useEffect(() => {
     fetchAllCharacteristics()
-  }, [excludedCharacteristics])
+  }, [excludedCharacteristics, pendingCharacteristics])
 
   // Prepare options for FormField
   const characteristicOptions = availableCharacteristics.map((char: ICharacteristic) => ({
@@ -175,7 +192,7 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
   return (
     <Box>
       <Typography variant='subtitle1' gutterBottom>
-        Agregar Característica
+        Agregar Características
       </Typography>
 
       <FormProvider {...methods}>
@@ -204,67 +221,88 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
         </Box>
       </FormProvider>
 
-      {/* Pending Characteristic Input - Using MUI components directly */}
-      {pendingCharacteristic && (
-        <Card sx={{ mt: 2, border: '1px solid', borderColor: 'primary.main' }}>
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant='subtitle2' color='primary'>
-                Configurar: {pendingCharacteristic.characteristic.name}
-              </Typography>
-              <IconButton size="small" onClick={onCancelPendingCharacteristic}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
+      {/* Pending Characteristics List */}
+      {pendingCharacteristics.length > 0 && (
+        <Box sx={{ mt: 2 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+            <Typography variant='subtitle2' color='primary'>
+              Características Pendientes ({pendingCharacteristics.length})
+            </Typography>
+            <Button
+              variant='contained'
+              color='success'
+              startIcon={<SaveIcon />}
+              onClick={onSaveAllPendingCharacteristics}
+              disabled={saving}
+              sx={{ minWidth: 'auto', px: 3 }}
+            >
+              {saving ? 'Guardando...' : 'Guardar Todas'}
+            </Button>
+          </Box>
 
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <Box sx={{ flex: 1 }}>
-                {pendingCharacteristic.characteristic.type_value === 'boolean' ? (
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={pendingCharacteristic.value}
-                        onChange={(e) => onPendingValueChange(e.target.checked)}
-                      />
-                    }
-                    label={pendingCharacteristic.characteristic.name}
-                  />
-                ) : (
-                  <MUITextField
-                    label={`Valor para ${pendingCharacteristic.characteristic.name}`}
-                    value={pendingCharacteristic.value}
-                    onChange={(e) => onPendingValueChange(e.target.value)}
-                    type={pendingCharacteristic.characteristic.type_value === 'integer' || pendingCharacteristic.characteristic.type_value === 'decimal' ? 'number' : 'text'}
-                    fullWidth
-                    variant="outlined"
-                    inputProps={
-                      pendingCharacteristic.characteristic.type_value === 'integer' ||
-                      pendingCharacteristic.characteristic.type_value === 'decimal'
-                        ? {
-                            min: 0,
-                            step: pendingCharacteristic.characteristic.type_value === 'decimal' ? 0.01 : 1
+          <Stack spacing={1}>
+            {pendingCharacteristics.map((pending) => (
+              <Card key={pending.id} sx={{ border: '1px solid', borderColor: 'primary.main' }}>
+                <CardContent sx={{ py: 1.5 }}>
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+                    <Typography variant='subtitle2' color='primary'>
+                      {pending.characteristic.name}
+                    </Typography>
+                    <IconButton
+                      size="small"
+                      onClick={() => onRemovePendingCharacteristic(pending.id)}
+                      disabled={saving}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+
+                  <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                    <Box sx={{ flex: 1 }}>
+                      {pending.characteristic.type_value === 'boolean' ? (
+                        <FormControlLabel
+                          control={
+                            <Checkbox
+                              checked={pending.value}
+                              onChange={(e) => onPendingValueChange(pending.id, e.target.checked)}
+                              disabled={saving}
+                            />
                           }
-                        : undefined
-                    }
-                  />
-                )}
-              </Box>
-              <Button
-                variant='contained'
-                color='success'
-                onClick={onSavePendingCharacteristic}
-                sx={{ minWidth: 'auto', px: 3 }}
-              >
-                Guardar
-              </Button>
-            </Box>
-          </CardContent>
-        </Card>
+                          label={pending.characteristic.name}
+                        />
+                      ) : (
+                        <MUITextField
+                          label={`Valor para ${pending.characteristic.name}`}
+                          value={pending.value}
+                          onChange={(e) => onPendingValueChange(pending.id, e.target.value)}
+                          type={pending.characteristic.type_value === 'integer' || pending.characteristic.type_value === 'decimal' ? 'number' : 'text'}
+                          fullWidth
+                          variant="outlined"
+                          size="small"
+                          disabled={saving}
+                          inputProps={
+                            pending.characteristic.type_value === 'integer' ||
+                            pending.characteristic.type_value === 'decimal'
+                              ? {
+                                  min: 0,
+                                  step: pending.characteristic.type_value === 'decimal' ? 0.01 : 1
+                                }
+                              : undefined
+                          }
+                        />
+                      )}
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        </Box>
       )}
 
       {availableCharacteristics.length === 0 && !loadingAll && (
         <Typography variant='body2' color='text.secondary' sx={{ mt: 2, fontStyle: 'italic' }}>
-          {excludedCharacteristics.length > 0
+          {excludedCharacteristics.length > 0 || pendingCharacteristics.length > 0
             ? 'Todas las características disponibles ya han sido agregadas'
             : 'No hay características disponibles para agregar'
           }

@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useMemo} from 'react'
 
 // MUI Imports
 import {
@@ -19,13 +19,12 @@ import {
   TextField as MUITextField,
   FormControlLabel,
   Checkbox,
-  Paper
+  Paper,
+  Button
 } from '@mui/material'
 import CloseIcon from '@mui/icons-material/Close'
-import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
 import SaveIcon from '@mui/icons-material/Save'
-import CancelIcon from '@mui/icons-material/Cancel'
 
 // Component Imports
 import SearchCharacteristicsSelector from './SearchCharacteristicsSelector'
@@ -44,13 +43,6 @@ interface AddSearchCharacteristicModalProps {
   onSuccess: () => void
 }
 
-interface EditingCharacteristic {
-  id: number
-  characteristic_name: string
-  value: any
-  type_value: string
-}
-
 const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> = ({
   open,
   onClose,
@@ -65,19 +57,7 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   const [existingCharacteristics, setExistingCharacteristics] = useState<ISearchCharacteristic[]>([])
   const [loadingCharacteristics, setLoadingCharacteristics] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
-
-  // Estados para edición
-  const [editingCharacteristic, setEditingCharacteristic] = useState<EditingCharacteristic | null>(null)
-  const [editValue, setEditValue] = useState<any>('')
   const [saving, setSaving] = useState<boolean>(false)
-
-  // Función helper para formatear el label de la característica
-  const formatCharacteristicLabel = useCallback((char: ISearchCharacteristic): string => {
-    const name = char.characteristic_name || 'Sin nombre'
-    const value = char.value !== null && char.value !== undefined ? String(char.value) : 'Sin valor'
-
-    return `${name}: ${value}`
-  }, [])
 
   // Función para cargar las características existentes
   const loadExistingCharacteristics = useCallback(async () => {
@@ -113,56 +93,41 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
     }
   }, [searchId, deleteCharacteristic, notify, loadExistingCharacteristics, onSuccess])
 
-  // Función para iniciar la edición
-  const handleStartEdit = useCallback((char: ISearchCharacteristic) => {
-    setEditingCharacteristic({
-      id: char.id,
-      characteristic_name: char.characteristic_name || '',
-      value: char.value,
-      type_value: char.characteristic_type || 'text'
-    })
-    setEditValue(char.value)
+  // Función para actualizar el valor de una característica con debounce
+  const handleValueChange = useCallback((id: number, value: any) => {
+    setExistingCharacteristics(prev =>
+      prev.map(char =>
+        char.id === id ? { ...char, value } : char
+      )
+    )
   }, [])
 
-  // Función para cancelar la edición
-  const handleCancelEdit = useCallback(() => {
-    setEditingCharacteristic(null)
-    setEditValue('')
-  }, [])
-
-  // Función para guardar la edición
-  const handleSaveEdit = useCallback(async () => {
-    if (!editingCharacteristic || !searchId) return
+  // Función para guardar todas las características modificadas
+  const handleSaveAllChanges = useCallback(async () => {
+    if (!searchId) return
 
     setSaving(true)
 
     try {
-      // Crear el objeto con la estructura correcta para el backend
-      const characteristicData: ISearchCharacteristic[] = [{
-        id: editingCharacteristic.id,
+      // Crear el array de características para actualizar
+      const characteristicsToUpdate: ISearchCharacteristic[] = existingCharacteristics.map(char => ({
+        id: char.id,
         search: {} as any, // Se completará en el backend
         characteristic: {} as any, // Se completará en el backend
-        value: editValue
-      }]
+        value: char.value
+      }))
 
-      await updateCharacteristic(searchId, characteristicData)
-      notify('Característica actualizada exitosamente', 'success')
-      setEditingCharacteristic(null)
-      setEditValue('')
+      await updateCharacteristic(searchId, characteristicsToUpdate)
+      notify('Características actualizadas exitosamente', 'success')
       loadExistingCharacteristics()
       onSuccess()
     } catch (err) {
-      console.error('Error updating characteristic:', err)
-      notify('Error al actualizar la característica', 'error')
+      console.error('Error updating characteristics:', err)
+      notify('Error al actualizar las características', 'error')
     } finally {
       setSaving(false)
     }
-  }, [editingCharacteristic, searchId, editValue, updateCharacteristic, notify, loadExistingCharacteristics, onSuccess])
-
-  // Función para manejar el cambio de valor en edición
-  const handleEditValueChange = useCallback((value: any) => {
-    setEditValue(value)
-  }, [])
+  }, [searchId, existingCharacteristics, updateCharacteristic, notify, loadExistingCharacteristics, onSuccess])
 
   // Cargar características cuando se abre el modal
   useEffect(() => {
@@ -172,8 +137,6 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
       // Limpiar estado cuando se cierra el modal
       setExistingCharacteristics([])
       setError(null)
-      setEditingCharacteristic(null)
-      setEditValue('')
     }
   }, [open, searchId, loadExistingCharacteristics])
 
@@ -214,15 +177,9 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
           <CharacteristicItem
             key={char.id}
             char={char}
-            editingCharacteristic={editingCharacteristic}
-            editValue={editValue}
+            onValueChange={handleValueChange}
+            onDelete={handleDeleteCharacteristic}
             saving={saving}
-            onStartEdit={handleStartEdit}
-            onCancelEdit={handleCancelEdit}
-            onSaveEdit={handleSaveEdit}
-            onDeleteCharacteristic={handleDeleteCharacteristic}
-            onEditValueChange={handleEditValueChange}
-            formatCharacteristicLabel={formatCharacteristicLabel}
           />
         ))}
       </Box>
@@ -230,15 +187,9 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   }, [
     loadingCharacteristics,
     existingCharacteristics,
-    editingCharacteristic,
-    editValue,
-    saving,
-    handleStartEdit,
-    handleCancelEdit,
-    handleSaveEdit,
+    handleValueChange,
     handleDeleteCharacteristic,
-    handleEditValueChange,
-    formatCharacteristicLabel
+    saving
   ])
 
   return (
@@ -299,9 +250,23 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
 
             {/* Sección de características existentes */}
             <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600 }}>
-                Características Actuales
-              </Typography>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                  Características Actuales
+                </Typography>
+                {existingCharacteristics.length > 0 && (
+                  <Button
+                    variant='contained'
+                    color='success'
+                    startIcon={<SaveIcon />}
+                    onClick={handleSaveAllChanges}
+                    disabled={saving}
+                    size="small"
+                  >
+                    {saving ? 'Guardando...' : 'Guardar Cambios'}
+                  </Button>
+                )}
+              </Box>
               {characteristicsList}
             </Box>
 
@@ -320,81 +285,138 @@ const AddSearchCharacteristicModal: React.FC<AddSearchCharacteristicModalProps> 
   )
 }
 
+// Hook de debounce personalizado
+const useDebounce = (value: any, delay: number) => {
+  const [debouncedValue, setDebouncedValue] = useState(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
+
 // Componente separado para cada item de característica
 interface CharacteristicItemProps {
   char: ISearchCharacteristic
-  editingCharacteristic: EditingCharacteristic | null
-  editValue: any
+  onValueChange: (id: number, value: any) => void
+  onDelete: (id: number) => void
   saving: boolean
-  onStartEdit: (char: ISearchCharacteristic) => void
-  onCancelEdit: () => void
-  onSaveEdit: () => void
-  onDeleteCharacteristic: (id: number) => void
-  onEditValueChange: (value: any) => void
-  formatCharacteristicLabel: (char: ISearchCharacteristic) => string
 }
 
 const CharacteristicItem: React.FC<CharacteristicItemProps> = React.memo(({
   char,
-  editingCharacteristic,
-  editValue,
-  saving,
-  onStartEdit,
-  onCancelEdit,
-  onSaveEdit,
-  onDeleteCharacteristic,
-  onEditValueChange,
-  formatCharacteristicLabel
+  onValueChange,
+  onDelete,
+  saving
 }) => {
-  const isEditing = editingCharacteristic?.id === char.id
+  // Determinar el tipo de valor basado en la característica
+  const getTypeValue = (char: ISearchCharacteristic): string => {
+    return char.characteristic_type || 'text'
+  }
+
+  const typeValue = getTypeValue(char)
+
+  // Estado local para el valor del input
+  const [localValue, setLocalValue] = useState(char.value ?? '')
+
+  // Debounce del valor local
+  const debouncedValue = useDebounce(localValue, 500) // 500ms de delay
+
+  // Actualizar el valor local cuando cambie la característica
+  useEffect(() => {
+    setLocalValue(char.value ?? '')
+  }, [char.value])
+
+  // Actualizar el valor en el estado principal cuando el debounced value cambie
+  useEffect(() => {
+    if (debouncedValue !== char.value) {
+      onValueChange(char.id, debouncedValue)
+    }
+  }, [debouncedValue, char.id, char.value, onValueChange])
+
+  // Handler para cambios inmediatos en el input
+  const handleInputChange = useCallback((e: any) => {
+    const value = typeValue === 'boolean' ? e.target.checked : e.target.value
+
+    setLocalValue(value)
+  }, [typeValue])
+
+  // Handler para eliminar
+  const handleDelete = useCallback(() => {
+    onDelete(char.id)
+  }, [char.id, onDelete])
 
   return (
     <Paper
       elevation={1}
       sx={{
         p: 2,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
         border: '1px solid',
-        borderColor: isEditing ? 'primary.main' : 'divider',
+        borderColor: 'divider',
         borderRadius: 1,
-        bgcolor: isEditing ? 'rgba(25, 118, 210, 0.02)' : 'background.paper'
+        bgcolor: 'background.paper'
       }}
     >
-      {/* Contenido normal o modo edición */}
-      {isEditing ? (
-        <Box sx={{ flex: 1, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography variant="body2" sx={{ minWidth: 'fit-content' }}>
-            {char.characteristic_name}:
+      {/* Input de edición con layout vertical como las características pendientes */}
+      <Box sx={{ flex: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Typography
+            variant="subtitle2"
+            sx={{ color: 'primary.main' }}
+          >
+            {char.characteristic_name}
           </Typography>
-          <Box sx={{ flex: 1, maxWidth: 300 }}>
-            {editingCharacteristic?.type_value === 'boolean' ? (
+          <IconButton
+            size="small"
+            onClick={handleDelete}
+            disabled={saving}
+            sx={{
+              color: 'error.main',
+              '&:hover': {
+                color: 'error.dark',
+                backgroundColor: 'rgba(211, 47, 47, 0.04)'
+              }
+            }}
+          >
+            <DeleteIcon fontSize="small" />
+          </IconButton>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Box sx={{ flex: 1 }}>
+            {typeValue === 'boolean' ? (
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={!!editValue}
-                    onChange={(e) => onEditValueChange(e.target.checked)}
+                    checked={!!localValue}
+                    onChange={handleInputChange}
                     disabled={saving}
                   />
                 }
-                label=""
+                label={char.characteristic_name}
               />
             ) : (
               <MUITextField
-                value={editValue ?? ''}
-                onChange={(e) => onEditValueChange(e.target.value)}
-                type={editingCharacteristic?.type_value === 'integer' || editingCharacteristic?.type_value === 'decimal' ? 'number' : 'text'}
-                size="small"
+                label={`Valor para ${char.characteristic_name}`}
+                value={localValue}
+                onChange={handleInputChange}
+                type={typeValue === 'integer' || typeValue === 'decimal' ? 'number' : 'text'}
                 fullWidth
                 variant="outlined"
+                size="small"
                 disabled={saving}
                 inputProps={
-                  editingCharacteristic?.type_value === 'integer' ||
-                  editingCharacteristic?.type_value === 'decimal'
+                  typeValue === 'integer' || typeValue === 'decimal'
                     ? {
                         min: 0,
-                        step: editingCharacteristic?.type_value === 'decimal' ? 0.01 : 1
+                        step: typeValue === 'decimal' ? 0.01 : 1
                       }
                     : undefined
                 }
@@ -402,77 +424,15 @@ const CharacteristicItem: React.FC<CharacteristicItemProps> = React.memo(({
             )}
           </Box>
         </Box>
-      ) : (
-        <Typography variant="body2" sx={{ flex: 1 }}>
-          {formatCharacteristicLabel(char)}
-        </Typography>
-      )}
-
-      {/* Botones de acción */}
-      <Box sx={{ display: 'flex', gap: 1 }}>
-        {isEditing ? (
-          <>
-            <IconButton
-              size="small"
-              onClick={onSaveEdit}
-              disabled={saving}
-              sx={{
-                color: 'success.main',
-                '&:hover': {
-                  color: 'success.dark',
-                  backgroundColor: 'rgba(76, 175, 80, 0.04)'
-                }
-              }}
-            >
-              <SaveIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={onCancelEdit}
-              disabled={saving}
-              sx={{
-                color: 'text.secondary',
-                '&:hover': {
-                  color: 'text.primary',
-                  backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                }
-              }}
-            >
-              <CancelIcon fontSize="small" />
-            </IconButton>
-          </>
-        ) : (
-          <>
-            <IconButton
-              size="small"
-              onClick={() => onStartEdit(char)}
-              sx={{
-                color: 'primary.main',
-                '&:hover': {
-                  color: 'primary.dark',
-                  backgroundColor: 'rgba(25, 118, 210, 0.04)'
-                }
-              }}
-            >
-              <EditIcon fontSize="small" />
-            </IconButton>
-            <IconButton
-              size="small"
-              onClick={() => onDeleteCharacteristic(char.id)}
-              sx={{
-                color: 'error.main',
-                '&:hover': {
-                  color: 'error.dark',
-                  backgroundColor: 'rgba(211, 47, 47, 0.04)'
-                }
-              }}
-            >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </>
-        )}
       </Box>
     </Paper>
+  )
+}, (prevProps, nextProps) => {
+  // Comparación personalizada para evitar re-renderizados innecesarios
+  return (
+    prevProps.char.id === nextProps.char.id &&
+    prevProps.char.characteristic_name === nextProps.char.characteristic_name &&
+    prevProps.saving === nextProps.saving
   )
 })
 
