@@ -1,4 +1,4 @@
-import type { ICharacteristic } from './RealtstateTypes'
+
 import type { IUser } from './UserTypes'
 
 export interface IClient {
@@ -9,26 +9,6 @@ export interface IClient {
   status?: number
   franchise?: number
   assigned_to?: number
-}
-
-export interface ISearch {
-  id: number
-  description: string
-  budget: number
-  client_id?: number
-  client?: IClient
-  characteristics: ISearchCharacteristic[]
-  observations: IClientObservation[]
-}
-
-export interface ISearchCharacteristic {
-  id: number
-  search: ISearch
-  characteristic: ICharacteristic
-  value: string
-  characteristic_name?: string
-  characteristic_type?: string
-  search_id?: number
 }
 
 export interface IClientObservation {

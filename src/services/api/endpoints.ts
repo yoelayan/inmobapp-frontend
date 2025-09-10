@@ -68,6 +68,7 @@ export const ENDPOINTS = {
         ADD: (id: number) => `/searches/${id}/add-characteristic/`,
         DELETE: (id: number) => `/searches/${id}/delete-characteristic/`,
         UPDATE: (id: number) => `/searches/${id}/update-characteristic/`,
+        ALL: (id: number) => `/searches/${id}/all-characteristics/`,
       },
       OBSERVATIONS: {
         ADD: (id: number) => `/searches/${id}/add-observation/`,

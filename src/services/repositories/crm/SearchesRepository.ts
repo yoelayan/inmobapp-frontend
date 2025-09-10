@@ -27,23 +27,21 @@ class SearchesRepository extends BaseRepository<ISearch> {
     return await this.apiClient.get<ResponseAPI<IRealProperty>>(url)
   }
 
-  public async allCharacteristics(): Promise<ResponseAPI<ICharacteristic>> {
-    const url = ENDPOINTS.REALSTATE.PROPERTY_CHARACTERISTICS.BASE
+  public async allCharacteristics(id: number): Promise<ResponseAPI<ICharacteristic>> {
+    const url = ENDPOINTS.CRM.SEARCHES.CHARACTERISTICS.ALL(id)
 
     return await this.apiClient.get<ResponseAPI<ICharacteristic>>(url)
   }
 
   public async addCharacteristic(
     id: number,
-    characteristicId: string | number,
-    value: string | number | boolean
+    characteristicId: string | number
   ): Promise<any> {
     const url = ENDPOINTS.CRM.SEARCHES.CHARACTERISTICS.ADD(id)
 
     return await this.apiClient.post(url, {
       characteristic: {
-        id: characteristicId,
-        value: value
+        id: characteristicId
       }
     })
   }

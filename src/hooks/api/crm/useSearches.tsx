@@ -13,8 +13,8 @@ export default function useSearches(defaultFilters?: FilterItem[]) {
   const repository = SearchesRepository
 
   const addCharacteristic = useCallback(
-    async (id: number, characteristicId: number, value: string | number | boolean) => {
-      return await repository.addCharacteristic(id, characteristicId, value)
+    async (id: number, characteristicId: number) => {
+      return await repository.addCharacteristic(id, characteristicId)
     },
     [repository]
   )
@@ -47,8 +47,8 @@ export default function useSearches(defaultFilters?: FilterItem[]) {
     [repository]
   )
 
-  const allCharacteristics = useCallback(async (): Promise<ResponseAPI<ICharacteristic>> => {
-    return await repository.allCharacteristics()
+  const allCharacteristics = useCallback(async (id: number): Promise<ResponseAPI<ICharacteristic>> => {
+    return await repository.allCharacteristics(id)
   }, [repository])
 
   const getMatchedProperties = useCallback(

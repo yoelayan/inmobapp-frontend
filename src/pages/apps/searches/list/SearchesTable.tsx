@@ -33,7 +33,8 @@ import {
 // Component Imports
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
 import ObservationsLogModal from '../form/ObservationsLogModal'
-import AddSearchCharacteristicModal from '../form/AddSearchCharacteristicModal'
+//import AddSearchCharacteristicModal from '../form/AddSearchCharacteristicModal'
+import SearchCharacteristicModalV2 from '../form/SearchCharacteristicModalV2'
 
 // Hooks Imports
 import useSearches from '@/hooks/api/crm/useSearches';
@@ -299,7 +300,7 @@ const SearchesTable = () => {
       )}
 
       {characteristicModalOpen && (
-        <AddSearchCharacteristicModal
+        <SearchCharacteristicModalV2
           open={characteristicModalOpen}
           onClose={handleCloseCharacteristicModal}
           searchId={selectedSearchId ?? null}
