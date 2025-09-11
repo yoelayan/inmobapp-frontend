@@ -34,6 +34,9 @@ import type { IUser } from '@/types/apps/UserTypes';
 
 import { formatDate, formatDateTime } from '@utils/date';
 
+import useConfirmDialog from '@/hooks/useConfirmDialog';
+import { useNotification } from '@/hooks/useNotification';
+
 const columns: ColumnDef<IUser>[] = [
   {
     accessorKey: 'franchise',
@@ -89,7 +92,32 @@ const columns: ColumnDef<IUser>[] = [
 
 const UsersTable = () => {
   const router = useRouter()
-  const { data, loading, fetchData } = useUsers()
+  const { notify } = useNotification()
+  const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
+  const { data, loading, fetchData, deleteData } = useUsers()
+
+  const handleDeleteUser = async (userId: number) => {
+    try {
+      await deleteData(userId)
+      notify('Usuario eliminado correctamente', 'success')
+      fetchData()
+    } catch (error) {
+      notify('Error al eliminar el usuario', 'error')
+      console.error('Error deleting user:', error)
+    }
+  }
+
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const userName = row.name || 'este usuario'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar ${userName}? Esta acción no se puede deshacer.`,
+      onConfirm: () => handleDeleteUser(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
+  }
 
   const useUsersTableStore = (
     () =>
@@ -125,9 +153,7 @@ const UsersTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        console.log('Eliminar usuario', row)
-
-        // TODO: Implementar confirmación y eliminación
+        handleConfirmDelete(row)
       },
       icon: <DeleteIcon fontSize="small" />
     }
@@ -176,6 +202,7 @@ const UsersTable = () => {
 
           <TablePagination />
         </Table>
+        <ConfirmDialog />
       </Grid>
     </>
   )

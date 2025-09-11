@@ -27,6 +27,9 @@ import {
 import useClients from '@/hooks/api/crm/useClients';
 import type { IClient } from '@/types/apps/ClientesTypes';
 
+import useConfirmDialog from '@/hooks/useConfirmDialog';
+import { useNotification } from '@/hooks/useNotification';
+
 const columns: ColumnDef<IClient>[] = [
   {
     accessorKey: 'name',
@@ -83,17 +86,35 @@ const columns: ColumnDef<IClient>[] = [
 
 const ClientsTable = () => {
   const router = useRouter()
-  const { data, loading, fetchData } = useClients()
+  const { notify } = useNotification()
+  const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
+  const { data, loading, fetchData, deleteData } = useClients() // ← Agregar deleteData
 
-  const useClientsTableStore = (
-    () =>
-      createTableStore<IClient>({
-        data: data,
-        loading: loading,
-        refresh: fetchData
-      })
-  )
+  // 3. Agregar función de eliminación
+  const handleDeleteClient = async (clientId: number) => {
+    try {
+      await deleteData(clientId)
+      notify('Cliente eliminado correctamente', 'success')
+      fetchData()
+    } catch (error) {
+      notify('Error al eliminar el cliente', 'error')
+      console.error('Error deleting client:', error)
+    }
+  }
 
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const clientName = row.name || 'este cliente'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar ${clientName}? Esta acción no se puede deshacer.`,
+      onConfirm: () => handleDeleteClient(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
+  }
+
+  // 4. Actualizar actions
   const actions: TableAction[] = [
     {
       label: 'Editar',
@@ -105,13 +126,20 @@ const ClientsTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        console.log('Eliminar', row)
-
-        // TODO: Implementar confirmación y eliminación
+        handleConfirmDelete(row) // ← Cambiar aquí
       },
       icon: <DeleteIcon fontSize="small" />
     }
   ]
+
+  const useClientsTableStore = (
+    () =>
+      createTableStore<IClient>({
+        data: data,
+        loading: loading,
+        refresh: fetchData
+      })
+  )
 
   const tableStore = useClientsTableStore();
 
@@ -136,6 +164,7 @@ const ClientsTable = () => {
 
           <TablePagination />
         </Table>
+        <ConfirmDialog />
       </Grid>
     </>
   )

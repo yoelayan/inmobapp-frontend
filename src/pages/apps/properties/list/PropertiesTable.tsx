@@ -12,7 +12,6 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import Tooltip from '@mui/material/Tooltip'
 
 import ImageIcon from '@mui/icons-material/Image'
 
@@ -32,27 +31,15 @@ import {
 } from '@/components/common/Table'
 
 import useConfirmDialog from '@/hooks/useConfirmDialog'
+import { useNotification } from '@/hooks/useNotification'
+import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'
-import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response'
 
-interface TableProps {
-  properties: any
-  loading: boolean
-  fetchProperties: (params?: {
-    page: number
-    pageSize: number
-    filters: FilterItem[]
-    sorting: SortingItem[]
-  }) => Promise<ResponseAPI<IRealProperty>>
-
-  deleteProperty: (id: string) => Promise<void>
-  title?: string
-  subtitle?: string
-  onStatusFilterChange?: (status: string | null) => void
-}
+// ✅ SOLO los tipos que realmente usamos
+import type { FilterItem, SortingItem } from '@/types/api/response'
 
 const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   {
@@ -133,76 +120,33 @@ const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   },
   {
     accessorKey: 'price',
-    header: 'Precio (USD)',
-    enableColumnFilter: false,
-    cell: ({ row }) => {
-      const price = row.original.price
-      const rentPrice = row.original.rent_price
-      const negotiationType = row.original.type_negotiation?.name
+    header: 'Precio',
+    enableColumnFilter: true,
+    cell: ({ getValue }) => {
+      const price = getValue() as number
 
-      // Si no hay ningún precio, mostrar vacío
-      if (!price && !rentPrice) return ''
-
-      // Si es "Venta y Alquiler", mostrar ambos precios
-      if (negotiationType === 'Venta y Alquiler' && price && rentPrice) {
-        return (
-          <Box className='flex flex-col gap-1'>
-            <Tooltip title='Precio de Venta' placement='top'>
-              <Box className='text-sm'>
-                <span className='text-green-600 font-bold'>V: </span>${Number(price).toLocaleString()}
-              </Box>
-            </Tooltip>
-            <Tooltip title='Precio de Alquiler' placement='top'>
-              <Box className='text-sm'>
-                <span className='text-blue-600 font-bold'>A: </span>${Number(rentPrice).toLocaleString()}
-              </Box>
-            </Tooltip>
-          </Box>
-        )
-      }
-
-      // Para otros tipos, mostrar solo el precio correspondiente
-      let displayPrice = null
-      let priceType = ''
-
-      if (negotiationType === 'Venta' && price) {
-        displayPrice = price
-        priceType = 'Venta'
-      } else if (negotiationType === 'Alquiler' && rentPrice) {
-        displayPrice = rentPrice
-        priceType = 'Alquiler'
-      }
-
-      if (!displayPrice) return ''
-
-      return (
-        <Box>
-          <Tooltip title={priceType}>
-            <Box className='font-bold'>${Number(displayPrice).toLocaleString()}</Box>
-          </Tooltip>
-        </Box>
-      )
+      return price ? `$${price.toLocaleString()}` : '$0'
     }
   },
   {
-    accessorKey: 'created_at',
-    header: 'Fecha de Creación',
+    accessorKey: 'status.name',
+    header: 'Estado',
     enableColumnFilter: false
   }
 ]
 
-const PropertiesTable = ({
-  properties,
-  loading,
-  fetchProperties,
-  title,
-  subtitle,
-  deleteProperty,
-  onStatusFilterChange
-}: TableProps) => {
+const PropertiesTable = () => {
   const router = useRouter()
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+
+  const {
+    data: properties,
+    loading,
+    fetchData: fetchProperties,
+    deleteData: deleteProperty
+  } = useProperties()
 
   const usePropertiesTableStore = useMemo(
     () =>
@@ -214,29 +158,66 @@ const PropertiesTable = ({
     [properties, loading, fetchProperties]
   )
 
+  // ✅ FUNCIÓN DE FILTRADO POR STATUS
   const handleStatusChange = async (status: string) => {
     setStatusFilter(status)
 
     try {
-      // Si no hay status seleccionado, mostrar todas las propiedades
       if (!status) {
         await fetchProperties()
 
         return
       }
 
-      // Aplicar filtro por status
-      const filters = [{ field: 'status__code', value: status }]
+      const filters: FilterItem[] = [{ field: 'status__code', value: status }]
+      const sorting: SortingItem[] = []
 
       await fetchProperties({
         filters,
         page: 1,
         pageSize: 10,
-        sorting: []
+        sorting
       })
     } catch (error) {
       console.error('Error filtering properties:', error)
     }
+  }
+
+  // ✅ FUNCIÓN DE LIMPIAR FILTROS
+  const handleClearFilters = async () => {
+    setStatusFilter(null)
+    const filters: FilterItem[] = []
+    const sorting: SortingItem[] = []
+
+    await fetchProperties({
+      filters,
+      page: 1,
+      pageSize: 10,
+      sorting
+    })
+  }
+
+  const handleDeleteProperty = async (propertyId: number) => {
+    try {
+      await deleteProperty(propertyId)
+      notify('Propiedad eliminada correctamente', 'success')
+      fetchProperties()
+    } catch (error) {
+      notify('Error al eliminar la propiedad', 'error')
+      console.error('Error deleting property:', error)
+    }
+  }
+
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const propertyName = row.name || 'esta propiedad'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar "${propertyName}"? Esta acción no se puede deshacer.`,
+      onConfirm: () => handleDeleteProperty(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
   }
 
   const actions: TableAction[] = [
@@ -257,14 +238,7 @@ const PropertiesTable = ({
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        showConfirmDialog({
-          title: 'Confirmar eliminación',
-          message: `¿Estás seguro que deseas eliminar la propiedad "${row.name}"?`,
-          onConfirm: async () => {
-            await deleteProperty(row.id)
-            fetchProperties()
-          }
-        })
+        handleConfirmDelete(row)
       },
       icon: <DeleteIcon fontSize='small' />
     }
@@ -281,8 +255,8 @@ const PropertiesTable = ({
 
       <Grid container spacing={2}>
         <SectionHeader
-          title={title || 'Propiedades'}
-          subtitle={subtitle || 'Aquí puedes ver todas las propiedades disponibles'}
+          title='Propiedades'
+          subtitle='Aquí puedes ver todas las propiedades disponibles'
         />
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
@@ -290,12 +264,7 @@ const PropertiesTable = ({
               <Button
                 variant='outlined'
                 size='small'
-                onClick={() => {
-                  tableStore.setFilters([])
-                  setStatusFilter(null)
-                  onStatusFilterChange?.(null)
-                  fetchProperties({ filters: [], page: 1, pageSize: 10, sorting: [] })
-                }}
+                onClick={handleClearFilters}
                 disabled={!statusFilter && tableStore.filters.length === 0}
               >
                 Limpiar filtros
@@ -311,7 +280,6 @@ const PropertiesTable = ({
                 Actualizar
               </Button>
 
-              {/* <Can permission='add_property'> */}
               <Button
                 key='add'
                 startIcon={<AddIcon />}
@@ -321,7 +289,6 @@ const PropertiesTable = ({
               >
                 Agregar
               </Button>
-              {/* </Can> */}
             </Box>
           </TableFilter>
 
@@ -333,6 +300,7 @@ const PropertiesTable = ({
           <TablePagination />
         </Table>
       </Grid>
+
       <ConfirmDialog />
     </>
   )

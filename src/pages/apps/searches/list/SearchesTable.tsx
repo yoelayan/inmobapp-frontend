@@ -33,12 +33,12 @@ import {
 // Component Imports
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
 import ObservationsLogModal from '../form/ObservationsLogModal'
-//import AddSearchCharacteristicModal from '../form/AddSearchCharacteristicModal'
 import SearchCharacteristicModalV2 from '../form/SearchCharacteristicModalV2'
 
 // Hooks Imports
 import useSearches from '@/hooks/api/crm/useSearches';
 import { useNotification } from '@/hooks/useNotification';
+import useConfirmDialog from '@/hooks/useConfirmDialog';
 import type { ISearch } from '@/types/apps/ClientesTypes';
 
 const columns: ColumnDef<ISearch>[] = [
@@ -81,13 +81,14 @@ const columns: ColumnDef<ISearch>[] = [
 const SearchesTable = () => {
   const router = useRouter()
   const { notify } = useNotification()
+  const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
   const [characteristicModalOpen, setCharacteristicModalOpen] = useState(false)
   const [observationModalOpen, setObservationModalOpen] = useState(false)
   const [observationsLogModalOpen, setObservationsLogModalOpen] = useState(false)
   const [selectedSearchId, setSelectedSearchId] = useState<number | null>(null)
   const [selectedSearch, setSelectedSearch] = useState<any>(null)
 
-  const { data, loading, fetchData, refreshData } = useSearches()
+  const { data, loading, fetchData, refreshData, deleteData } = useSearches()
 
   const useSearchesTableStore = useMemo(
     () =>
@@ -154,9 +155,28 @@ const SearchesTable = () => {
     }
   }
 
-  const handleSearchDeleted = () => {
-    notify('Búsqueda eliminada correctamente', 'success')
-    refreshData()
+
+  const handleDeleteSearch = async (searchId: number) => {
+    try {
+      await deleteData(searchId)
+      notify('Búsqueda eliminada correctamente', 'success')
+      refreshData()
+    } catch (error) {
+      notify('Error al eliminar la búsqueda', 'error')
+      console.error('Error deleting search:', error)
+    }
+  }
+
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const searchDescription = row.description || 'esta búsqueda'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar ${searchDescription}? Esta acción no se puede deshacer.`,
+      onConfirm: () => handleDeleteSearch(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
   }
 
   const actions: TableAction[] = [
@@ -198,10 +218,9 @@ const SearchesTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        handleSearchDeleted()
-        console.log('Eliminar', row)
+        handleConfirmDelete(row)
 
-        // TODO: Implementar confirmación y eliminación
+
       },
       icon: <DeleteIcon fontSize="small" />
     }
@@ -307,6 +326,8 @@ const SearchesTable = () => {
           onSuccess={handleCharacteristicAdded}
         />
       )}
+
+      <ConfirmDialog />
     </>
   )
 };
