@@ -36,14 +36,16 @@ import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 
 import { type FranchiseTypes, mappedFranchiseTypes } from '@/validations/franchiseSchema'
 import useConfirmDialog from '@/hooks/useConfirmDialog'
+import { useNotification } from '@/hooks/useNotification';
 import type { IUser } from '@/types/apps/UserTypes'
 
 
 
 const FranchisesTable = () => {
   const router = useRouter()
+  const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
-  const { data, loading, fetchData, deleteData: deleteFranchise } = useFranchises()
+  const { data, loading, fetchData, deleteData } = useFranchises()
   const [open, setOpen] = useState(false)
   const [selectedFranchise, setSelectedFranchise] = useState<IFranchise | null>(null)
   const [editParentOpen, setEditParentOpen] = useState(false)
@@ -73,6 +75,37 @@ const FranchisesTable = () => {
   )
 
   const tableStore = useFranchisesTableStore()
+
+  const handleDeleteFranchise = async (franchiseId: number) => {
+    try {
+      await deleteData(franchiseId)
+      notify('Franquicia eliminada correctamente', 'success')
+      fetchData()
+    } catch (error: any) {
+      console.error('Error deleting franchise:', error)
+
+      // Manejar errores específicos del backend
+      if (error?.response?.status === 400) {
+        const detail = error?.response?.data?.detail || 'No se puede eliminar esta franquicia'
+
+        notify(detail, 'error')
+      } else {
+        notify('Error al eliminar la franquicia', 'error')
+      }
+    }
+  }
+
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const franchiseName = row.name || 'esta franquicia'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar ${franchiseName}?`,
+      onConfirm: () => handleDeleteFranchise(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
+  }
 
 
 const columns: ColumnDef<IFranchise>[] = [
@@ -181,14 +214,7 @@ const columns: ColumnDef<IFranchise>[] = [
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        showConfirmDialog({
-          title: 'Confirmar eliminación',
-          message: `¿Estás seguro que deseas eliminar la franquicia "${row.name}"?`,
-          onConfirm: async () => {
-            await deleteFranchise(row.id)
-            tableStore.getState().fetchData()
-          }
-        })
+        handleConfirmDelete(row)
       },
       icon: <DeleteIcon fontSize='small' />
     }

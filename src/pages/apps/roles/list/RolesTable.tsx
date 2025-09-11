@@ -31,6 +31,7 @@ import {
 
 import useRoles from '@/hooks/api/roles/useRoles'
 import useConfirmDialog from '@/hooks/useConfirmDialog'
+import { useNotification } from '@/hooks/useNotification';
 import type { IUserGroup } from '@/types/apps/UserTypes'
 
 const columns: ColumnDef<IUserGroup>[] = [
@@ -65,14 +66,47 @@ const columns: ColumnDef<IUserGroup>[] = [
 
 const RolesTable = () => {
   const router = useRouter()
+  const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
-  const { data, loading, fetchData, deleteData: deleteRole } = useRoles()
+  const { data, loading, fetchData, deleteData } = useRoles()
   const [open, setOpen] = useState(false)
   const [selectedRole, setSelectedRole] = useState<IUserGroup | null>(null)
 
   const handleOpenDetail = (role: IUserGroup) => {
     setSelectedRole(role)
     setOpen(true)
+  }
+
+  const handleDeleteRole = async (roleId: number) => {
+    try {
+      await deleteData(roleId)
+      notify('Rol eliminado correctamente', 'success')
+      fetchData()
+    } catch (error: any) {
+      console.error('Error deleting role:', error)
+
+      // Manejar errores específicos del backend
+      if (error?.response?.status === 400) {
+        const detail = error?.response?.data?.detail || 'No se puede eliminar este rol'
+
+        notify(detail, 'error')
+      } else {
+        notify('Error al eliminar el rol', 'error')
+      }
+    }
+  }
+
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const roleName = row.name || 'este rol'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar ${roleName}?
+      No se puede eliminar un rol que tiene usuarios asignados.`,
+      onConfirm: () => handleDeleteRole(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
   }
 
   const useRolesTableStore = (
@@ -104,14 +138,7 @@ const RolesTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        showConfirmDialog({
-          title: 'Confirmar eliminación',
-          message: `¿Estás seguro que deseas eliminar el rol "${row.name}"? Esta acción no se puede deshacer.`,
-          onConfirm: async () => {
-            await deleteRole(row.id)
-            rolesTableStore.getState().fetchData()
-          }
-        })
+        handleConfirmDelete(row)
       },
       icon: <DeleteIcon fontSize='small' />
     }

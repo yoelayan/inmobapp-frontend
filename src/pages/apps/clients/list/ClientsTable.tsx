@@ -25,6 +25,8 @@ import {
 } from '@/components/common/Table';
 
 import useClients from '@/hooks/api/crm/useClients';
+import useConfirmDialog from '@/hooks/useConfirmDialog';
+import { useNotification } from '@/hooks/useNotification';
 import type { IClient } from '@/types/apps/ClientesTypes';
 
 const columns: ColumnDef<IClient>[] = [
@@ -62,7 +64,6 @@ const columns: ColumnDef<IClient>[] = [
       priority: 5 // Medium priority - show in collapse on mobile
     }
   },
-
   {
     accessorKey: 'franchise.name',
     header: 'Franquicia',
@@ -83,7 +84,32 @@ const columns: ColumnDef<IClient>[] = [
 
 const ClientsTable = () => {
   const router = useRouter()
-  const { data, loading, fetchData } = useClients()
+  const { notify } = useNotification()
+  const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
+  const { data, loading, fetchData, deleteData } = useClients()
+
+  const handleDeleteClient = async (clientId: number) => {
+    try {
+      await deleteData(clientId)
+      notify('Cliente eliminado correctamente', 'success')
+      fetchData()
+    } catch (error) {
+      notify('Error al eliminar el cliente', 'error')
+      console.error('Error deleting client:', error)
+    }
+  }
+
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const clientName = row.name || 'este cliente'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar ${clientName}? Esta acción no se puede deshacer.`,
+      onConfirm: () => handleDeleteClient(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
+  }
 
   const useClientsTableStore = (
     () =>
@@ -105,9 +131,7 @@ const ClientsTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        console.log('Eliminar', row)
-
-        // TODO: Implementar confirmación y eliminación
+        handleConfirmDelete(row)
       },
       icon: <DeleteIcon fontSize="small" />
     }
@@ -137,6 +161,8 @@ const ClientsTable = () => {
           <TablePagination />
         </Table>
       </Grid>
+
+      <ConfirmDialog />
     </>
   )
 };

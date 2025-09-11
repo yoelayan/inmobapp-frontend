@@ -32,27 +32,13 @@ import {
 } from '@/components/common/Table'
 
 import useConfirmDialog from '@/hooks/useConfirmDialog'
+import { useNotification } from '@/hooks/useNotification'
+import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'
-import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response'
-
-interface TableProps {
-  properties: any
-  loading: boolean
-  fetchProperties: (params?: {
-    page: number
-    pageSize: number
-    filters: FilterItem[]
-    sorting: SortingItem[]
-  }) => Promise<ResponseAPI<IRealProperty>>
-
-  deleteProperty: (id: string) => Promise<void>
-  title?: string
-  subtitle?: string
-  onStatusFilterChange?: (status: string | null) => void
-}
+import type { FilterItem, SortingItem } from '@/types/api/response'
 
 const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   {
@@ -191,18 +177,19 @@ const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   }
 ]
 
-const PropertiesTable = ({
-  properties,
-  loading,
-  fetchProperties,
-  title,
-  subtitle,
-  deleteProperty,
-  onStatusFilterChange
-}: TableProps) => {
+const PropertiesTable = () => {
   const router = useRouter()
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
+  const [statusFilter, setStatusFilter] = useState<string | null>(null)
+
+  // ✅ CAMBIO: Usar hook directamente
+  const {
+    data: properties,
+    loading,
+    fetchData: fetchProperties,
+    deleteData: deleteProperty
+  } = useProperties()
 
   const usePropertiesTableStore = useMemo(
     () =>
@@ -218,25 +205,61 @@ const PropertiesTable = ({
     setStatusFilter(status)
 
     try {
-      // Si no hay status seleccionado, mostrar todas las propiedades
       if (!status) {
         await fetchProperties()
 
         return
       }
 
-      // Aplicar filtro por status
-      const filters = [{ field: 'status__code', value: status }]
+      const filters: FilterItem[] = [{ field: 'status__code', value: status }]
+      const sorting: SortingItem[] = []
 
       await fetchProperties({
         filters,
         page: 1,
         pageSize: 10,
-        sorting: []
+        sorting
       })
     } catch (error) {
       console.error('Error filtering properties:', error)
     }
+  }
+
+  const handleClearFilters = async () => {
+    setStatusFilter(null)
+    const filters: FilterItem[] = []
+    const sorting: SortingItem[] = []
+
+    await fetchProperties({
+      filters,
+      page: 1,
+      pageSize: 10,
+      sorting
+    })
+  }
+
+  // ✅ FUNCIONES DE ELIMINACIÓN
+  const handleDeleteProperty = async (propertyId: number) => {
+    try {
+      await deleteProperty(propertyId)
+      notify('Propiedad eliminada correctamente', 'success')
+      fetchProperties()
+    } catch (error) {
+      notify('Error al eliminar la propiedad', 'error')
+      console.error('Error deleting property:', error)
+    }
+  }
+
+  const handleConfirmDelete = (row: Record<string, any>) => {
+    const propertyName = row.name || 'esta propiedad'
+
+    showConfirmDialog({
+      title: 'Confirmar eliminación',
+      message: `¿Está seguro de que desea eliminar "${propertyName}"? Esta acción no se puede deshacer.`,
+      onConfirm: () => handleDeleteProperty(row.id),
+      confirmText: 'Eliminar',
+      cancelText: 'Cancelar'
+    })
   }
 
   const actions: TableAction[] = [
@@ -257,14 +280,7 @@ const PropertiesTable = ({
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        showConfirmDialog({
-          title: 'Confirmar eliminación',
-          message: `¿Estás seguro que deseas eliminar la propiedad "${row.name}"?`,
-          onConfirm: async () => {
-            await deleteProperty(row.id)
-            fetchProperties()
-          }
-        })
+        handleConfirmDelete(row)
       },
       icon: <DeleteIcon fontSize='small' />
     }
@@ -281,8 +297,8 @@ const PropertiesTable = ({
 
       <Grid container spacing={2}>
         <SectionHeader
-          title={title || 'Propiedades'}
-          subtitle={subtitle || 'Aquí puedes ver todas las propiedades disponibles'}
+          title='Propiedades'
+          subtitle='Aquí puedes ver todas las propiedades disponibles'
         />
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
@@ -290,12 +306,7 @@ const PropertiesTable = ({
               <Button
                 variant='outlined'
                 size='small'
-                onClick={() => {
-                  tableStore.setFilters([])
-                  setStatusFilter(null)
-                  onStatusFilterChange?.(null)
-                  fetchProperties({ filters: [], page: 1, pageSize: 10, sorting: [] })
-                }}
+                onClick={handleClearFilters}
                 disabled={!statusFilter && tableStore.filters.length === 0}
               >
                 Limpiar filtros
@@ -311,7 +322,6 @@ const PropertiesTable = ({
                 Actualizar
               </Button>
 
-              {/* <Can permission='add_property'> */}
               <Button
                 key='add'
                 startIcon={<AddIcon />}
@@ -321,7 +331,6 @@ const PropertiesTable = ({
               >
                 Agregar
               </Button>
-              {/* </Can> */}
             </Box>
           </TableFilter>
 
@@ -333,6 +342,7 @@ const PropertiesTable = ({
           <TablePagination />
         </Table>
       </Grid>
+
       <ConfirmDialog />
     </>
   )
