@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -45,7 +45,7 @@ const FranchisesTable = () => {
   const router = useRouter()
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
-  const { data, loading, fetchData, deleteData } = useFranchises()
+  const { data, loading, fetchData, deleteData, error } = useFranchises()
   const [open, setOpen] = useState(false)
   const [selectedFranchise, setSelectedFranchise] = useState<IFranchise | null>(null)
   const [editParentOpen, setEditParentOpen] = useState(false)
@@ -79,19 +79,16 @@ const FranchisesTable = () => {
   const handleDeleteFranchise = async (franchiseId: number) => {
     try {
       await deleteData(franchiseId)
+
+
       notify('Franquicia eliminada correctamente', 'success')
-      fetchData()
+
     } catch (error: any) {
       console.error('Error deleting franchise:', error)
 
-      // Manejar errores específicos del backend
-      if (error?.response?.status === 400) {
-        const detail = error?.response?.data?.detail || 'No se puede eliminar esta franquicia'
 
-        notify(detail, 'error')
-      } else {
-        notify('Error al eliminar la franquicia', 'error')
-      }
+    } finally {
+      tableStore.getState().fetchData()
     }
   }
 

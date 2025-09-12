@@ -81,18 +81,13 @@ const RolesTable = () => {
     try {
       await deleteData(roleId)
       notify('Rol eliminado correctamente', 'success')
-      fetchData()
+
     } catch (error: any) {
       console.error('Error deleting role:', error)
 
-      // Manejar errores específicos del backend
-      if (error?.response?.status === 400) {
-        const detail = error?.response?.data?.detail || 'No se puede eliminar este rol'
 
-        notify(detail, 'error')
-      } else {
-        notify('Error al eliminar el rol', 'error')
-      }
+    } finally {
+      rolesTableStore.getState().fetchData()
     }
   }
 

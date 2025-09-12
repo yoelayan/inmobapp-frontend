@@ -3,7 +3,7 @@ import React from 'react';
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -111,7 +111,12 @@ const UsersTable = () => {
     showConfirmDialog({
       title: 'Confirmar eliminación',
       message: `¿Está seguro de que desea eliminar ${userName}?
-      Todos los clientes y propiedades asociados a este usuario serán eliminados.`,
+      El usuario sera anulado en las siguientes entidades: `,
+      children: <Box>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Clientes</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Propiedades</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Franquicias</Typography>
+      </Box>,
       onConfirm: () => handleDeleteUser(row.id),
       confirmText: 'Eliminar',
       cancelText: 'Cancelar'

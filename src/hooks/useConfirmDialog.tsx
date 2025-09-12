@@ -16,6 +16,7 @@ interface ConfirmDialogProps {
   onCancel?: () => void
   confirmText?: string
   cancelText?: string
+  children?: React.ReactNode
 }
 
 export default function useConfirmDialog() {
@@ -26,7 +27,8 @@ export default function useConfirmDialog() {
     message: '',
     onConfirm: () => {},
     confirmText: 'Confirmar',
-    cancelText: 'Cancelar'
+    cancelText: 'Cancelar',
+    children: undefined
   })
 
   const showConfirmDialog = useCallback((props: ConfirmDialogProps) => {
@@ -59,6 +61,7 @@ export default function useConfirmDialog() {
         <DialogTitle id='alert-dialog-title'>{dialogProps.title}</DialogTitle>
         <DialogContent>
           <DialogContentText id='alert-dialog-description'>{dialogProps.message}</DialogContentText>
+          {dialogProps.children}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCancel} color='primary'>
