@@ -1,7 +1,8 @@
 // forms/UserForm.tsx
-import React from 'react'
+import React, { useEffect } from 'react'
 
 import { useQuery } from '@tanstack/react-query'
+import { useFormContext, useWatch } from 'react-hook-form'
 
 import {
   Grid2, Alert
@@ -26,6 +27,53 @@ interface UserFormProps {
   mode?: 'create' | 'edit'
   userId?: number
   onSuccess?: (user: CreateUserFormData | EditUserFormData) => void
+}
+
+// Componente interno para sincronización de permisos
+const PermissionsSync = () => {
+  const { setValue, getValues } = useFormContext<CreateUserFormData | EditUserFormData>()
+  const selectedGroups = useWatch({ name: 'groups' }) as number[] || []
+
+  const { fetchData: fetchRoles } = useRoles()
+
+  const groups = useQuery({
+    queryKey: ['roles'],
+    queryFn: () => fetchRoles(),
+  })
+
+  useEffect(() => {
+    if (!groups?.data?.results || !selectedGroups.length) {
+      return
+    }
+
+    // Obtener los permisos actuales del usuario
+    const currentPermissions = getValues('user_permissions') as string[] || []
+
+    // Obtener todos los permisos de los roles seleccionados
+    const rolePermissions = new Set<string>()
+
+    selectedGroups.forEach(groupId => {
+      const group = groups.data.results.find(g => g.id === groupId)
+
+      if (group?.permissions) {
+        group.permissions.forEach(permission => {
+          rolePermissions.add(permission.codename)
+        })
+      }
+    })
+
+    // Obtener permisos que no vienen de roles (permisos directos del usuario)
+    const allRolePermissions = Array.from(rolePermissions)
+    const directPermissions = currentPermissions.filter(perm => !allRolePermissions.includes(perm))
+
+    // Combinar permisos directos con permisos de roles
+    const newPermissions = [...directPermissions, ...allRolePermissions]
+
+    // Actualizar el campo de permisos
+    setValue('user_permissions', newPermissions)
+  }, [selectedGroups, groups?.data?.results, setValue, getValues])
+
+  return null
 }
 
 const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
@@ -147,6 +195,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
         setFormData={handleSetFormData}
         formatData={formatData}
       >
+        <PermissionsSync />
         <Grid2 container spacing={4}>
           {/* Columna izquierda: nombre, email, contraseñas */}
           <Grid2 size={{ xs: 12, md: 8 }}>
