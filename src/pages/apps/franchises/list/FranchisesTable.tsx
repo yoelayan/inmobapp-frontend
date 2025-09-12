@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -45,7 +45,7 @@ const FranchisesTable = () => {
   const router = useRouter()
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
-  const { data, loading, fetchData, deleteData, error } = useFranchises()
+  const { data, loading, fetchData, deleteData } = useFranchises()
   const [open, setOpen] = useState(false)
   const [selectedFranchise, setSelectedFranchise] = useState<IFranchise | null>(null)
   const [editParentOpen, setEditParentOpen] = useState(false)
