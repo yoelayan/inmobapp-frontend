@@ -30,11 +30,12 @@ interface UserFormProps {
 }
 
 
-const PermissionsSync = () => {
-  const selectedGroups = useWatch({ name: 'groups' }) as number[] || []
-  const { setValue, getValues } = useFormContext<CreateUserFormData | EditUserFormData>()
 
+// Component interno para manejar la sincronización de permisos
+const PermissionsSyncHandler = () => {
+  const { setValue, getValues } = useFormContext<CreateUserFormData | EditUserFormData>()
   const { fetchData: fetchRoles } = useRoles()
+  const selectedGroups = useWatch({ name: 'groups' })
 
   const groups = useQuery({
     queryKey: ['roles'],
@@ -42,16 +43,18 @@ const PermissionsSync = () => {
   })
 
   useEffect(() => {
-    if (!groups?.data?.results || !selectedGroups.length) {
+    const groupsArray = (selectedGroups as number[]) || []
+
+    if (!groups?.data?.results || !groupsArray.length) {
       return
     }
 
-    console.log('PermissionsSync - Roles changed:', selectedGroups)
+    console.log('PermissionsSync - Roles changed:', groupsArray)
 
     // Obtener permisos de los roles seleccionados
     const rolePermissions = new Set<string>()
 
-    selectedGroups.forEach(groupId => {
+    groupsArray.forEach(groupId => {
       const group = groups.data.results.find(g => g.id === groupId)
 
       if (group?.permissions) {
@@ -81,7 +84,7 @@ const PermissionsSync = () => {
 }
 
 const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
-
+  console.log("render Principal")
 
   const { user: currentUser, logout } = useAuth()
   const { fetchData: fetchFranchises } = useFranchises()
@@ -234,7 +237,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
         setFormData={setFormData}
         formatData={formatData}
       >
-        <PermissionsSync />
+        <PermissionsSyncHandler />
         <Grid2 container spacing={4}>
           {/* Columna izquierda: nombre, email, contraseñas */}
           <Grid2 size={{ xs: 12, md: 8 }}>
