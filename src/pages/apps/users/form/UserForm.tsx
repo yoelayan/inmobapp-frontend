@@ -90,7 +90,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
 
   const groups = useQuery({
     queryKey: ['roles'],
-    queryFn: () => fetchRoles(),
+    queryFn: () => fetchRoles(), // console.log para hacer el match de los permisos de los usuarios, debe hacer el selected mas no agregar nuevos.
   })
 
   // Check if the user being edited is the same as the logged-in user
