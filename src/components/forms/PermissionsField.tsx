@@ -266,9 +266,7 @@ const PermissionsField = <T extends Record<string, any>>({
 
 
       {error && (
-        <FormHelperText error sx={{ mt: 1 }}>
-          {error.message}
-        </FormHelperText>
+      <h1>Error: {error.message}</h1>
       )}
 
       <Card sx={{ width: '100%' }}>

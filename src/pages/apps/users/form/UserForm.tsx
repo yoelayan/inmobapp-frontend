@@ -195,7 +195,6 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
         setFormData={handleSetFormData}
         formatData={formatData}
       >
-        <PermissionsSync />
         <Grid2 container spacing={4}>
           {/* Columna izquierda: nombre, email, contraseñas */}
           <Grid2 size={{ xs: 12, md: 8 }}>
