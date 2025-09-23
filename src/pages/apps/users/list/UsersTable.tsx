@@ -3,7 +3,7 @@ import React from 'react';
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material';
+import { Button, Typography } from '@mui/material';
 import Grid from '@mui/material/Grid2'
 import Box from '@mui/material/Box'
 
@@ -30,6 +30,8 @@ import {
 } from '@/components/common/Table';
 
 import useUsers from '@/hooks/api/users/useUsers';
+import useConfirmDialog from '@/hooks/useConfirmDialog';
+import { useNotification } from '@/hooks/useNotification';
 import type { IUser } from '@/types/apps/UserTypes';
 
 import { formatDate, formatDateTime } from '@utils/date';
@@ -60,7 +62,6 @@ const columns: ColumnDef<IUser>[] = [
     header: 'Email',
     enableColumnFilter: true
   },
-
   {
     accessorKey: 'date_joined',
     header: 'Fecha de Registro',
@@ -112,7 +113,13 @@ const UsersTable = () => {
 
     showConfirmDialog({
       title: 'Confirmar eliminación',
-      message: `¿Está seguro de que desea eliminar ${userName}? Esta acción no se puede deshacer.`,
+      message: `¿Está seguro de que desea eliminar ${userName}?
+      El usuario sera anulado en las siguientes entidades: `,
+      children: <Box>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Clientes</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Propiedades</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Franquicias</Typography>
+      </Box>,
       onConfirm: () => handleDeleteUser(row.id),
       confirmText: 'Eliminar',
       cancelText: 'Cancelar'
@@ -204,6 +211,8 @@ const UsersTable = () => {
         </Table>
         <ConfirmDialog />
       </Grid>
+
+      <ConfirmDialog />
     </>
   )
 };

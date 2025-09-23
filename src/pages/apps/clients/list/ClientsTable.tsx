@@ -3,11 +3,12 @@ import React from 'react';
 
 import { useRouter } from 'next/navigation'
 
-import { Button } from '@mui/material';
+import { Button, Typography, Box } from '@mui/material';
 import Grid from '@mui/material/Grid2'
 
 import EditIcon from '@mui/icons-material/Edit'
 import DeleteIcon from '@mui/icons-material/Delete'
+import RefreshIcon from '@mui/icons-material/Refresh'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
@@ -25,6 +26,8 @@ import {
 } from '@/components/common/Table';
 
 import useClients from '@/hooks/api/crm/useClients';
+import useConfirmDialog from '@/hooks/useConfirmDialog';
+import { useNotification } from '@/hooks/useNotification';
 import type { IClient } from '@/types/apps/ClientesTypes';
 
 import useConfirmDialog from '@/hooks/useConfirmDialog';
@@ -65,7 +68,6 @@ const columns: ColumnDef<IClient>[] = [
       priority: 5 // Medium priority - show in collapse on mobile
     }
   },
-
   {
     accessorKey: 'franchise.name',
     header: 'Franquicia',
@@ -88,17 +90,17 @@ const ClientsTable = () => {
   const router = useRouter()
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
-  const { data, loading, fetchData, deleteData } = useClients() // ← Agregar deleteData
+  const { data, loading, fetchData, deleteData } = useClients()
 
-  // 3. Agregar función de eliminación
   const handleDeleteClient = async (clientId: number) => {
     try {
       await deleteData(clientId)
       notify('Cliente eliminado correctamente', 'success')
-      fetchData()
+
     } catch (error) {
-      notify('Error al eliminar el cliente', 'error')
       console.error('Error deleting client:', error)
+    } finally {
+      tableStore.getState().fetchData()
     }
   }
 
@@ -107,14 +109,28 @@ const ClientsTable = () => {
 
     showConfirmDialog({
       title: 'Confirmar eliminación',
-      message: `¿Está seguro de que desea eliminar ${clientName}? Esta acción no se puede deshacer.`,
+      message: `¿Está seguro de que desea eliminar ${clientName}? Esta acción no se puede deshacer y afecta a las siguientes entidades: `,
       onConfirm: () => handleDeleteClient(row.id),
+      children: <Box>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Propiedades</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Franquicias</Typography>
+        <Typography variant="body2" sx={{ mb: 1 }}>• Usuarios</Typography>
+      </Box>
+      ,
       confirmText: 'Eliminar',
       cancelText: 'Cancelar'
     })
   }
 
-  // 4. Actualizar actions
+  const useClientsTableStore = (
+    () =>
+      createTableStore<IClient>({
+        data: data,
+        loading: loading,
+        refresh: fetchData
+      })
+  )
+
   const actions: TableAction[] = [
     {
       label: 'Editar',
@@ -126,7 +142,7 @@ const ClientsTable = () => {
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
-        handleConfirmDelete(row) // ← Cambiar aquí
+        handleConfirmDelete(row)
       },
       icon: <DeleteIcon fontSize="small" />
     }
@@ -152,6 +168,15 @@ const ClientsTable = () => {
             <Button variant='outlined' size='small' onClick={() => tableStore.getState().setFilters([])}>
               Limpiar filtros
             </Button>
+            <Button
+              key='update'
+              startIcon={<RefreshIcon />}
+              variant='contained'
+              color='primary'
+              onClick={() => tableStore.getState().fetchData()}
+            >
+              Actualizar
+            </Button>
             <Button key='add' variant='contained' color='primary' onClick={() => router.push('/clientes/agregar/')}>
               Agregar
             </Button>
@@ -166,6 +191,8 @@ const ClientsTable = () => {
         </Table>
         <ConfirmDialog />
       </Grid>
+
+      <ConfirmDialog />
     </>
   )
 };

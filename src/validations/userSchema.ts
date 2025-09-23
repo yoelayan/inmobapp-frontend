@@ -46,7 +46,16 @@ const baseUserSchema = z.object({
     ),
   franchise_id: z.number({ message: 'La franquicia no es válida' }),
   groups: z.array(z.number()).optional(),
-  user_permissions: z.array(z.string()).optional()
+  user_permissions: z.array(z.string()).optional().refine(
+    (permissions) => {
+      if (!permissions) return true // Allow undefined/empty
+
+      return permissions.length > 0
+    },
+    {
+      message: 'Debe seleccionar al menos un permiso'
+    }
+  )
 })
 
 // Schema for creating users (passwords required)

@@ -37,8 +37,6 @@ import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'
-
-// ✅ SOLO los tipos que realmente usamos
 import type { FilterItem, SortingItem } from '@/types/api/response'
 
 const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
@@ -141,6 +139,7 @@ const PropertiesTable = () => {
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
 
+  // ✅ CAMBIO: Usar hook directamente
   const {
     data: properties,
     loading,
@@ -183,7 +182,6 @@ const PropertiesTable = () => {
     }
   }
 
-  // ✅ FUNCIÓN DE LIMPIAR FILTROS
   const handleClearFilters = async () => {
     setStatusFilter(null)
     const filters: FilterItem[] = []
@@ -197,6 +195,7 @@ const PropertiesTable = () => {
     })
   }
 
+  // ✅ FUNCIONES DE ELIMINACIÓN
   const handleDeleteProperty = async (propertyId: number) => {
     try {
       await deleteProperty(propertyId)

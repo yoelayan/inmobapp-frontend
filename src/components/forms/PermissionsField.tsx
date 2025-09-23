@@ -57,77 +57,114 @@ const PermissionsField = <T extends Record<string, any>>({
 
 
   // Memoized selected permissions
-  const selectedPermissions = useMemo(() => (value as string[]) || [], [value]);
+  const selectedPermissions = useMemo(() => (value as string[]) || [], [value])
 
-  // Memoized permission filtering
+  // Optimized group selection helpers with Set for faster lookups
+  const selectedPermissionsSet = useMemo(() => new Set(selectedPermissions), [selectedPermissions])
+
+  // Memoized permission filtering with better optimization
   const filteredPermissions = useMemo(() => {
     let filtered = permissions
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase()
 
-      filtered = filtered
-        .map(group => ({
-          ...group,
-          permissions: group.permissions.filter(
-            p =>
-              p.name.toLowerCase().includes(term) ||
-              p.codename.toLowerCase().includes(term) ||
-              group.name.toLowerCase().includes(term)
-          )
-        }))
-        .filter(group => group.permissions.length > 0)
+      filtered = filtered.reduce<GroupPermission[]>((acc, group) => {
+        const filteredPerms = group.permissions.filter(
+          p =>
+            p.name.toLowerCase().includes(term) ||
+            p.codename.toLowerCase().includes(term) ||
+            group.name.toLowerCase().includes(term)
+        )
+
+        if (filteredPerms.length > 0) {
+          acc.push({ ...group, permissions: filteredPerms })
+        }
+
+        return acc
+      }, [])
     }
 
     if (filterBySelected) {
-      filtered = filtered
-        .map(group => ({
-          ...group,
-          permissions: group.permissions.filter(p => selectedPermissions.includes(p.codename))
-        }))
-        .filter(group => group.permissions.length > 0)
+      filtered = filtered.reduce<GroupPermission[]>((acc, group) => {
+        const filteredPerms = group.permissions.filter(p => selectedPermissions.includes(p.codename))
+
+        if (filteredPerms.length > 0) {
+          acc.push({ ...group, permissions: filteredPerms })
+        }
+
+        return acc
+      }, [])
     }
 
     return filtered
   }, [searchTerm, filterBySelected, selectedPermissions])
 
-  // Memoized counts
-  const { totalPermissions, selectedCount } = useMemo(
-    () => ({
-      totalPermissions: permissions.reduce((acc, group) => acc + group.permissions.length, 0),
-      selectedCount: selectedPermissions.length
-    }),
-    [selectedPermissions]
+  // Memoized counts - optimize total permissions calculation
+  const totalPermissions = useMemo(
+    () => permissions.reduce((acc, group) => acc + group.permissions.length, 0),
+    [] // Only calculate once since permissions data is static
   )
 
-  // Handlers
+  const selectedCount = selectedPermissions.length
+
+  // Optimized handlers
   const handlePermissionChange = useCallback(
     (permissionCode: string, checked: boolean) => {
-      onChange(
-        checked ? [...selectedPermissions, permissionCode] : selectedPermissions.filter(p => p !== permissionCode)
-      )
+      if (checked) {
+        // Only add if not already present
+        if (!selectedPermissionsSet.has(permissionCode)) {
+          onChange([...selectedPermissions, permissionCode])
+        }
+      } else {
+        // Only remove if present
+        if (selectedPermissionsSet.has(permissionCode)) {
+          onChange(selectedPermissions.filter(p => p !== permissionCode))
+        }
+      }
     },
-    [onChange, selectedPermissions]
+    [onChange, selectedPermissions, selectedPermissionsSet]
   )
 
   const handleGroupChange = useCallback(
     (groupPermissions: Permission[], checked: boolean) => {
       const codes = groupPermissions.map(p => p.codename)
+      const codesSet = new Set(codes)
 
       if (checked) {
-        onChange([...new Set([...selectedPermissions, ...codes])])
+        // Add only permissions that aren't already selected
+        const newPermissions = codes.filter(code => !selectedPermissionsSet.has(code))
+
+        if (newPermissions.length > 0) {
+          onChange([...selectedPermissions, ...newPermissions])
+        }
       } else {
-        onChange(selectedPermissions.filter(p => !codes.includes(p)))
+        // Remove only permissions that are currently selected
+        const filteredPermissions = selectedPermissions.filter(p => !codesSet.has(p))
+
+        if (filteredPermissions.length !== selectedPermissions.length) {
+          onChange(filteredPermissions)
+        }
       }
     },
-    [onChange, selectedPermissions]
+    [onChange, selectedPermissions, selectedPermissionsSet]
   )
 
   const handleSelectAll = useCallback(() => {
-    onChange(permissions.flatMap(g => g.permissions.map(p => p.codename)))
-  }, [onChange])
+    const allPermissions = permissions.flatMap(g => g.permissions.map(p => p.codename))
 
-  const handleClearAll = useCallback(() => onChange([]), [onChange])
+    // Only update if not all permissions are already selected
+    if (selectedPermissions.length !== allPermissions.length) {
+      onChange(allPermissions)
+    }
+  }, [onChange, selectedPermissions])
+
+  const handleClearAll = useCallback(() => {
+    // Only clear if there are permissions to clear
+    if (selectedPermissions.length > 0) {
+      onChange([])
+    }
+  }, [onChange, selectedPermissions])
 
   const handleGroupExpand = useCallback((groupCode: string) => {
     setExpandedGroups(prev =>
@@ -137,25 +174,35 @@ const PermissionsField = <T extends Record<string, any>>({
 
   // Group selection helpers
   const isGroupSelected = useCallback(
-    (groupPermissions: Permission[]) => groupPermissions.every(p => selectedPermissions.includes(p.codename)),
-    [selectedPermissions]
+    (groupPermissions: Permission[]) => groupPermissions.every(p => selectedPermissionsSet.has(p.codename)),
+    [selectedPermissionsSet]
   )
 
   const isGroupPartiallySelected = useCallback(
     (groupPermissions: Permission[]) => {
-      const codes = groupPermissions.map(p => p.codename)
-      const selectedInGroup = codes.filter(code => selectedPermissions.includes(code))
+      let selectedInGroup = 0
+      const totalInGroup = groupPermissions.length
 
-      return selectedInGroup.length > 0 && selectedInGroup.length < codes.length
+      for (const permission of groupPermissions) {
+        if (selectedPermissionsSet.has(permission.codename)) {
+          selectedInGroup++
+        }
+      }
+
+      return selectedInGroup > 0 && selectedInGroup < totalInGroup
     },
-    [selectedPermissions]
+    [selectedPermissionsSet]
   )
 
   // Render group (unifica lógica colapsable y no colapsable)
   const renderGroup = useCallback(
     (group: GroupPermission, groupIndex: number) => {
       const isExpanded = expandedGroups.includes(group.codename)
-      const selectedInGroup = group.permissions.filter(p => selectedPermissions.includes(p.codename)).length
+
+      // Optimize selected count calculation using Set
+      const selectedInGroup = group.permissions.reduce((count, p) =>
+        selectedPermissionsSet.has(p.codename) ? count + 1 : count, 0
+      )
 
       const groupHeader = (
         <Box className='flex flex-col sm:flex-row sm:items-center gap-2 mb-2'>
@@ -248,6 +295,7 @@ const PermissionsField = <T extends Record<string, any>>({
     },
     [
       expandedGroups,
+      selectedPermissionsSet,
       selectedPermissions,
       showGroups,
       collapsible,
@@ -266,9 +314,7 @@ const PermissionsField = <T extends Record<string, any>>({
 
 
       {error && (
-        <FormHelperText error sx={{ mt: 1 }}>
-          {error.message}
-        </FormHelperText>
+        <FormHelperText error sx={{ mt: 1 }}>{error.message}</FormHelperText>
       )}
 
       <Card sx={{ width: '100%' }}>

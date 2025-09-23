@@ -37,7 +37,7 @@ import type { IUser } from '@/types/apps/UserTypes'
 
 
 // Components Imports
-import { ClientForm } from '@/pages/apps/clients/form/ClientForm'
+import  ClientForm  from '@/pages/apps/clients/form/ClientForm'
 
 // Repository Import
 import SearchesRepository from '@/services/repositories/crm/SearchesRepository'

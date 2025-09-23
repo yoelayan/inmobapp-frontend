@@ -185,7 +185,9 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
 
         setState({ data: defaultResponseAPI, loading: false, error: null, item: null, errors: null })
       } catch (error: any) {
+
         setState({ data: defaultResponseAPI, loading: false, error: error.message, item: null, errors: error.response.data })
+        throw error
       }
     },
     [repository]
