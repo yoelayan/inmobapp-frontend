@@ -50,11 +50,11 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
   // Mantener un estado local de las observaciones para que se actualice inmediatamente
-  const [localObservations, setLocalObservations] = useState<IClientObservation[]>(observations)
+  const [localObservations, setLocalObservations] = useState<IClientObservation[]>(observations || [])
 
   // Actualizar el estado local cuando cambien las props
   useEffect(() => {
-    setLocalObservations(observations)
+    setLocalObservations(observations || [])
   }, [observations])
 
   const handleDeleteObservation = async (observationId: number) => {
@@ -67,7 +67,7 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
           await deleteObservation(searchId, observationId)
 
           // Actualizar el estado local inmediatamente después de eliminar
-          setLocalObservations(prevObservations => prevObservations.filter(obs => obs.id !== observationId))
+          setLocalObservations(prevObservations => (prevObservations || []).filter(obs => obs.id !== observationId))
 
           // Notificar al componente padre para que actualice los datos
           onSuccess()
