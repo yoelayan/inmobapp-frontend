@@ -36,8 +36,6 @@ import type { IUser } from '@/types/apps/UserTypes';
 
 import { formatDate, formatDateTime } from '@utils/date';
 
-import useConfirmDialog from '@/hooks/useConfirmDialog';
-import { useNotification } from '@/hooks/useNotification';
 
 const columns: ColumnDef<IUser>[] = [
   {

@@ -30,7 +30,8 @@ import { useNotification } from '@/hooks/useNotification'
 
 // Type Imports
 import type { ResponseAPI } from '@/types/api/response'
-import type { ISearch, IClient } from '@/types/apps/ClientesTypes'
+import type { IClient } from '@/types/apps/ClientesTypes'
+import type { ISearch } from '@/types/apps/SearchTypes'
 import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
@@ -158,7 +159,7 @@ const SearchFormFields: React.FC<{ mode: 'create' | 'edit' }> = ({ mode }) => {
   )
 }
 
-export const SearchForm: React.FC<SearchFormProps> = ({
+const SearchForm: React.FC<SearchFormProps> = ({
   searchId,
   onSuccess
 }) => {
@@ -230,7 +231,7 @@ export const SearchForm: React.FC<SearchFormProps> = ({
       description: data.description,
       budget: data.budget,
       client_id: data.client ? {
-        value: data.client.id,
+        value: data.client.id!, // Aseguras que no es undefined
         label: data.client.name
       } : undefined
     }
@@ -274,3 +275,6 @@ export const SearchForm: React.FC<SearchFormProps> = ({
     </PageContainer>
   )
 }
+
+export { SearchForm }
+export default SearchForm

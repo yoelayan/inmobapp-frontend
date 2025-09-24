@@ -30,9 +30,6 @@ import useConfirmDialog from '@/hooks/useConfirmDialog';
 import { useNotification } from '@/hooks/useNotification';
 import type { IClient } from '@/types/apps/ClientesTypes';
 
-import useConfirmDialog from '@/hooks/useConfirmDialog';
-import { useNotification } from '@/hooks/useNotification';
-
 const columns: ColumnDef<IClient>[] = [
   {
     accessorKey: 'name',
@@ -148,14 +145,6 @@ const ClientsTable = () => {
     }
   ]
 
-  const useClientsTableStore = (
-    () =>
-      createTableStore<IClient>({
-        data: data,
-        loading: loading,
-        refresh: fetchData
-      })
-  )
 
   const tableStore = useClientsTableStore();
 

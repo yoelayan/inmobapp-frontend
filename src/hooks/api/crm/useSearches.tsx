@@ -6,7 +6,7 @@ import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
 import type { ICharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
 import type { ResponseAPI, FilterItem } from '@/types/api/response'
-import { type ISearchCharacteristic } from '@/types/apps/ClientesTypes'
+import { type ISearchCharacteristic } from '@/types/apps/SearchTypes'
 
 export default function useSearches(defaultFilters?: FilterItem[]) {
   const baseHook = useBaseHookApi(SearchesRepository, defaultFilters)

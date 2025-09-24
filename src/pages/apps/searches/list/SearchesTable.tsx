@@ -39,7 +39,7 @@ import SearchCharacteristicModalV2 from '../form/SearchCharacteristicModalV2'
 import useSearches from '@/hooks/api/crm/useSearches';
 import { useNotification } from '@/hooks/useNotification';
 import useConfirmDialog from '@/hooks/useConfirmDialog';
-import type { ISearch } from '@/types/apps/ClientesTypes';
+import type { ISearch } from '@/types/apps/SearchTypes';
 
 const columns: ColumnDef<ISearch>[] = [
   {

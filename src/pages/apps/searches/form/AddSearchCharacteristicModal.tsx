@@ -34,7 +34,7 @@ import useSearches from '@/hooks/api/crm/useSearches'
 import { useNotification } from '@/hooks/useNotification'
 
 // Type Imports
-import type { ISearchCharacteristic } from '@/types/apps/ClientesTypes'
+import type { ISearchCharacteristic } from '@/types/apps/SearchTypes'
 
 interface AddSearchCharacteristicModalProps {
   open: boolean
@@ -318,7 +318,7 @@ const CharacteristicItem: React.FC<CharacteristicItemProps> = React.memo(({
 }) => {
   // Determinar el tipo de valor basado en la característica
   const getTypeValue = (char: ISearchCharacteristic): string => {
-    return char.characteristic_type || 'text'
+    return char.characteristic.type_value || 'text'
   }
 
   const typeValue = getTypeValue(char)
@@ -371,7 +371,7 @@ const CharacteristicItem: React.FC<CharacteristicItemProps> = React.memo(({
             variant="subtitle2"
             sx={{ color: 'primary.main' }}
           >
-            {char.characteristic_name}
+          {char.characteristic.name}
           </Typography>
           <IconButton
             size="small"
@@ -400,11 +400,11 @@ const CharacteristicItem: React.FC<CharacteristicItemProps> = React.memo(({
                     disabled={saving}
                   />
                 }
-                label={char.characteristic_name}
+                label={char.characteristic.name}
               />
             ) : (
               <MUITextField
-                label={`Valor para ${char.characteristic_name}`}
+                label={`Valor para ${char.characteristic.name}`}
                 value={localValue}
                 onChange={handleInputChange}
                 type={typeValue === 'integer' || typeValue === 'decimal' ? 'number' : 'text'}
@@ -431,7 +431,7 @@ const CharacteristicItem: React.FC<CharacteristicItemProps> = React.memo(({
   // Comparación personalizada para evitar re-renderizados innecesarios
   return (
     prevProps.char.id === nextProps.char.id &&
-    prevProps.char.characteristic_name === nextProps.char.characteristic_name &&
+    prevProps.char.characteristic.name === nextProps.char.characteristic.name &&
     prevProps.saving === nextProps.saving
   )
 })

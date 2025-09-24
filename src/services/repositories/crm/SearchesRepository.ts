@@ -4,7 +4,7 @@ import BaseRepository from '../BaseRepository'
 import type { ResponseAPI } from '@/types/api/response'
 
 import type { ICharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
-import type { ISearchCharacteristic, ISearch } from '@/types/apps/ClientesTypes'
+import type { ISearchCharacteristic, ISearch } from '@/types/apps/SearchTypes'
 
 class SearchesRepository extends BaseRepository<ISearch> {
   private static instance: SearchesRepository

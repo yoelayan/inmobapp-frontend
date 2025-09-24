@@ -57,7 +57,7 @@ const PropertyImage = ({
   const inputRef = useRef<HTMLInputElement>(null)
   const { notify } = useNotification()
 
-  {/* TODO: usar zustband para los estados */}
+  // TODO: usar zustand para los estados
   const [isFullScreenOpen, setIsFullScreenOpen] = useState(false)
   const [selectedImageIndex, setSelectedImageIndex] = useState<number>(0)
   const [isDragOver, setIsDragOver] = useState(false)

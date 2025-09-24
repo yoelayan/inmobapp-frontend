@@ -31,7 +31,7 @@ import useSearches from '@/hooks/api/crm/useSearches'
 
 // Type definitions
 import type { ICharacteristic } from '@/types/apps/RealtstateTypes'
-import type { ISearchCharacteristic } from '@/types/apps/ClientesTypes'
+import type { ISearchCharacteristic } from '@/types/apps/SearchTypes'
 
 interface SearchCharacteristicsSelectorProps {
   searchId?: number | null
@@ -71,36 +71,6 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
 
   const { handleSubmit, reset, watch } = methods
   const selectedCharacteristic = watch('selectedCharacteristic')
-
-  // Fetch all available characteristics
-  const fetchAllCharacteristics = async () => {
-    setLoadingAll(true)
-
-    try {
-      const response = await allCharacteristics()
-      const availableChars = response.results || []
-
-      // Filtrar las características excluyendo las que ya están agregadas y las pendientes
-      const filteredChars = availableChars.filter(char => {
-        const isExcluded = excludedCharacteristics.some(excluded => {
-          return excluded.characteristic_name === char.name
-        })
-
-        const isPending = pendingCharacteristics.some(pending => {
-          return pending.characteristic.id === char.id
-        })
-
-        return !isExcluded && !isPending
-      })
-
-      setAvailableCharacteristics(filteredChars)
-    } catch (error) {
-      console.error('Error fetching all characteristics:', error)
-      notify('Error al cargar las características disponibles', 'error')
-    } finally {
-      setLoadingAll(false)
-    }
-  }
 
   // Get default value based on characteristic type
   const getDefaultValueForType = (type: string): any => {
@@ -151,7 +121,7 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
     try {
       // Guardar todas las características pendientes
       const savePromises = pendingCharacteristics.map(pending =>
-        addCharacteristic(searchId, Number(pending.characteristic.id), pending.value)
+        addCharacteristic(searchId, Number(pending.characteristic.id))
       )
 
       await Promise.all(savePromises)
@@ -180,8 +150,25 @@ const SearchCharacteristicsSelector: React.FC<SearchCharacteristicsSelectorProps
 
   // Initial load and when excluded characteristics or pending characteristics change
   useEffect(() => {
+    const fetchAllCharacteristics = async () => {
+      setLoadingAll(true)
+
+      try {
+        if (searchId) {
+          const response = await allCharacteristics(searchId)
+
+          setAvailableCharacteristics(response.results || [])
+        }
+      } catch (error) {
+        console.error('Error fetching all characteristics:', error)
+        notify('Error al cargar las características', 'error')
+      } finally {
+        setLoadingAll(false)
+      }
+    }
+
     fetchAllCharacteristics()
-  }, [excludedCharacteristics, pendingCharacteristics])
+  }, [excludedCharacteristics, pendingCharacteristics, searchId, allCharacteristics, notify])
 
   // Prepare options for FormField
   const characteristicOptions = availableCharacteristics.map((char: ICharacteristic) => ({

@@ -3,7 +3,7 @@ import { useBaseForm } from '@/hooks/useBaseForm'
 
 import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 
-import type { ISearch, ISearchCharacteristic } from '@/types/apps/ClientesTypes'
+import type { ISearch, ISearchCharacteristic } from '@/types/apps/SearchTypes'
 import type { ResponseAPI } from '@/types/api/response'
 
 // Form data type
@@ -66,3 +66,4 @@ export const useSearchForm = (searchId?: number, onSuccess?: (response: ISearch)
     getCharacteristics
   }
 }
+

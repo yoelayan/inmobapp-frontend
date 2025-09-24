@@ -1,7 +1,7 @@
 'use client'
 
-// React Imports
-import React, { useState } from 'react'
+
+import { z } from 'zod'
 
 // MUI Imports
 import {
@@ -20,9 +20,9 @@ import AddCommentIcon from '@mui/icons-material/AddComment'
 
 // Form Imports
 import { Form, FormField } from '@/components/common/forms/Form'
-import { z } from 'zod'
 
 // Hook Imports
+
 import useSearches from '@/hooks/api/crm/useSearches'
 import { useNotification } from '@/hooks/useNotification'
 
@@ -89,7 +89,9 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
 
     // Llamar directamente a la función addObservation
     const response = await addObservation(searchId, data.observation, data.audioFile)
+    
     console.log('API response:', response)
+    
     return response
   }
 
