@@ -29,7 +29,7 @@ import type { IClientObservation } from '@/types/apps/ClientesTypes'
 
 // Hooks Imports
 import useSearches from '@/hooks/api/crm/useSearches'
-import useConfirmDialog from '../../../../hooks/useConfirmDialog'
+import useConfirmDialog from '@/hooks/useConfirmDialog'
 
 interface ObservationsLogModalProps {
   open: boolean
@@ -50,11 +50,11 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
   // Mantener un estado local de las observaciones para que se actualice inmediatamente
-  const [localObservations, setLocalObservations] = useState<IClientObservation[]>(observations)
+  const [localObservations, setLocalObservations] = useState<IClientObservation[]>(observations ?? [])
 
   // Actualizar el estado local cuando cambien las props
   useEffect(() => {
-    setLocalObservations(observations)
+    setLocalObservations(observations ?? [])
   }, [observations])
 
   const handleDeleteObservation = async (observationId: number) => {
@@ -177,3 +177,5 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
 }
 
 export default ObservationsLogModal
+
+

@@ -133,7 +133,11 @@ const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   }
 ]
 
-const PropertiesTable = () => {
+interface PropertiesTableProps {
+  dataOverride?: IRealProperty[]
+}
+
+const PropertiesTable = ({ dataOverride }: PropertiesTableProps) => {
   const router = useRouter()
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
@@ -150,11 +154,11 @@ const PropertiesTable = () => {
   const usePropertiesTableStore = useMemo(
     () =>
       createTableStore<IRealProperty>({
-        data: properties,
-        loading: loading,
-        refresh: fetchProperties
+        data: dataOverride ? ({ results: dataOverride } as any) : properties,
+        loading: dataOverride ? false : loading,
+        refresh: dataOverride ? async () => ({ results: dataOverride } as any) : fetchProperties
       }),
-    [properties, loading, fetchProperties]
+    [properties, loading, fetchProperties, dataOverride]
   )
 
   // ✅ FUNCIÓN DE FILTRADO POR STATUS
@@ -274,7 +278,8 @@ const PropertiesTable = () => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => fetchProperties()}
+                onClick={() => (dataOverride ? null : fetchProperties())}
+                disabled={!!dataOverride}
               >
                 Actualizar
               </Button>
