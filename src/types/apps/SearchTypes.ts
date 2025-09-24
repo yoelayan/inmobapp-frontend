@@ -10,16 +10,13 @@ export type ISearchCharacteristic = {
 
 export type ISearch = {
   description: string
-  id?: number  
+  id?: number
   budget: number
-  client_id?: {
-    label: string;
-    value: number | undefined;
-  }
-  client?: IClient  
-  status_id?: number 
-  user_id?: number  
-  franchise_id?: number  
-  created_at?: string  
-  updated_at?: string  
+  client_id: number
+  client?: IClient
+  status_id?: number
+  user_id?: number
+  franchise_id?: number
+  created_at?: string
+  updated_at?: string
 }

@@ -18,9 +18,15 @@ export const createSearchSchema = baseSearchSchema.extend({
 })
 
 // Schema for editing searches (todos los campos opcionales)
-export const editSearchSchema = baseSearchSchema.partial().extend({
-  client_id: asyncSelectValidation.optional()
+export const editSearchSchema = baseSearchSchema.extend({
+  client_id: asyncSelectValidation
 })
+
+export const defaultSearchValues = {
+  description: '',
+  budget: 0.01,
+  client_id: undefined
+}
 
 // Types
 export type CreateSearchFormData = z.infer<typeof createSearchSchema>

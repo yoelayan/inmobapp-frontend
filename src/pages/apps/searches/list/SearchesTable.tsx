@@ -33,7 +33,7 @@ import {
 // Component Imports
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
 import ObservationsLogModal from '../form/ObservationsLogModal'
-import SearchCharacteristicModalV2 from '../form/SearchCharacteristicModalV2'
+import SearchCharacteristicModalV2 from '../form/SearchCharacteristicModal'
 
 // Hooks Imports
 import useSearches from '@/hooks/api/crm/useSearches';

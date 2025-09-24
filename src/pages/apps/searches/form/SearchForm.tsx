@@ -19,8 +19,6 @@ import CloseIcon from '@mui/icons-material/Close'
 
 import { useFormContext } from 'react-hook-form'
 
-import type { UseFormReturn } from 'react-hook-form'
-
 // Component Imports
 import { Form, PageContainer, FormField } from '@/components/common/forms/Form'
 
@@ -31,10 +29,10 @@ import { useNotification } from '@/hooks/useNotification'
 // Type Imports
 import type { ResponseAPI } from '@/types/api/response'
 import type { IClient } from '@/types/apps/ClientesTypes'
-import type { ISearch } from '@/types/apps/SearchTypes'
 import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
+import type { ISearch } from '@/types/apps/SearchTypes'
 
 
 // Components Imports
@@ -50,6 +48,7 @@ import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 import {
   createSearchSchema,
   editSearchSchema,
+  defaultSearchValues,
   type CreateSearchFormData,
   type EditSearchFormData
 } from '@/validations/searchSchema'
@@ -57,7 +56,7 @@ import {
 // Component Props
 interface SearchFormProps {
   searchId?: string
-  onSuccess?: (response: ISearch) => void
+  onSuccess?: (data: ISearch) => void
   statuses?: ResponseAPI<IStatus> | null
   users?: ResponseAPI<IUser> | null
   franchises?: ResponseAPI<IFranchise> | null
@@ -179,11 +178,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
   console.log('  - editSearchSchema:', editSearchSchema)
   console.log('  - createSearchSchema:', createSearchSchema)
 
-  const defaultValues: Partial<CreateSearchFormData> = {
-    description: '',
-    budget: 0.01,
-    client_id: undefined
-  }
+  const defaultValues = defaultSearchValues
 
   const handleSuccess = (data: CreateSearchFormData | EditSearchFormData) => {
     console.log('✅ Búsqueda creada/actualizada exitosamente:', data)
@@ -200,9 +195,15 @@ const SearchForm: React.FC<SearchFormProps> = ({
       notify('Búsqueda creada exitosamente', 'success')
     }
 
-    if (onSuccess) {
-      onSuccess(data as ISearch)
+    const { client_id } = data
+
+    const formattedData = {
+      ...data,
+      client_id: client_id?.value
     }
+
+    onSuccess?.(formattedData)
+
   }
 
   const handleError = (error: Error | { message?: string; status?: number }) => {
@@ -222,34 +223,17 @@ const SearchForm: React.FC<SearchFormProps> = ({
     notify(errorMessage, 'error')
   }
 
-    const setFormData = (data: ISearch, methods: UseFormReturn<EditSearchFormData>) => {
-    console.log('🔧 setFormData - Datos recibidos:', data)
-    console.log('🔧 setFormData - data.client:', data.client)
-    console.log('🔧 setFormData - data.client_id:', data.client_id)
 
-    const formData: EditSearchFormData = {
-      description: data.description,
-      budget: data.budget,
-      client_id: data.client ? {
-        value: data.client.id!, // Aseguras que no es undefined
-        label: data.client.name
-      } : undefined
-    }
-
-    console.log('🔧 setFormData - Datos formateados para el formulario:', formData)
-    console.log('🔧 setFormData - formData.client_id:', formData.client_id)
-    methods.reset(formData)
-  }
 
   // Función para formatear los datos antes de enviarlos
   const formatData = (data: CreateSearchFormData | EditSearchFormData) => {
     console.log('🔧 formatData - Datos originales:', data)
 
+    const { client_id } = data
+
     const formattedData = {
       ...data,
-      client_id: typeof data.client_id === 'object' && data.client_id !== null
-        ? (data.client_id as any).value
-        : data.client_id
+      client_id: client_id?.value
     }
 
     console.log('🔧 formatData - Datos formateados:', formattedData)
@@ -267,7 +251,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
         onError={handleError}
         mode={mode}
         entityId={searchId ? parseInt(searchId) : undefined}
-        setFormData={setFormData}
         formatData={formatData}
       >
         <SearchFormFields mode={mode} />
