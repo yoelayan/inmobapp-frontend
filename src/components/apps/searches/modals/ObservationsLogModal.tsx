@@ -49,20 +49,12 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
   const { deleteObservation } = useSearches()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
 
-  // Mantener un estado local de las observaciones para que se actualice inmediatamente
-<<<<<<<< HEAD:src/components/apps/searches/ObservationsLogModal.tsx
-  const [localObservations, setLocalObservations] = useState<IClientObservation[]>(observations ?? [])
 
-  // Actualizar el estado local cuando cambien las props
-  useEffect(() => {
-    setLocalObservations(observations ?? [])
-========
   const [localObservations, setLocalObservations] = useState<IClientObservation[]>(observations || [])
 
   // Actualizar el estado local cuando cambien las props
   useEffect(() => {
     setLocalObservations(observations || [])
->>>>>>>> master:src/components/apps/searches/modals/ObservationsLogModal.tsx
   }, [observations])
 
   const handleDeleteObservation = async (observationId: number) => {

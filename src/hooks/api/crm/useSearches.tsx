@@ -4,7 +4,7 @@ import { useCallback } from 'react'
 // Repository Imports
 import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 import useBaseHookApi from '@/hooks/api/useBaseHookApi'
-import type { ICharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
+import type { ICharacteristic } from '@/types/apps/RealtstateTypes'
 import type { ResponseAPI, FilterItem } from '@/types/api/response'
 import { type ISearchCharacteristic } from '@/types/apps/SearchTypes'
 
@@ -51,13 +51,6 @@ export default function useSearches(defaultFilters?: FilterItem[]) {
     return await repository.allCharacteristics(id)
   }, [repository])
 
-  const getMatchedProperties = useCallback(
-    async (searchId: number): Promise<ResponseAPI<IRealProperty>> => {
-      return await repository.getMatchedProperties(searchId)
-    },
-    [repository]
-  )
-
   const getCharacteristics = useCallback(
     async (searchId: number): Promise<ResponseAPI<ISearchCharacteristic>> => {
       return await repository.getCharacteristics(searchId)
@@ -73,7 +66,6 @@ export default function useSearches(defaultFilters?: FilterItem[]) {
     addObservation,
     deleteObservation,
     allCharacteristics,
-    getMatchedProperties,
     getCharacteristics,
   }
 }

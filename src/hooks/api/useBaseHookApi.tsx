@@ -205,6 +205,7 @@ export default function useBaseHookApi<T>(repository: InterfaceRepositoryAPI<T>,
     createData,
     updateData,
     deleteData,
-    ...state
+    ...state,
+    setState
   }
 }

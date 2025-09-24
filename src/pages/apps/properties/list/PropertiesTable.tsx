@@ -12,12 +12,15 @@ import DeleteIcon from '@mui/icons-material/Delete'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import AddIcon from '@mui/icons-material/Add'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import Tooltip from '@mui/material/Tooltip'
 
 import ImageIcon from '@mui/icons-material/Image'
 
 import type { ColumnDef } from '@tanstack/react-table'
 
 import SectionHeader from '@/components/layout/horizontal/SectionHeader'
+
+
 
 import {
   Table,
@@ -32,12 +35,11 @@ import {
 
 import useConfirmDialog from '@/hooks/useConfirmDialog'
 import { useNotification } from '@/hooks/useNotification'
-import useProperties from '@/hooks/api/realstate/useProperties'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 
 // Properties Card
 import PropertiesCard from './PropertiesCard'
-import type { FilterItem, SortingItem } from '@/types/api/response'
+import type { FilterItem, SortingItem, ResponseAPI } from '@/types/api/response'
 
 const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   {
@@ -72,7 +74,7 @@ const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
     cell: ({ row }) => {
       return (
         <Button
-          variant="text"
+          variant='text'
           sx={{
             textAlign: 'left',
             justifyContent: 'flex-start',
@@ -118,50 +120,95 @@ const getColumns = (router: any): ColumnDef<IRealProperty>[] => [
   },
   {
     accessorKey: 'price',
-    header: 'Precio',
-    enableColumnFilter: true,
-    cell: ({ getValue }) => {
-      const price = getValue() as number
+    header: 'Precio (USD)',
+    enableColumnFilter: false,
+    cell: ({ row }) => {
+      const price = row.original.price
+      const rentPrice = row.original.rent_price
+      const negotiationType = row.original.type_negotiation?.name
 
-      return price ? `$${price.toLocaleString()}` : '$0'
+      // Si no hay ningún precio, mostrar vacío
+      if (!price && !rentPrice) return ''
+
+      // Si es "Venta y Alquiler", mostrar ambos precios
+      if (negotiationType === 'Venta y Alquiler' && price && rentPrice) {
+        return (
+          <Box className='flex flex-col gap-1'>
+            <Tooltip title='Precio de Venta' placement='top'>
+              <Box className='text-sm'>
+                <span className='text-green-600 font-bold'>V: </span>${Number(price).toLocaleString()}
+              </Box>
+            </Tooltip>
+            <Tooltip title='Precio de Alquiler' placement='top'>
+              <Box className='text-sm'>
+                <span className='text-blue-600 font-bold'>A: </span>${Number(rentPrice).toLocaleString()}
+              </Box>
+            </Tooltip>
+          </Box>
+        )
+      }
+
+      // Para otros tipos, mostrar solo el precio correspondiente
+      let displayPrice = null
+      let priceType = ''
+
+      if (negotiationType === 'Venta' && price) {
+        displayPrice = price
+        priceType = 'Venta'
+      } else if (negotiationType === 'Alquiler' && rentPrice) {
+        displayPrice = rentPrice
+        priceType = 'Alquiler'
+      }
+
+      if (!displayPrice) return ''
+
+      return (
+        <Box>
+          <Tooltip title={priceType}>
+            <Box className='font-bold'>${Number(displayPrice).toLocaleString()}</Box>
+          </Tooltip>
+        </Box>
+      )
     }
   },
   {
-    accessorKey: 'status.name',
-    header: 'Estado',
+    accessorKey: 'created_at',
+    header: 'Fecha de Creación',
     enableColumnFilter: false
   }
 ]
 
-interface PropertiesTableProps {
-  dataOverride?: IRealProperty[]
+type PropertiesTableProps = {
+  properties: ResponseAPI<IRealProperty>
+  loading: boolean
+  fetchProperties: (
+    params?: {
+      page: number,
+      pageSize: number,
+      filters: FilterItem[],
+      sorting: SortingItem[]
+    }) => Promise<ResponseAPI<IRealProperty>>
+  deleteProperty: (id: number) => Promise<void>
 }
 
-const PropertiesTable = ({ dataOverride }: PropertiesTableProps) => {
+const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty }: PropertiesTableProps) => {
   const router = useRouter()
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
 
   // ✅ CAMBIO: Usar hook directamente
-  const {
-    data: properties,
-    loading,
-    fetchData: fetchProperties,
-    deleteData: deleteProperty
-  } = useProperties()
 
   const usePropertiesTableStore = useMemo(
     () =>
       createTableStore<IRealProperty>({
-        data: dataOverride ? ({ results: dataOverride } as any) : properties,
-        loading: dataOverride ? false : loading,
-        refresh: dataOverride ? async () => ({ results: dataOverride } as any) : fetchProperties
+        data: properties,
+        loading: loading,
+        refresh: fetchProperties
       }),
-    [properties, loading, fetchProperties, dataOverride]
+    [properties, loading, fetchProperties]
   )
 
-  // ✅ FUNCIÓN DE FILTRADO POR STATUS
   const handleStatusChange = async (status: string) => {
     setStatusFilter(status)
 
@@ -257,10 +304,7 @@ const PropertiesTable = ({ dataOverride }: PropertiesTableProps) => {
       </Box>
 
       <Grid container spacing={2}>
-        <SectionHeader
-          title='Propiedades'
-          subtitle='Aquí puedes ver todas las propiedades disponibles'
-        />
+        <SectionHeader title='Propiedades' subtitle='Aquí puedes ver todas las propiedades disponibles' />
         <Table columns={columns} state={tableStore} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
             <Box className='flex gap-4 w-full'>
@@ -278,8 +322,7 @@ const PropertiesTable = ({ dataOverride }: PropertiesTableProps) => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => (dataOverride ? null : fetchProperties())}
-                disabled={!!dataOverride}
+                onClick={() => fetchProperties()}
               >
                 Actualizar
               </Button>

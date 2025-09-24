@@ -1,14 +1,14 @@
 // React Imports
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 
 // Api Imports
 import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
 import useBaseHookApi from '@hooks/api/useBaseHookApi'
 
 // Type Imports
-import type { IPropertyCharacteristic } from '@/types/apps/RealtstateTypes'
+import type { IPropertyCharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
 import type { PropertyMetricsFilters } from '@/types/apps/RealtstateMetricsTypes'
-import type { FilterItem } from '@/types/api/response'
+import type { FilterItem, ResponseAPI, SortingItem } from '@/types/api/response'
 
 export default function useProperties(defaultFilters?: Record<string, any>) {
   /**
@@ -19,7 +19,9 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
       updateCharacteristic - detail
      */
 
-  const baseHookApi=useBaseHookApi(PropertiesRepository, defaultFilters as FilterItem[])
+  const baseHookApi = useBaseHookApi(PropertiesRepository, defaultFilters as FilterItem[])
+  const { setState } = baseHookApi
+  const repository = PropertiesRepository
 
   const [metricsData, setMetricsData] = useState<any>(null)
   const [metricsLoading, setMetricsLoading] = useState<boolean>(false)
@@ -110,6 +112,57 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     }
   }
 
+  const fetchMatchedProperties = useCallback(
+    async (
+      searchId: number,
+      params?: {
+        page: number
+        pageSize: number
+        filters: FilterItem[]
+        sorting: SortingItem[]
+      }
+    ): Promise<ResponseAPI<IRealProperty>> => {
+      const { page = 1, pageSize = 10, filters = [], sorting = [] } = params || {}
+
+      setState(prev => ({ ...prev, loading: true }))
+
+      const sortingParams = sorting.reduce(
+        (acc: Record<string, string>, item) => {
+          acc[`order_by_${item.id}`] = item.desc ? 'desc' : 'asc'
+
+          return acc
+        },
+        {} as Record<string, string>
+      )
+
+      const filtersParams = filters.reduce(
+        (acc: Record<string, string>, item) => {
+          acc[item.field] = item.value
+
+          return acc
+        },
+        {} as Record<string, string>
+      )
+
+      try {
+        const response = await repository.fetchMatchedProperties(searchId, {
+          page,
+          per_page: pageSize,
+          ...filtersParams,
+          ...sortingParams
+        })
+
+        setState({ data: response, loading: false, error: null, item: null, errors: null })
+
+        return response
+      } catch (error) {
+        setState(prev => ({ ...prev, loading: false }))
+        throw error
+      }
+    },
+    [repository, setState]
+  )
+
   return {
     uploadImages,
     getAllImages,
@@ -128,6 +181,7 @@ export default function useProperties(defaultFilters?: Record<string, any>) {
     totalProperties,
     totalPropertiesLoading,
     totalPropertiesError,
+    fetchMatchedProperties,
     ...baseHookApi
   }
 }

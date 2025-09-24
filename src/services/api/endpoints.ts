@@ -5,89 +5,89 @@ export const ENDPOINTS = {
       BY_ID: (id: number) => `/properties/${id}/`,
       METRICS: '/properties/metrics/',
       TOTAL: '/properties/total/',
+      MATCHED: (searchId: number) => `/searches/${searchId}/properties_matched/`,
       IMAGES: {
         ALL: (id: number) => `/properties/${id}/get-images/`,
         UPLOAD: (id: number) => `/properties/${id}/upload-images/`,
         DELETE: (id: number) => `/properties/${id}/delete-image/`,
-        REORDER: (id: number) => `/properties/${id}/reorder-images/`,
+        REORDER: (id: number) => `/properties/${id}/reorder-images/`
       },
       CHARACTERISTICS: {
         BASE: (id: number) => `/properties/${id}/characteristics/`,
         ADD: (id: number) => `/properties/${id}/add-characteristic/`,
         DELETE: (id: number) => `/properties/${id}/delete-characteristic/`,
-        UPDATE: (id: number) => `/properties/${id}/update-characteristic/`,
-      },
+        UPDATE: (id: number) => `/properties/${id}/update-characteristic/`
+      }
     },
     PROPERTY_CHARACTERISTICS: {
-      BASE: '/property-characteristics/',
+      BASE: '/property-characteristics/'
     },
     PROPERTY_STATUS: {
-      BASE: '/property-status/',
+      BASE: '/property-status/'
     },
     TYPE_NEGOTIATIONS: {
-      BASE: '/type-negotiations/',
+      BASE: '/type-negotiations/'
     },
     PROPERTY_TYPES: {
-      BASE: '/property-types/',
+      BASE: '/property-types/'
     },
     FRANCHISES: {
-      BASE: '/franchises/',
-    },
+      BASE: '/franchises/'
+    }
   },
   LOCATIONS: {
     CITIES: {
-      BASE: '/cities/',
+      BASE: '/cities/'
     },
     STATES: {
-      BASE: '/states/',
+      BASE: '/states/'
     },
     MUNICIPALITIES: {
-      BASE: '/municipalities/',
+      BASE: '/municipalities/'
     },
     PARISHES: {
-      BASE: '/parishes/',
-    },
+      BASE: '/parishes/'
+    }
   },
   CRM: {
     CLIENTS: {
       BASE: '/clients/',
-      BY_ID: (id: number) => `/clients/${id}/`,
+      BY_ID: (id: number) => `/clients/${id}/`
     },
     CLIENT_STATUS: {
-      BASE: '/client-status/',
+      BASE: '/client-status/'
     },
     VISITS: {
-      BASE: '/visits/',
+      BASE: '/visits/'
     },
     SEARCHES: {
       BASE: '/searches/',
       BY_ID: (id: number) => `/searches/${id}/`,
-      PROPERTIES_MATCHED: (id: number) => `/searches/${id}/properties_matched/`,
       CHARACTERISTICS: {
         GET: (id: number) => `/searches/${id}/characteristics/`,
         ADD: (id: number) => `/searches/${id}/add-characteristic/`,
         DELETE: (id: number) => `/searches/${id}/delete-characteristic/`,
         UPDATE: (id: number) => `/searches/${id}/update-characteristic/`,
-        ALL: (id: number) => `/searches/${id}/all-characteristics/`,
+        ALL: (id: number) => `/searches/${id}/all-characteristics/`
       },
       OBSERVATIONS: {
         ADD: (id: number) => `/searches/${id}/add-observation/`,
-        DELETE: (id: number) => `/searches/${id}/delete-observation/`,
-      },
-    },
+        DELETE: (id: number) => `/searches/${id}/delete-observation/`
+      }
+    }
   },
   USERS: {
     BASE: '/users/',
     BY_ID: (id: number) => `/users/${id}/`,
     BY_FRANCHISE: (franchiseId: number) => `/users/franchise/${franchiseId}/`,
     GROUPS: {
-      BASE: '/groups/',
+      BASE: '/groups/'
     },
     ROLES: {
-      BASE: '/roles/',
+      BASE: '/roles/'
     },
     FRANCHISE_GROUPS: {
-      BASE: '/franchise-groups/',
+      BASE: '/franchise-groups/'
     }
-  },
-};
+  }
+}

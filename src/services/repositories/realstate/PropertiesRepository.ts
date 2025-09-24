@@ -106,6 +106,14 @@ class PropertyRepository extends BaseRepository<IRealProperty> {
   public async getTotalProperties(): Promise<TotalPropertiesResponse> {
     return await this.apiClient.get<TotalPropertiesResponse>(ENDPOINTS.REALSTATE.PROPERTIES.TOTAL)
   }
+  public async fetchMatchedProperties(
+    searchId: number,
+    params?: Record<string, any>
+  ): Promise<ResponseAPI<IRealProperty>> {
+    const url = ENDPOINTS.REALSTATE.PROPERTIES.MATCHED(searchId)
+
+    return await this.apiClient.get<ResponseAPI<IRealProperty>>(url, params)
+  }
 }
 
 export default PropertyRepository.getInstance()

@@ -3,7 +3,7 @@ import { ENDPOINTS } from '@/services/api/endpoints'
 import BaseRepository from '../BaseRepository'
 import type { ResponseAPI } from '@/types/api/response'
 
-import type { ICharacteristic, IRealProperty } from '@/types/apps/RealtstateTypes'
+import type { ICharacteristic } from '@/types/apps/RealtstateTypes'
 import type { ISearchCharacteristic, ISearch } from '@/types/apps/SearchTypes'
 
 class SearchesRepository extends BaseRepository<ISearch> {
@@ -19,12 +19,6 @@ class SearchesRepository extends BaseRepository<ISearch> {
     }
 
     return SearchesRepository.instance
-  }
-
-  public async getMatchedProperties(searchId: number): Promise<ResponseAPI<IRealProperty>> {
-    const url = ENDPOINTS.CRM.SEARCHES.PROPERTIES_MATCHED(searchId)
-
-    return await this.apiClient.get<ResponseAPI<IRealProperty>>(url)
   }
 
   public async allCharacteristics(id: number): Promise<ResponseAPI<ICharacteristic>> {
