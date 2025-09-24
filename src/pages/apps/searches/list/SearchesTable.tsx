@@ -32,7 +32,7 @@ import {
 
 // Component Imports
 import AddSearchObservationModal from '../form/AddSearchObservationModal'
-import ObservationsLogModal from '@/components/apps/searches/ObservationsLogModal'
+import ObservationsLogModal from '@/components/apps/searches/modals/ObservationsLogModal'
 import SearchCharacteristicModalV2 from '../form/SearchCharacteristicModal'
 
 // Hooks Imports
