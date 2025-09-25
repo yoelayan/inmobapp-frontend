@@ -168,21 +168,13 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
                   color='primary'
                   startIcon={<AddCommentIcon />}
                   sx={{
-                    width: '100%',
-                    background: 'linear-gradient(45deg, #1976d2 30%, #42a5f5 90%)',
-                    '&:hover': {
-                      background: 'linear-gradient(45deg, #1565c0 30%, #1976d2 90%)'
-                    },
+                    width: '75%',
+                    alignSelf: 'center',
                     fontWeight: 600,
                     py: 1.5,
                     px: 3,
                     borderRadius: 2,
                     transition: 'all 0.2s ease-in-out',
-                    transform: 'scale(1)',
-                    '&:hover:not(:disabled)': {
-                      transform: 'scale(1.02)',
-                      boxShadow: theme.shadows[8]
-                    },
                     boxShadow: theme.shadows[4]
                   }}
                 >
@@ -195,10 +187,12 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
                   name='observation'
                   label='Observación'
                   type='text'
+                  fullWidth
                   required
                   multiline
                   rows={4}
                   placeholder='Escriba su observación aquí...'
+                  sx={{ width: '100%' }}
                 />
 
                 <FormField

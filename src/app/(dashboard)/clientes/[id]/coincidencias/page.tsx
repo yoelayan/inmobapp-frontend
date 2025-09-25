@@ -3,6 +3,8 @@
 // React Imports
 import React, { useCallback } from 'react'
 
+import { useParams } from 'next/navigation'
+
 // Component Imports
 import Grid from '@mui/material/Grid2'
 
@@ -15,10 +17,9 @@ import useProperties from '@/hooks/api/realstate/useProperties'
 
 import type { FilterItem, SortingItem } from '@/types/api/response'
 
-interface PageProps { params: { id: string } }
-
-const ClientMatches: React.FC<PageProps> = ({ params }) => {
-  const searchId = Number(params.id)
+const ClientMatches = () => {
+  const params = useParams<{ id: string }>()
+  const searchId = Number(params?.id ?? '0')
 
   const { data: properties, loading, fetchMatchedProperties: fetchMatchedProperties, deleteData: deleteProperty } = useProperties()
 
@@ -37,6 +38,7 @@ const ClientMatches: React.FC<PageProps> = ({ params }) => {
             loading={loading}
             fetchProperties={fetchProperties}
             deleteProperty={deleteProperty}
+            showCards={false}
           />
         </Grid>
       </Grid>

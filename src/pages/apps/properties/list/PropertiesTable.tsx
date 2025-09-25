@@ -189,9 +189,10 @@ type PropertiesTableProps = {
       sorting: SortingItem[]
     }) => Promise<ResponseAPI<IRealProperty>>
   deleteProperty: (id: number) => Promise<void>
+  showCards?: boolean
 }
 
-const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty }: PropertiesTableProps) => {
+const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty, showCards = true }: PropertiesTableProps) => {
   const router = useRouter()
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
@@ -299,9 +300,11 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty 
 
   return (
     <>
-      <Box sx={{ mb: 6 }}>
-        <PropertiesCard onStatusChange={handleStatusChange} />
-      </Box>
+      {showCards && (
+        <Box sx={{ mb: 6 }}>
+          <PropertiesCard onStatusChange={handleStatusChange} />
+        </Box>
+      )}
 
       <Grid container spacing={2}>
         <SectionHeader title='Propiedades' subtitle='Aquí puedes ver todas las propiedades disponibles' />
