@@ -141,7 +141,7 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
                         </Box>
                       }
                       secondary={
-                        <Box component='div'>
+                        <Box component='span'>
                           <Typography
                             sx={{ display: 'block', mt: 1 }}
                             component='span'
@@ -151,7 +151,7 @@ const ObservationsLogModal: React.FC<ObservationsLogModalProps> = ({
                             {observation.description}
                           </Typography>
                           {observation.audio && (
-                            <Box sx={{ mt: 1 }}>
+                            <Box component='span' sx={{ display: 'block', mt: 1 }}>
                               <audio controls src={observation.audio} style={{ width: '100%' }} />
                             </Box>
                           )}

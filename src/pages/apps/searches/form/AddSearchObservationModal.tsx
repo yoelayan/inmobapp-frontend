@@ -89,9 +89,9 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
 
     // Llamar directamente a la función addObservation
     const response = await addObservation(searchId, data.observation, data.audioFile)
-    
+
     console.log('API response:', response)
-    
+
     return response
   }
 
@@ -110,7 +110,7 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
       open={open}
       onClose={handleClose}
       aria-labelledby='add-observation-modal-title'
-      className="flex items-center justify-center p-4"
+      className='flex items-center justify-center p-4'
     >
       <Box
         sx={{
@@ -128,9 +128,7 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
           <CardHeader
             title='Añadir Observación'
             sx={{
-              bgcolor: theme.palette.mode === 'dark'
-                ? 'rgba(255, 255, 255, 0.05)'
-                : 'rgba(25, 118, 210, 0.04)',
+              bgcolor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(25, 118, 210, 0.04)',
               borderBottom: `1px solid ${theme.palette.divider}`,
               '& .MuiTypography-root': {
                 color: theme.palette.text.primary,
@@ -162,24 +160,17 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
               onError={handleError}
               formatData={formatData}
               actionsComponent={
-                <Button
-                  type='submit'
-                  variant='contained'
-                  color='primary'
-                  startIcon={<AddCommentIcon />}
-                  sx={{
-                    width: '75%',
-                    alignSelf: 'center',
-                    fontWeight: 600,
-                    py: 1.5,
-                    px: 3,
-                    borderRadius: 2,
-                    transition: 'all 0.2s ease-in-out',
-                    boxShadow: theme.shadows[4]
-                  }}
-                >
-                  Añadir Observación
-                </Button>
+                <Box display='flex' gap={2} justifyContent='flex-end'>
+                  <Button variant='contained' color='secondary' onClick={handleClose}>Cancelar</Button>
+                  <Button
+                    type='submit'
+                    variant='contained'
+                    color='primary'
+                    startIcon={<AddCommentIcon />}
+                  >
+                    Añadir Observación
+                  </Button>
+                </Box>
               }
             >
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -195,17 +186,15 @@ const AddSearchObservationModal: React.FC<AddSearchObservationModalProps> = ({
                   sx={{ width: '100%' }}
                 />
 
-                <FormField
-                  name='audioFile'
-                  label='Grabación de audio (opcional)'
-                  type='audio'
-                />
+                <FormField name='audioFile' label='Grabación de audio (opcional)' type='audio' />
 
-                <Box sx={{
-                  color: theme.palette.text.secondary,
-                  fontSize: '0.75rem',
-                  fontStyle: 'italic'
-                }}>
+                <Box
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.75rem',
+                    fontStyle: 'italic'
+                  }}
+                >
                   * Debe proporcionar una observación de texto o una grabación de audio
                 </Box>
               </Box>

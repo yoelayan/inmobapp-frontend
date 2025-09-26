@@ -384,7 +384,6 @@ const SearchCharacteristicModalV2 = ({ open, onClose, searchId, onSuccess }: Sea
                 Agregar característica
               </Typography>
               <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-
                 <FormControl fullWidth>
                   <InputLabel id='add-characteristic-label'>Seleccionar Característica</InputLabel>
                   <Select
@@ -420,9 +419,13 @@ const SearchCharacteristicModalV2 = ({ open, onClose, searchId, onSuccess }: Sea
               )}
             </Box>
           </CardContent>
-          <CardActions>
-            <Button variant='contained' color='primary' onClick={onSubmit}>Guardar</Button>
-            <Button variant='contained' color='secondary' onClick={handleClose}>Cancelar</Button>
+          <CardActions className='flex justify-end'>
+            <Button variant='contained' color='secondary' onClick={handleClose}>
+              Cancelar
+            </Button>
+            <Button variant='contained' color='primary' onClick={onSubmit}>
+              Guardar
+            </Button>
           </CardActions>
         </Card>
       </Box>
