@@ -94,23 +94,6 @@ const VerticalMenu = ({ scrollMenu }: Props) => {
           title: 'Agregar',
           href: '/clientes/agregar'
         },
-        {
-          type: 'subMenu',
-          label: 'Búsquedas',
-          icon: <i className='tabler-search' />,
-          subMenu: [
-            {
-              type: 'item',
-              title: 'Todas',
-              href: '/clientes/busquedas'
-            },
-            {
-              type: 'item',
-              title: 'Agregar',
-              href: '/clientes/busquedas/agregar'
-            }
-          ]
-        }
       ]
     },
     {
