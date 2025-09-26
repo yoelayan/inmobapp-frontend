@@ -7,6 +7,5 @@ node_modules
 .vscode
 README.md
 .env*
-!.env.production
 .gitignore
 *.log
