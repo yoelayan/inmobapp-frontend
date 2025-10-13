@@ -62,8 +62,6 @@ import StatesRepository from '@/services/repositories/locations/StatesRepository
 import MunicipalitiesRepository from '@/services/repositories/locations/MunicipalitiesRepository'
 import ParishesRepository from '@/services/repositories/locations/ParishesRepository'
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
-import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
-import UsersRepository from '@/services/repositories/users/UsersRepository'
 import { EditorField } from '@components/common/forms/fields/EditorField'
 
 
@@ -227,24 +225,6 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
 
   return (
     <>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <FormField
-          type='async-select'
-          name='franchise_id'
-          label='Franquicia'
-          required
-          repository={FranchisesRepository}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <FormField
-          type='async-select'
-          name='assigned_to_id'
-          label='Usuario Asignado'
-          required
-          repository={UsersRepository}
-        />
-      </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
         <FormField
           name='type_negotiation_id'
@@ -666,12 +646,10 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const formatData = (data: CreatePropertyFormData | EditPropertyFormData) => {
     // Extraer id de los async-select
-    const { franchise_id, assigned_to_id, state_id, municipality_id, parish_id, owner_id } = data
+    const { state_id, municipality_id, parish_id, owner_id } = data
 
     return {
       ...data,
-      franchise_id: franchise_id?.value,
-      assigned_to_id: assigned_to_id?.value,
       state_id: state_id?.value,
       municipality_id: municipality_id?.value,
       parish_id: parish_id?.value,

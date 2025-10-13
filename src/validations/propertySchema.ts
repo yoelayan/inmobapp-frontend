@@ -13,10 +13,6 @@ const basePropertySchema = z.object({
 
   code: z.string().optional().or(z.literal('')),
 
-  franchise_id: asyncSelectValidation,
-
-  assigned_to_id: asyncSelectValidation,
-
   status_id: z.number({ message: 'El estado es requerido' }).min(1, { message: 'Debe seleccionar un estado' }),
 
   type_negotiation_id: z
@@ -68,8 +64,6 @@ export const step1PartialSchema = basePropertySchema.pick({
 }).partial()
 
 export const step2PartialSchema = basePropertySchema.pick({
-  franchise_id: true,
-  assigned_to_id: true,
   type_negotiation_id: true,
   price: true,
   rent_price: true,
@@ -89,8 +83,6 @@ export const step1Schema = z.object({
 })
 
 export const step2Schema = z.object({
-  franchise_id: basePropertySchema.shape.franchise_id,
-  assigned_to_id: basePropertySchema.shape.assigned_to_id,
   type_negotiation_id: basePropertySchema.shape.type_negotiation_id,
   price: basePropertySchema.shape.price,
   rent_price: basePropertySchema.shape.rent_price,
@@ -130,8 +122,6 @@ export const defaultPropertyValues = {
   name: '',
   description: '',
   code: '',
-  franchise_id: undefined,
-  assigned_to_id: undefined,
   status_id: undefined,
   type_negotiation_id: undefined,
   type_property_id: undefined,

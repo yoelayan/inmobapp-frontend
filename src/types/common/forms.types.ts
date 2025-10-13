@@ -96,6 +96,9 @@ export interface AsyncSelectFieldProps<T extends FieldValues> extends FormFieldB
   onChange?: (option: { label: string, value: string | number | undefined }) => void
   filters?: FilterItem[]
   disabled?: boolean
+  searchParam?: string
+  labelKey?: string
+  valueKey?: string
 }
 
 export type PermissionsFieldProps<T extends FieldValues> = FormFieldBaseProps<T> & {

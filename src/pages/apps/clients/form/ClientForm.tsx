@@ -9,13 +9,9 @@ import { Form, FormField } from '@components/common/forms/Form'
 
 import { useNotification } from '@/hooks/useNotification'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useUsers from '@/hooks/api/users/useUsers'
-import useFranchises from '@/hooks/api/realstate/useFranchises'
 import type { IClient } from '@/types/apps/ClientesTypes'
 
 // Importar repositorios para async-select
-import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
-import UsersRepository from '@/services/repositories/users/UsersRepository'
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 
 // Importar esquemas de validación
@@ -38,8 +34,6 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
 
   // --- Cargar datos directamente en el componente (como PropertyForm) ---
   const { data: statuses, fetchData: fetchStatuses } = useClientStatus()
-  const { data: users, fetchData: fetchUsers } = useUsers()
-  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
 
   // Cargar datasets una sola vez (evita loops por identidades inestables)
   const didInitRef = useRef(false)
@@ -49,13 +43,11 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
     didInitRef.current = true
 
     fetchStatuses()
-    fetchUsers()
-    fetchFranchises()
-  }, [fetchStatuses, fetchUsers, fetchFranchises])
+  }, [fetchStatuses])
 
 
   // --- Renderizado Condicional (Carga Inicial) ---
-  if (!statuses || !users || !franchises) {
+  if (!statuses) {
     return (
       <Box display='flex' justifyContent='center' alignItems='center' minHeight='200px'>
         <CircularProgress />
@@ -80,13 +72,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
   }
 
   const formatData = (data: CreateClientFormData | EditClientFormData) => {
-    const { franchise_id, assigned_to_id } = data
-
-    return {
-      ...data,
-      franchise_id: franchise_id?.value,
-      assigned_to_id: assigned_to_id?.value,
-    }
+    return data
   }
 
   return (
@@ -128,27 +114,6 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
           />
         </Grid>
 
-        {/* --- Campo Franquicia (Usando FormField con async-select) --- */}
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <FormField
-            type='async-select'
-            name='franchise_id'
-            label='Franquicia'
-            required
-            repository={FranchisesRepository}
-          />
-        </Grid>
-
-        {/* --- Campo Usuario Asignado (Usando FormField con async-select) --- */}
-        <Grid size={{ xs: 12, sm: 6 }}>
-          <FormField
-            type='async-select'
-            name='assigned_to_id'
-            label='Usuario Asignado'
-            required
-            repository={UsersRepository}
-          />
-        </Grid>
       </Grid>
     </Form>
   )
