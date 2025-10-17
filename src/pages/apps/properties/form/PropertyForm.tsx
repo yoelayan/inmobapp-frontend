@@ -96,8 +96,8 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 }))
 
 
-const Step1Content = memo(({ statuses, propertyTypes, isSuperuser }: { 
-  statuses: any, 
+const Step1Content = memo(({ statuses, propertyTypes, isSuperuser }: {
+  statuses: any,
   propertyTypes: any,
   isSuperuser: boolean
 }) => {
@@ -593,9 +593,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               📋 Información General
             </Typography>
           </Grid>
-          <Step1Content 
-            statuses={statuses} 
-            propertyTypes={propertyTypes} 
+          <Step1Content
+            statuses={statuses}
+            propertyTypes={propertyTypes}
             isSuperuser={isSuperuser}
           />
 
@@ -663,9 +663,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     // En modo creación, solo mostrar pasos 1 y 2
     switch (activeStep) {
       case 0:
-        return <Step1Content 
-          statuses={statuses} 
-          propertyTypes={propertyTypes} 
+        return <Step1Content
+          statuses={statuses}
+          propertyTypes={propertyTypes}
           isSuperuser={isSuperuser}
         />
       case 1:
@@ -696,22 +696,16 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
       owner_id: owner_id?.value,
     }
 
-    // Solo enviar franchise_id y assigned_to_id si es superusuario
     if (isSuperuser) {
-      if (franchise_id && typeof franchise_id === 'object' && 'value' in franchise_id) {
-        payload.franchise_id = franchise_id
-      }
-
-      if (assigned_to_id && typeof assigned_to_id === 'object' && 'value' in assigned_to_id) {
-        payload.assigned_to_id = assigned_to_id
+      return {
+        ...payload,
+        franchise_id: franchise_id?.value,
+        assigned_to_id: assigned_to_id?.value,
       }
     }
 
     return payload
   }
-
-  
-
 
   return (
     <>
