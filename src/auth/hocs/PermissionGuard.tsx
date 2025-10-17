@@ -12,7 +12,7 @@ interface PermissionGuardProps {
   requiredPermissions: string | string[]
   fallbackPath?: string
   requireAll?: boolean // Si true, requiere TODOS los permisos. Si false, requiere AL MENOS UNO
-  verifyOwner?: (user: any) => boolean // Función para verificar ownership del usuario
+  conditionToAccess?: () => boolean
 }
 
 export default function PermissionGuard({
@@ -20,9 +20,8 @@ export default function PermissionGuard({
   requiredPermissions,
   fallbackPath = '/unauthorized',
   requireAll = false,
-  verifyOwner
+  conditionToAccess
 }: PermissionGuardProps) {
-
   const { user, isAuthenticated, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
@@ -51,10 +50,10 @@ export default function PermissionGuard({
     }
 
     // Si existe verificación de ownership, usarla
-    if (verifyOwner) {
-      const hasOwnership = verifyOwner(user)
+    if (conditionToAccess) {
+      const hasAccess = conditionToAccess()
 
-      if (!hasOwnership) {
+      if (!hasAccess) {
         router.push(fallbackPath)
       }
 
@@ -91,10 +90,10 @@ export default function PermissionGuard({
   }
 
   // Si existe verificación de ownership, usarla
-  if (verifyOwner) {
-    const hasOwnership = verifyOwner(user)
+  if (conditionToAccess) {
+    const hasAccess = conditionToAccess()
 
-    if (!hasOwnership) {
+    if (!hasAccess) {
       return null // Se redirigirá en el useEffect
     }
 

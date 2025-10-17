@@ -13,7 +13,6 @@ import { useAuth } from '@/auth/hooks/useAuth'
 import PropertiesRepository from '@/services/repositories/realstate/PropertiesRepository'
 
 import type { EditPropertyFormData } from '@/validations/propertySchema'
-import type { IProfile } from '@/auth/types/UserTypes'
 
 type EditPropertyProps = {
   params: Promise<{
@@ -55,14 +54,14 @@ const EditProperty: React.FC<EditPropertyProps> = ({ params }) => {
   }
 
   // Custom permission logic: verify ownership
-  const verifyOwnership = (currentUser: IProfile) => {
-    if (!property) return false
+  const canAccess = () => {
+    if (!user || !property) return false
 
     // Si es superusuario, permitir siempre (ya se verifica en PermissionGuard, pero por si acaso)
-    if (currentUser.is_superuser) return true
+    if (user.is_superuser) return true
 
     // Verificar si el usuario es el dueño asignado
-    return property.assigned_to_id === currentUser.id
+    return property.assigned_to_id === user.id
   }
 
   if (loading) {
@@ -70,16 +69,9 @@ const EditProperty: React.FC<EditPropertyProps> = ({ params }) => {
   }
 
   return (
-    <PermissionGuard
-      requiredPermissions={['change_realproperty']}
-      verifyOwner={verifyOwnership}
-    >
+    <PermissionGuard requiredPermissions={['change_realproperty']} conditionToAccess={canAccess}>
       <BreadcrumbWrapper />
-      <PropertyForm
-        propertyId={propertyId}
-        mode='edit'
-        onSuccess={handleSuccess}
-      />
+      <PropertyForm propertyId={propertyId} mode='edit' onSuccess={handleSuccess} />
     </PermissionGuard>
   )
 }
