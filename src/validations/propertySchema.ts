@@ -42,6 +42,10 @@ const basePropertySchema = z.object({
 
   owner_id: asyncSelectValidation,
 
+  // Control de asignaciones
+  franchise_id: z.number().optional().nullable(),
+  assigned_to_id: z.number().optional().nullable(),
+
 })
 
 export const createPropertySchema = basePropertySchema
@@ -131,7 +135,9 @@ export const defaultPropertyValues = {
   municipality_id: undefined,
   parish_id: undefined,
   address: '',
-  owner_id: undefined
+  owner_id: undefined,
+  franchise_id: undefined,
+  assigned_to_id: undefined
 }
 
 export type CreatePropertyFormData = z.infer<typeof basePropertySchema>

@@ -6,6 +6,7 @@ export type IProfile = {
   franchise: number
   id: number
   user_permissions: string[]
+  is_superuser: boolean
 }
 
 export type Session = {

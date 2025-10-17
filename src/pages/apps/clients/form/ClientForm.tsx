@@ -4,11 +4,15 @@ import React, { useEffect, useRef } from 'react'
 
 import { Box, CircularProgress, Grid2 as Grid } from '@mui/material'
 
+import { useAuth } from '@auth/hooks/useAuth'
+
 
 import { Form, FormField } from '@components/common/forms/Form'
 
 import { useNotification } from '@/hooks/useNotification'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
+import useFranchises from '@/hooks/api/realstate/useFranchises'
+import useUsers from '@/hooks/api/users/useUsers'
 import type { IClient } from '@/types/apps/ClientesTypes'
 
 // Importar repositorios para async-select
@@ -31,9 +35,13 @@ interface ClientFormProps {
 
 const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
   const { notify } = useNotification()
+  const { user } = useAuth()
+  const isSuperuser = user?.is_superuser || false
 
   // --- Cargar datos directamente en el componente (como PropertyForm) ---
   const { data: statuses, fetchData: fetchStatuses } = useClientStatus()
+  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
+  const { data: users, fetchData: fetchUsers } = useUsers()
 
   // Cargar datasets una sola vez (evita loops por identidades inestables)
   const didInitRef = useRef(false)
@@ -43,7 +51,12 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
     didInitRef.current = true
 
     fetchStatuses()
-  }, [fetchStatuses])
+
+    if (isSuperuser) {
+      fetchFranchises()
+      fetchUsers()
+    }
+  }, [fetchStatuses, fetchFranchises, fetchUsers, isSuperuser])
 
 
   // --- Renderizado Condicional (Carga Inicial) ---
@@ -72,7 +85,14 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
   }
 
   const formatData = (data: CreateClientFormData | EditClientFormData) => {
-    return data
+    if (!isSuperuser) return data
+
+    const payload: any = { ...data }
+
+    if ((data as any).franchise_id) payload.franchise_id = Number((data as any).franchise_id)
+    if ((data as any).assigned_to_id) payload.assigned_to_id = Number((data as any).assigned_to_id)
+
+    return payload
   }
 
   return (
@@ -113,6 +133,30 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
             options={statuses?.results?.map((status: any) => ({ value: status.id, label: status.name })) || []}
           />
         </Grid>
+
+        {/* --- Campos solo visibles para superusuarios --- */}
+        {isSuperuser && (
+        <>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormField
+              name='franchise_id'
+              type='select'
+              label='Franquicia'
+              fullWidth
+              options={franchises?.results?.map((franchise: any) => ({ value: franchise.id, label: franchise.name })) || []}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormField
+              name='assigned_to_id'
+              type='select'
+              label='Usuario asignado'
+              fullWidth
+              options={users?.results?.map((user: any) => ({ value: user.id, label: user.name || user.email })) || []}
+            />
+          </Grid>
+          </>
+        )}
 
       </Grid>
     </Form>
