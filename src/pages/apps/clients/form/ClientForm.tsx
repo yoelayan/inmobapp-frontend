@@ -11,12 +11,12 @@ import { Form, FormField } from '@components/common/forms/Form'
 
 import { useNotification } from '@/hooks/useNotification'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
-import useFranchises from '@/hooks/api/realstate/useFranchises'
-import useUsers from '@/hooks/api/users/useUsers'
 import type { IClient } from '@/types/apps/ClientesTypes'
 
 // Importar repositorios para async-select
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
+import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
+import UsersRepository from '@/services/repositories/users/UsersRepository'
 
 // Importar esquemas de validación
 import {
@@ -40,8 +40,6 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
 
   // --- Cargar datos directamente en el componente (como PropertyForm) ---
   const { data: statuses, fetchData: fetchStatuses } = useClientStatus()
-  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
-  const { data: users, fetchData: fetchUsers } = useUsers()
 
   // Cargar datasets una sola vez (evita loops por identidades inestables)
   const didInitRef = useRef(false)
@@ -51,12 +49,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
     didInitRef.current = true
 
     fetchStatuses()
-
-    if (isSuperuser) {
-      fetchFranchises()
-      fetchUsers()
-    }
-  }, [fetchStatuses, fetchFranchises, fetchUsers, isSuperuser])
+  }, [fetchStatuses])
 
 
   // --- Renderizado Condicional (Carga Inicial) ---
@@ -85,12 +78,14 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
   }
 
   const formatData = (data: CreateClientFormData | EditClientFormData) => {
-    if (!isSuperuser) return data
+    // Extraer id de los async-select
+    const { franchise_id, assigned_to_id } = data
 
-    const payload: any = { ...data }
-
-    if ((data as any).franchise_id) payload.franchise_id = Number((data as any).franchise_id)
-    if ((data as any).assigned_to_id) payload.assigned_to_id = Number((data as any).assigned_to_id)
+    const payload = {
+      ...data,
+      franchise_id: franchise_id?.value,
+      assigned_to_id: assigned_to_id?.value
+    }
 
     return payload
   }
@@ -140,19 +135,17 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
           <Grid size={{ xs: 12, md: 6 }}>
             <FormField
               name='franchise_id'
-              type='select'
+              type='async-select'
               label='Franquicia'
-              fullWidth
-              options={franchises?.results?.map((franchise: any) => ({ value: franchise.id, label: franchise.name })) || []}
+              repository={FranchisesRepository}
             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
             <FormField
               name='assigned_to_id'
-              type='select'
+              type='async-select'
               label='Usuario asignado'
-              fullWidth
-              options={users?.results?.map((user: any) => ({ value: user.id, label: user.name || user.email })) || []}
+              repository={UsersRepository}
             />
           </Grid>
           </>
