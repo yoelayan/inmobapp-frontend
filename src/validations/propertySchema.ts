@@ -43,8 +43,8 @@ const basePropertySchema = z.object({
   owner_id: asyncSelectValidation,
 
   // Control de asignaciones
-  franchise_id: z.number().optional().nullable(),
-  assigned_to_id: z.number().optional().nullable(),
+  franchise_id: asyncSelectValidation.optional().nullable(),
+  assigned_to_id: asyncSelectValidation.optional().nullable(),
 
 })
 

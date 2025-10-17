@@ -32,8 +32,6 @@ import usePropertyTypes from '@hooks/api/realstate/usePropertyTypes'
 import usePropertyNegotiation from '@hooks/api/realstate/usePropertyNegotiation'
 import useClients from '@hooks/api/crm/useClients'
 import useProperties from '@hooks/api/realstate/useProperties'
-import useFranchises from '@hooks/api/realstate/useFranchises'
-import useUsers from '@hooks/api/users/useUsers'
 
 import { useAuth } from '@auth/hooks/useAuth'
 
@@ -64,6 +62,8 @@ import StatesRepository from '@/services/repositories/locations/StatesRepository
 import MunicipalitiesRepository from '@/services/repositories/locations/MunicipalitiesRepository'
 import ParishesRepository from '@/services/repositories/locations/ParishesRepository'
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
+import UsersRepository from '@/services/repositories/users/UsersRepository'
+import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
 import { EditorField } from '@components/common/forms/fields/EditorField'
 
 
@@ -96,11 +96,9 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 }))
 
 
-const Step1Content = memo(({ statuses, propertyTypes, franchises, users, isSuperuser }: { 
+const Step1Content = memo(({ statuses, propertyTypes, isSuperuser }: { 
   statuses: any, 
   propertyTypes: any,
-  franchises: any,
-  users: any,
   isSuperuser: boolean
 }) => {
   console.log('re-render')
@@ -190,19 +188,17 @@ const Step1Content = memo(({ statuses, propertyTypes, franchises, users, isSuper
           <Grid size={{ xs: 12, md: 6 }}>
             <FormField
               name='franchise_id'
-              type='select'
+              type='async-select'
               label='Franquicia'
-              fullWidth
-              options={franchises?.results?.map((franchise: any) => ({ value: franchise.id, label: franchise.name })) || []}
+              repository={FranchisesRepository}
             />
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
             <FormField
               name='assigned_to_id'
-              type='select'
+              type='async-select'
               label='Usuario asignado'
-              fullWidth
-              options={users?.results?.map((user: any) => ({ value: user.id, label: user.name || user.email })) || []}
+              repository={UsersRepository}
             />
           </Grid>
         </>
@@ -373,8 +369,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const { data: propertyTypes, fetchData: fetchPropertyTypes } = usePropertyTypes()
   const { data: negotiations, fetchData: fetchNegotiations } = usePropertyNegotiation()
   const { fetchData: fetchClients } = useClients()
-  const { data: franchises, fetchData: fetchFranchises } = useFranchises()
-  const { data: users, fetchData: fetchUsers } = useUsers()
 
 
   useEffect(() => {
@@ -382,8 +376,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     fetchStatuses()
     fetchPropertyTypes()
     fetchNegotiations()
-    fetchFranchises()
-    fetchUsers()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -604,8 +596,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           <Step1Content 
             statuses={statuses} 
             propertyTypes={propertyTypes} 
-            franchises={franchises}
-            users={users}
             isSuperuser={isSuperuser}
           />
 
@@ -676,8 +666,6 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
         return <Step1Content 
           statuses={statuses} 
           propertyTypes={propertyTypes} 
-          franchises={franchises}
-          users={users}
           isSuperuser={isSuperuser}
         />
       case 1:
@@ -698,7 +686,7 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const formatData = (data: CreatePropertyFormData | EditPropertyFormData) => {
     // Extraer id de los async-select
-    const { state_id, municipality_id, parish_id, owner_id } = data
+    const { state_id, municipality_id, parish_id, owner_id, franchise_id, assigned_to_id } = data
 
     const payload = {
       ...data,
@@ -710,12 +698,12 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
     // Solo enviar franchise_id y assigned_to_id si es superusuario
     if (isSuperuser) {
-      if (data.franchise_id) {
-        payload.franchise_id = Number(data.franchise_id)
+      if (franchise_id && typeof franchise_id === 'object' && 'value' in franchise_id) {
+        payload.franchise_id = franchise_id
       }
 
-      if (data.assigned_to_id) {
-        payload.assigned_to_id = Number(data.assigned_to_id)
+      if (assigned_to_id && typeof assigned_to_id === 'object' && 'value' in assigned_to_id) {
+        payload.assigned_to_id = assigned_to_id
       }
     }
 

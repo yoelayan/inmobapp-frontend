@@ -12,14 +12,17 @@ interface PermissionGuardProps {
   requiredPermissions: string | string[]
   fallbackPath?: string
   requireAll?: boolean // Si true, requiere TODOS los permisos. Si false, requiere AL MENOS UNO
+  verifyOwner?: (user: any) => boolean // Función para verificar ownership del usuario
 }
 
 export default function PermissionGuard({
   children,
   requiredPermissions,
   fallbackPath = '/unauthorized',
-  requireAll = false
+  requireAll = false,
+  verifyOwner
 }: PermissionGuardProps) {
+
   const { user, isAuthenticated, loading } = useAuth()
   const router = useRouter()
   const pathname = usePathname()
@@ -42,6 +45,22 @@ export default function PermissionGuard({
       return
     }
 
+    // Si es superusuario, permitir acceso automáticamente
+    if (user.is_superuser) {
+      return
+    }
+
+    // Si existe verificación de ownership, usarla
+    if (verifyOwner) {
+      const hasOwnership = verifyOwner(user)
+
+      if (!hasOwnership) {
+        router.push(fallbackPath)
+      }
+
+      return
+    }
+
     // Normalizar permisos requeridos a array
     const permissionsArray = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions]
 
@@ -54,7 +73,7 @@ export default function PermissionGuard({
     if (!hasRequiredPermissions) {
       router.push(fallbackPath)
     }
-  }, [user, isAuthenticated, loading, requiredPermissions, requireAll, fallbackPath, router, pathname])
+  }, [user, isAuthenticated, loading, requiredPermissions, requireAll, fallbackPath, router, pathname, verifyOwner])
 
   // Mostrar loading mientras se verifica
   if (loading) {
@@ -64,6 +83,22 @@ export default function PermissionGuard({
   // Si no está autenticado, no mostrar nada (se redirigirá)
   if (!isAuthenticated || !user) {
     return null
+  }
+
+  // Si es superusuario, permitir acceso automáticamente
+  if (user.is_superuser) {
+    return <>{children}</>
+  }
+
+  // Si existe verificación de ownership, usarla
+  if (verifyOwner) {
+    const hasOwnership = verifyOwner(user)
+
+    if (!hasOwnership) {
+      return null // Se redirigirá en el useEffect
+    }
+
+    return <>{children}</>
   }
 
   // Verificar permisos antes de renderizar
