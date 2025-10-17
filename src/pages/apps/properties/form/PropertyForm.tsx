@@ -694,14 +694,8 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
       municipality_id: municipality_id?.value,
       parish_id: parish_id?.value,
       owner_id: owner_id?.value,
-    }
-
-    if (isSuperuser) {
-      return {
-        ...payload,
-        franchise_id: franchise_id?.value,
-        assigned_to_id: assigned_to_id?.value,
-      }
+      franchise_id: franchise_id?.value,
+      assigned_to_id: assigned_to_id?.value
     }
 
     return payload
