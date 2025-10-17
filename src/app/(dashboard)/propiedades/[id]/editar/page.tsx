@@ -9,10 +9,10 @@ import { useRouter } from 'next/navigation'
 import PropertyForm from '@/pages/apps/properties/form/PropertyForm'
 import { BreadcrumbWrapper } from '@components/common/Breadcrumb'
 import PermissionGuard from '@/auth/hocs/PermissionGuard'
-import { useAuth } from '@/auth/hooks/useAuth'
 import PropertiesRepository from '@/services/repositories/realstate/PropertiesRepository'
 
 import type { EditPropertyFormData } from '@/validations/propertySchema'
+import type { IProfile } from '@/auth/types/UserTypes'
 
 type EditPropertyProps = {
   params: Promise<{
@@ -22,7 +22,6 @@ type EditPropertyProps = {
 
 const EditProperty: React.FC<EditPropertyProps> = ({ params }) => {
   const router = useRouter()
-  const { user } = useAuth()
   const [property, setProperty] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -54,7 +53,7 @@ const EditProperty: React.FC<EditPropertyProps> = ({ params }) => {
   }
 
   // Custom permission logic: verify ownership
-  const canAccess = () => {
+  const canAccess = (user: IProfile) => {
     if (!user || !property) return false
 
     // Si es superusuario, permitir siempre (ya se verifica en PermissionGuard, pero por si acaso)
