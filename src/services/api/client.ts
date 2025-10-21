@@ -49,6 +49,10 @@ class ApiClient {
     return !!this.axiosInstance.defaults.headers.common['Authorization']
   }
 
+  public setCompany(company: string): void {
+    this.axiosInstance.defaults.headers.common['X-Company'] = company
+  }
+
   public static getInstance(): ApiClient {
     if (!ApiClient.instance) {
       ApiClient.instance = new ApiClient()
@@ -63,9 +67,14 @@ class ApiClient {
         }
 
         const token = session.access
+        const company = session.company
 
         if (token) {
           ApiClient.instance.setToken(token)
+        }
+
+        if (company) {
+          ApiClient.instance.setCompany(company)
         }
       } catch (error) {
         ApiClient.instance.removeToken()
