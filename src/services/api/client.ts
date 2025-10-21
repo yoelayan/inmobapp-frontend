@@ -52,6 +52,13 @@ class ApiClient {
   public setCompany(company: string): void {
     this.axiosInstance.defaults.headers.common['X-Company'] = company
   }
+  public removeCompany(): void {
+    delete this.axiosInstance.defaults.headers.common['X-Company']
+  }
+
+  public isCompanySet(): boolean {
+    return !!this.axiosInstance.defaults.headers.common['X-Company']
+  }
 
   public static getInstance(): ApiClient {
     if (!ApiClient.instance) {
@@ -67,17 +74,31 @@ class ApiClient {
         }
 
         const token = session.access
-        const company = session.company
 
         if (token) {
           ApiClient.instance.setToken(token)
         }
 
+      } catch (error) {
+        ApiClient.instance.removeToken()
+      }
+    }
+
+    if (!ApiClient.instance.isCompanySet()) {
+      try {
+        const session = JSON.parse(localStorage.getItem('session') || '')
+
+        if (!session) {
+          return ApiClient.instance
+        }
+
+        const company = session.company_name
+
         if (company) {
           ApiClient.instance.setCompany(company)
         }
       } catch (error) {
-        ApiClient.instance.removeToken()
+        ApiClient.instance.removeCompany()
       }
     }
 
