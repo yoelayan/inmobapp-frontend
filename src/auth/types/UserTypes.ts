@@ -14,4 +14,5 @@ export type Session = {
   refresh: string
   expires_in: number
   user: IProfile
+  company: string
 }
