@@ -65,39 +65,25 @@ class ApiClient {
       ApiClient.instance = new ApiClient()
     }
 
-    if (!ApiClient.instance.isTokenSet()) {
+    // Check if we need to set token or company from session
+    if (!ApiClient.instance.isTokenSet() || !ApiClient.instance.isCompanySet()) {
       try {
         const session = JSON.parse(localStorage.getItem('session') || '')
 
-        if (!session) {
-          return ApiClient.instance
+        if (session) {
+          // Set token if not already set and available in session
+          if (!ApiClient.instance.isTokenSet() && session.access) {
+            ApiClient.instance.setToken(session.access)
+          }
+
+          // Set company if not already set and available in session
+          if (!ApiClient.instance.isCompanySet() && session.company_name) {
+            ApiClient.instance.setCompany(session.company_name)
+          }
         }
-
-        const token = session.access
-
-        if (token) {
-          ApiClient.instance.setToken(token)
-        }
-
       } catch (error) {
+        // Clean up any partial state on error
         ApiClient.instance.removeToken()
-      }
-    }
-
-    if (!ApiClient.instance.isCompanySet()) {
-      try {
-        const session = JSON.parse(localStorage.getItem('session') || '')
-
-        if (!session) {
-          return ApiClient.instance
-        }
-
-        const company = session.company_name
-
-        if (company) {
-          ApiClient.instance.setCompany(company)
-        }
-      } catch (error) {
         ApiClient.instance.removeCompany()
       }
     }
