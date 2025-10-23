@@ -90,4 +90,8 @@ export const ENDPOINTS = {
       BASE: '/franchise-groups/',
     }
   },
+  MEMBERSHIPS: {
+    BASE: '/memberships/',
+    BY_ID: (id: number) => `/memberships/${id}/`,
+  }
 };
