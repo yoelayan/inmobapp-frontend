@@ -44,6 +44,8 @@ import DirectionalIcon from '@components/DirectionalIcon'
 import StepperWrapper from '@core/styles/stepper'
 
 import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
+import MembershipsRepository from '@/services/repositories/membership/MembershipsRepository'
+
 import { useNotification } from '@hooks/useNotification'
 
 import {
@@ -62,7 +64,6 @@ import StatesRepository from '@/services/repositories/locations/StatesRepository
 import MunicipalitiesRepository from '@/services/repositories/locations/MunicipalitiesRepository'
 import ParishesRepository from '@/services/repositories/locations/ParishesRepository'
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
-import UsersRepository from '@/services/repositories/users/UsersRepository'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
 import { EditorField } from '@components/common/forms/fields/EditorField'
 
@@ -198,7 +199,7 @@ const Step1Content = memo(({ statuses, propertyTypes, isSuperuser }: {
               name='assigned_to_id'
               type='async-select'
               label='Usuario asignado'
-              repository={UsersRepository}
+              repository={MembershipsRepository}
             />
           </Grid>
         </>

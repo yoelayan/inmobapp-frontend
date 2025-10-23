@@ -13,10 +13,12 @@ import { useNotification } from '@/hooks/useNotification'
 import useClientStatus from '@/hooks/api/crm/useClientStatus'
 import type { IClient } from '@/types/apps/ClientesTypes'
 
+
 // Importar repositorios para async-select
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
-import UsersRepository from '@/services/repositories/users/UsersRepository'
+
+import MembershipsRepository from '@/services/repositories/membership/MembershipsRepository'
 
 // Importar esquemas de validación
 import {
@@ -145,7 +147,7 @@ const ClientForm: React.FC<ClientFormProps> = ({ clientId, onSuccess }) => {
               name='assigned_to_id'
               type='async-select'
               label='Usuario asignado'
-              repository={UsersRepository}
+              repository={MembershipsRepository}
             />
           </Grid>
           </>
