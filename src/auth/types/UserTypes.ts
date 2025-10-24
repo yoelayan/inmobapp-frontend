@@ -5,6 +5,7 @@ export type IProfile = {
   name: string
   franchise: number
   id: number
+  membership_id?: number
   user_permissions: string[]
   is_superuser: boolean
 }

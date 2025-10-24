@@ -229,7 +229,7 @@ const PropertiesTable = () => {
     if (user.is_superuser) return true
 
     // Si es el dueño asignado, puede modificar
-    return row.assigned_to_id === user.id
+    return row.assigned_to_id === user.membership_id
   }
 
   const actions: TableAction[] = [
