@@ -60,7 +60,7 @@ const EditProperty: React.FC<EditPropertyProps> = ({ params }) => {
     if (user.is_superuser) return true
 
     // Verificar si el usuario es el dueño asignado
-    return property.assigned_to_id === user.id
+    return property.assigned_to_id === user.membership_id
   }
 
   if (loading) {
