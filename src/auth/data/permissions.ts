@@ -75,10 +75,6 @@ export const permissions: GroupPermission[] = [
         codename: 'view_client',
         name: 'Ver listado de clientes',
       },
-      {
-        codename: 'view_client_all',
-        name: 'Ver listado de clientes de todas las franquicias',
-      }
     ]
   },
   {

@@ -136,14 +136,15 @@ const columns: ColumnDef<IFranchise>[] = [
       return usersA - usersB
     },
     cell: ({ getValue }) => {
-      const users = getValue() as IUser[]
+      const users = getValue() as IUser[] | undefined
+      const usersCount = users?.length || 0
 
       return (
         <Box display="flex" alignItems="center" justifyContent="center" gap={1}>
           <GroupIcon fontSize="small" color="action" />
           <Chip
-            label={users.length}
-            color={users.length > 0 ? 'primary' : 'default'}
+            label={usersCount}
+            color={usersCount > 0 ? 'primary' : 'default'}
             size="small"
             variant="outlined"
           />

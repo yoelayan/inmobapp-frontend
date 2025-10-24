@@ -5,7 +5,9 @@ export type IProfile = {
   name: string
   franchise: number
   id: number
+  membership_id?: number
   user_permissions: string[]
+  is_superuser: boolean
 }
 
 export type Session = {
@@ -13,4 +15,5 @@ export type Session = {
   refresh: string
   expires_in: number
   user: IProfile
+  company: string
 }

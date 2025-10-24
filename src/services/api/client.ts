@@ -49,26 +49,42 @@ class ApiClient {
     return !!this.axiosInstance.defaults.headers.common['Authorization']
   }
 
+  public setCompany(company: string): void {
+    this.axiosInstance.defaults.headers.common['X-Company'] = company
+  }
+  public removeCompany(): void {
+    delete this.axiosInstance.defaults.headers.common['X-Company']
+  }
+
+  public isCompanySet(): boolean {
+    return !!this.axiosInstance.defaults.headers.common['X-Company']
+  }
+
   public static getInstance(): ApiClient {
     if (!ApiClient.instance) {
       ApiClient.instance = new ApiClient()
     }
 
-    if (!ApiClient.instance.isTokenSet()) {
+    // Check if we need to set token or company from session
+    if (!ApiClient.instance.isTokenSet() || !ApiClient.instance.isCompanySet()) {
       try {
         const session = JSON.parse(localStorage.getItem('session') || '')
 
-        if (!session) {
-          return ApiClient.instance
-        }
+        if (session) {
+          // Set token if not already set and available in session
+          if (!ApiClient.instance.isTokenSet() && session.access) {
+            ApiClient.instance.setToken(session.access)
+          }
 
-        const token = session.access
-
-        if (token) {
-          ApiClient.instance.setToken(token)
+          // Set company if not already set and available in session
+          if (!ApiClient.instance.isCompanySet() && session.company_name) {
+            ApiClient.instance.setCompany(session.company_name)
+          }
         }
       } catch (error) {
+        // Clean up any partial state on error
         ApiClient.instance.removeToken()
+        ApiClient.instance.removeCompany()
       }
     }
 

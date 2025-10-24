@@ -18,7 +18,10 @@ export const AsyncSelectField = <T extends FieldValues>({
   repository,
   onChange,
   filters,
-  disabled
+  disabled,
+  searchParam = 'search',
+  labelKey = 'name',
+  valueKey = 'id'
 }: AsyncSelectFieldProps<T>) => {
   const { control } = useFormContext()
   const theme = useTheme()
@@ -38,12 +41,12 @@ export const AsyncSelectField = <T extends FieldValues>({
   const loadOptions = debounce(async (inputValue: string, callback: (options: any[]) => void) => {
     const response = await repository.getAll({
       page: 1,
-      pageSize: 10,
-      search: inputValue,
+      per_page: 50,
+      [searchParam]: inputValue,
       ...buildFilters()
     })
 
-    const options = response.results?.map(state => ({ value: state.id, label: state.name })) || []
+    const options = response.results?.map((item: any) => ({ value: item?.[valueKey], label: item?.[labelKey] })) || []
 
     callback(options)
   }, 500)

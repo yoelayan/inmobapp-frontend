@@ -35,6 +35,7 @@ import {
 
 import useConfirmDialog from '@/hooks/useConfirmDialog'
 import { useNotification } from '@/hooks/useNotification'
+import { useAuth } from '@/auth/hooks/useAuth'
 import type { IRealProperty } from '@/types/apps/RealtstateTypes'
 
 // Properties Card
@@ -197,6 +198,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
+  const { user } = useAuth()
 
   // ✅ CAMBIO: Usar hook directamente
 
@@ -271,6 +273,17 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
     })
   }
 
+  // Verificar si el usuario puede editar/eliminar la propiedad
+  const canModifyProperty = (row: Record<string, any>) => {
+    if (!user) return false
+
+    // Si es superusuario, puede modificar cualquier propiedad
+    if (user.is_superuser) return true
+
+    // Si es el dueño asignado, puede modificar
+    return row.assigned_to_id === user.membership_id
+  }
+
   const actions: TableAction[] = [
     {
       label: 'Ver',
@@ -284,14 +297,16 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
       onClick: (row: Record<string, any>) => {
         router.push(`/propiedades/${row.id}/editar/`)
       },
-      icon: <EditIcon fontSize='small' />
+      icon: <EditIcon fontSize='small' />,
+      condition: canModifyProperty
     },
     {
       label: 'Eliminar',
       onClick: (row: Record<string, any>) => {
         handleConfirmDelete(row)
       },
-      icon: <DeleteIcon fontSize='small' />
+      icon: <DeleteIcon fontSize='small' />,
+      condition: canModifyProperty
     }
   ]
 

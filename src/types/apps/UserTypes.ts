@@ -20,6 +20,7 @@ export interface IUser {
   name: string
   email: string
   image?: string | null
+  membership_id?: number
   username?: string
   date_joined?: string
   last_login?: string

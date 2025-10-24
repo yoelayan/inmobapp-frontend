@@ -6,19 +6,28 @@ import { useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 
 import { useAuth } from '@auth/hooks/useAuth'
+import type { IProfile } from '@/auth/types/UserTypes'
 
 interface PermissionGuardProps {
   children: ReactNode
   requiredPermissions: string | string[]
   fallbackPath?: string
   requireAll?: boolean // Si true, requiere TODOS los permisos. Si false, requiere AL MENOS UNO
+  /**
+   * Lógica de acceso personalizada opcional.
+   * Si se proporciona, esta función se llama con el usuario autenticado.
+   * Debe retornar true si el usuario puede acceder, o false para denegar el acceso.
+   * Úsalo para verificaciones de contexto específico (ej. propiedad de objetos).
+   */
+  conditionToAccess?: (user: IProfile) => boolean
 }
 
 export default function PermissionGuard({
   children,
   requiredPermissions,
   fallbackPath = '/unauthorized',
-  requireAll = false
+  requireAll = false,
+  conditionToAccess
 }: PermissionGuardProps) {
   const { user, isAuthenticated, loading } = useAuth()
   const router = useRouter()
@@ -42,6 +51,22 @@ export default function PermissionGuard({
       return
     }
 
+    // Si es superusuario, permitir acceso automáticamente
+    if (user.is_superuser) {
+      return
+    }
+
+    // Si existe verificación de ownership, usarla
+    if (conditionToAccess) {
+      const hasAccess = conditionToAccess(user)
+
+      if (!hasAccess) {
+        router.push(fallbackPath)
+      }
+
+      return
+    }
+
     // Normalizar permisos requeridos a array
     const permissionsArray = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions]
 
@@ -54,7 +79,7 @@ export default function PermissionGuard({
     if (!hasRequiredPermissions) {
       router.push(fallbackPath)
     }
-  }, [user, isAuthenticated, loading, requiredPermissions, requireAll, fallbackPath, router, pathname])
+  }, [user, isAuthenticated, loading, requiredPermissions, requireAll, fallbackPath, router, pathname, conditionToAccess])
 
   // Mostrar loading mientras se verifica
   if (loading) {
@@ -64,6 +89,22 @@ export default function PermissionGuard({
   // Si no está autenticado, no mostrar nada (se redirigirá)
   if (!isAuthenticated || !user) {
     return null
+  }
+
+  // Si es superusuario, permitir acceso automáticamente
+  if (user.is_superuser) {
+    return <>{children}</>
+  }
+
+  // Si existe verificación de ownership, usarla
+  if (conditionToAccess) {
+    const hasAccess = conditionToAccess(user)
+
+    if (!hasAccess) {
+      return null // Se redirigirá en el useEffect
+    }
+
+    return <>{children}</>
   }
 
   // Verificar permisos antes de renderizar

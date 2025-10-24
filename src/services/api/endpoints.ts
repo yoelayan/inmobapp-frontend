@@ -89,5 +89,9 @@ export const ENDPOINTS = {
     FRANCHISE_GROUPS: {
       BASE: '/franchise-groups/'
     }
+  },
+  MEMBERSHIPS: {
+    BASE: '/memberships/',
+    BY_ID: (id: number) => `/memberships/${id}/`,
   }
-}
+};

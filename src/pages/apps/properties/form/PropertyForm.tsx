@@ -1,7 +1,5 @@
 import { useEffect, useState, useRef, memo } from 'react'
 
-
-
 import { useFormContext } from 'react-hook-form'
 
 import classnames from 'classnames'
@@ -35,6 +33,8 @@ import usePropertyNegotiation from '@hooks/api/realstate/usePropertyNegotiation'
 import useClients from '@hooks/api/crm/useClients'
 import useProperties from '@hooks/api/realstate/useProperties'
 
+import { useAuth } from '@auth/hooks/useAuth'
+
 import { Form, FormField } from '@components/common/forms/Form'
 import PropertyImage from './components/PropertyImage'
 import PropertyCharacteristicsV2 from './components/PropertyCharacteristicsV2'
@@ -44,6 +44,8 @@ import DirectionalIcon from '@components/DirectionalIcon'
 import StepperWrapper from '@core/styles/stepper'
 
 import PropertiesRepository from '@services/repositories/realstate/PropertiesRepository'
+import MembershipsRepository from '@/services/repositories/membership/MembershipsRepository'
+
 import { useNotification } from '@hooks/useNotification'
 
 import {
@@ -63,7 +65,6 @@ import MunicipalitiesRepository from '@/services/repositories/locations/Municipa
 import ParishesRepository from '@/services/repositories/locations/ParishesRepository'
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
-import UsersRepository from '@/services/repositories/users/UsersRepository'
 import { EditorField } from '@components/common/forms/fields/EditorField'
 
 
@@ -96,7 +97,11 @@ const Step = styled(MuiStep)<StepProps>(({ theme }) => ({
 }))
 
 
-const Step1Content = memo(({ statuses, propertyTypes }: { statuses: any, propertyTypes: any }) => {
+const Step1Content = memo(({ statuses, propertyTypes, isSuperuser }: {
+  statuses: any,
+  propertyTypes: any,
+  isSuperuser: boolean
+}) => {
   console.log('re-render')
 
   // watch
@@ -177,6 +182,28 @@ const Step1Content = memo(({ statuses, propertyTypes }: { statuses: any, propert
           fullWidth
         />
       </Grid>
+
+      {/* Campos de franquicia y usuario asignado - solo para superusuarios */}
+      {isSuperuser && (
+        <>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormField
+              name='franchise_id'
+              type='async-select'
+              label='Franquicia'
+              repository={FranchisesRepository}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormField
+              name='assigned_to_id'
+              type='async-select'
+              label='Usuario asignado'
+              repository={MembershipsRepository}
+            />
+          </Grid>
+        </>
+      )}
     </>
   )
 })
@@ -227,24 +254,6 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
 
   return (
     <>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <FormField
-          type='async-select'
-          name='franchise_id'
-          label='Franquicia'
-          required
-          repository={FranchisesRepository}
-        />
-      </Grid>
-      <Grid size={{ xs: 12, md: 6 }}>
-        <FormField
-          type='async-select'
-          name='assigned_to_id'
-          label='Usuario Asignado'
-          required
-          repository={UsersRepository}
-        />
-      </Grid>
       <Grid size={{ xs: 12, md: 6 }}>
         <FormField
           name='type_negotiation_id'
@@ -333,6 +342,7 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
 
 const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormProps) => {
   const { notify } = useNotification()
+  const { user } = useAuth()
   const [activeStep, setActiveStep] = useState(0)
 
   const [isClientModalOpen, setIsClientModalOpen] = useState(false)
@@ -342,6 +352,9 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
   const setCharToSave = (characteristics: IPropertyCharacteristic[]) => {
     charToSave.current = characteristics
   }
+
+  // Lógica de superusuario para habilitar/deshabilitar campos
+  const isSuperuser = user?.is_superuser || false
 
 
   const {
@@ -581,7 +594,11 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
               📋 Información General
             </Typography>
           </Grid>
-          <Step1Content statuses={statuses} propertyTypes={propertyTypes} />
+          <Step1Content
+            statuses={statuses}
+            propertyTypes={propertyTypes}
+            isSuperuser={isSuperuser}
+          />
 
           {/* Divider */}
           <Grid size={{ xs: 12 }}>
@@ -647,7 +664,11 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
     // En modo creación, solo mostrar pasos 1 y 2
     switch (activeStep) {
       case 0:
-        return <Step1Content statuses={statuses} propertyTypes={propertyTypes} />
+        return <Step1Content
+          statuses={statuses}
+          propertyTypes={propertyTypes}
+          isSuperuser={isSuperuser}
+        />
       case 1:
         return (
           <>
@@ -666,17 +687,19 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
 
   const formatData = (data: CreatePropertyFormData | EditPropertyFormData) => {
     // Extraer id de los async-select
-    const { franchise_id, assigned_to_id, state_id, municipality_id, parish_id, owner_id } = data
+    const { state_id, municipality_id, parish_id, owner_id, franchise_id, assigned_to_id } = data
 
-    return {
+    const payload = {
       ...data,
-      franchise_id: franchise_id?.value,
-      assigned_to_id: assigned_to_id?.value,
       state_id: state_id?.value,
       municipality_id: municipality_id?.value,
       parish_id: parish_id?.value,
       owner_id: owner_id?.value,
+      franchise_id: franchise_id?.value,
+      assigned_to_id: assigned_to_id?.value
     }
+
+    return payload
   }
 
   return (
@@ -745,15 +768,15 @@ const PropertyForm = ({ mode = 'create', propertyId, onSuccess }: PropertyFormPr
           ) : (
                 <Form
                   formatData={formatData}
-              schema={schema}
-              defaultValues={defaultPropertyValues}
-              repository={PropertiesRepository}
-              mode={propertyId ? 'edit' : 'create'}
-              entityId={propertyId ? Number(propertyId) : undefined}
-              onSuccess={handleSuccess}
-              onError={handleError}
-              actionsComponent={<FormNavigationButtons />}
-            >
+                  schema={schema}
+                  defaultValues={defaultPropertyValues}
+                  repository={PropertiesRepository}
+                  mode={propertyId ? 'edit' : 'create'}
+                  entityId={propertyId ? Number(propertyId) : undefined}
+                  onSuccess={handleSuccess}
+                  onError={handleError}
+                  actionsComponent={<FormNavigationButtons />}
+                >
               <Grid container spacing={6}>
                 {renderStepContent(activeStep)}
               </Grid>
