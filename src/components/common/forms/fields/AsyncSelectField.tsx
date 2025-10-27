@@ -38,6 +38,7 @@ export const AsyncSelectField = <T extends FieldValues>({
     return filtersObject
   }
 
+  // Debounce de 2 segundos para evitar llamadas excesivas al backend
   const loadOptions = debounce(async (inputValue: string, callback: (options: any[]) => void) => {
     const response = await repository.getAll({
       page: 1,
@@ -49,7 +50,7 @@ export const AsyncSelectField = <T extends FieldValues>({
     const options = response.results?.map((item: any) => ({ value: item?.[valueKey], label: item?.[labelKey] })) || []
 
     callback(options)
-  }, 500)
+  }, 2000)
 
 
   // Custom styles for react-select that follow MUI theme

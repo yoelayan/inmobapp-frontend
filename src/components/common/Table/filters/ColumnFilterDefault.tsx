@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
 
+import { useDebounce } from 'react-use'
 import type { Column } from '@tanstack/react-table'
 
 import CustomTextField from '@core/components/mui/TextField'
+
 import { useTableContext } from '../TableContext'
-import debounce from '@/utils/debounce'
 
 interface ColumnFilterDefaultProps {
   column: Column<any, unknown>
@@ -20,26 +21,26 @@ const ColumnFilterDefault = ({ column }: ColumnFilterDefaultProps) => {
     }
   }, [state.filters, column.id])
 
-
-  // Función debounced para aplicar el filtro al store
-  const debouncedAddFilter = debounce((...args: unknown[]) => {
-    const value = String(args[0])
-
-    if (value.trim() === '') {
-      state.removeFilter(column.id)
-    } else {
-      state.addFilter({
-        field: column.id,
-        value: value.trim()
-      })
-    }
-  }, 500)
+  // useDebounce ejecuta la función después de 2 segundos de que localValue deje de cambiar
+  useDebounce(
+    () => {
+      if (localValue.trim() === '') {
+        state.removeFilter(column.id)
+      } else {
+        state.addFilter({
+          field: column.id,
+          value: localValue.trim()
+        })
+      }
+    },
+    2000, // 2 segundos
+    [localValue]
+  )
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
 
     setLocalValue(value)
-    debouncedAddFilter(value)
   }
 
   return (

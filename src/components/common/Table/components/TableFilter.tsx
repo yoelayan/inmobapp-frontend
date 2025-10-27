@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react'
 
+import { useDebounce } from 'react-use'
+
 import {
   useMediaQuery,
   Box,
@@ -9,7 +11,6 @@ import {
   InputAdornment,
   IconButton,
   Toolbar,
-  debounce,
   Modal,
   Button,
   Card,
@@ -17,11 +18,9 @@ import {
   CardContent
 } from '@mui/material'
 
-
 import SettingsIcon from '@mui/icons-material/Settings'
 import SearchIcon from '@mui/icons-material/Search'
 import ClearIcon from '@mui/icons-material/Clear'
-
 
 import { useTableContext } from '../TableContext'
 
@@ -38,23 +37,24 @@ const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', se
   const [isModalOpen, setIsModalOpen] = useState(false)
   const isMobile = useMediaQuery('(max-width: 600px)')
 
-  const debouncedSearch = (
-    debounce((value: string) => {
-      if (value) {
-        state.addFilter({ field: searchField, value })
+  // useDebounce ejecuta la función después de 2 segundos de que searchValue deje de cambiar
+  useDebounce(
+    () => {
+      if (searchValue.trim()) {
+        state.addFilter({ field: searchField, value: searchValue.trim() })
       } else {
         state.removeFilter(searchField)
       }
-    }, 300)
+    },
+    2000, // 2 segundos
+    [searchValue]
   )
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
-
+    
     setSearchValue(value)
-    debouncedSearch(value)
   }
-
 
   const clearSearch = () => {
     setSearchValue('')
