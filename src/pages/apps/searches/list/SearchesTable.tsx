@@ -1,5 +1,5 @@
 "use client"
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 import { useRouter } from 'next/navigation'
 
@@ -90,19 +90,14 @@ const SearchesTable = () => {
 
   const { data, loading, fetchData, refreshData, deleteData } = useSearches()
 
-  const useSearchesTableStore = useMemo(
-    () =>
-      createTableStore<ISearch>({
+  const useSearchesTableStore = (
+    () => createTableStore<ISearch>({
         data: data,
         loading: loading,
-        refresh: async () => {
-          await refreshData()
-
-          return data
-        }
-      }),
-    [data, loading, refreshData]
+        refresh: fetchData
+    })
   )
+
 
   const handleOpenCharacteristicModal = (searchId: number) => {
     setSelectedSearchId(searchId)
@@ -163,7 +158,6 @@ const SearchesTable = () => {
       refreshData()
     } catch (error) {
       notify('Error al eliminar la búsqueda', 'error')
-      console.error('Error deleting search:', error)
     }
   }
 
@@ -228,27 +222,6 @@ const SearchesTable = () => {
 
   const tableStore = useSearchesTableStore();
 
-  useEffect(() => {
-    console.log('🔄 Cargando datos de búsquedas...')
-    fetchData()
-  }, [fetchData])
-
-  useEffect(() => {
-    console.log('📊 Datos de búsquedas cargados:', data)
-    console.log('📊 Cantidad de búsquedas:', data?.results?.length || 0)
-
-    if (data?.results) {
-      data.results.forEach((search: any, index: number) => {
-        console.log(`📊 Búsqueda ${index + 1}:`, {
-          id: search.id,
-          description: search.description,
-          budget: search.budget,
-          client_id: search.client_id,
-          client_name: search.client?.name
-        })
-      })
-    }
-  }, [data])
 
   return (
     <>
@@ -257,10 +230,10 @@ const SearchesTable = () => {
           title='Búsquedas de Clientes'
           subtitle='Listado de Búsquedas'
         />
-        <Table columns={columns} state={tableStore} actions={actions}>
+        <Table columns={columns} state={tableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar búsquedas...'>
             <Box className='flex gap-4 w-full'>
-              <Button variant='outlined' size='small' onClick={() => tableStore.setFilters([])}>
+              <Button variant='outlined' size='small' onClick={() => tableStore.getState().setFilters([])}>
                 Limpiar filtros
               </Button>
               <Button
@@ -269,8 +242,6 @@ const SearchesTable = () => {
                 variant='contained'
                 color='primary'
                 onClick={() => {
-                  console.log('🔄 Botón Actualizar clickeado')
-                  console.log('📊 Datos actuales antes de refresh:', data)
                   fetchData()
                 }}
               >
