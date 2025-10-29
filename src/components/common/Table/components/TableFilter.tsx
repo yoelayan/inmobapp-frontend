@@ -46,7 +46,7 @@ const TableFilter: React.FC<TableFilterProps> = ({ placeholder = 'Buscar...', se
         state.removeFilter(searchField)
       }
     },
-    2000, // 2 segundos
+    1000, // 1 segundos
     [searchValue]
   )
 

@@ -38,16 +38,14 @@ const ColumnFilterDefault = ({ column }: ColumnFilterDefaultProps) => {
     () => {
       if (localValue.trim() === '') {
         state.removeFilter(backendField)
-        state.fetchData()
       } else {
         state.addFilter({
           field: backendField,
           value: localValue.trim()
         })
-        state.fetchData()
       }
     },
-    2000, // 2 segundos
+    1000, // 1 segundos
     [localValue, backendField]
   )
 

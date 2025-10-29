@@ -50,7 +50,7 @@ export const AsyncSelectField = <T extends FieldValues>({
     const options = response.results?.map((item: any) => ({ value: item?.[valueKey], label: item?.[labelKey] })) || []
 
     callback(options)
-  }, 2000)
+  }, 1000)
 
 
   // Custom styles for react-select that follow MUI theme
