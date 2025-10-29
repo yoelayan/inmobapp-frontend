@@ -22,44 +22,48 @@ const ColumnFilterDefault = ({ column }: ColumnFilterDefaultProps) => {
 
     return `${djangoField}__icontains`
   }
+  
+  //esto lo hice porque no sabia que campos se pedian al backend, asi que no creo que accessorKey se tenga que utilizar, pero lo dejo porque asi funciona. teniendo en cuenta que atravez de los logs resolvi el problema en el backend y ya se esta filtrando todo.
 
-  const backendField = normalizeField(column.id)
+  // Usar accessorKey directamente en lugar de column.id para campos anidados
+  const accessorKey = (column.columnDef as any).accessorKey as string | undefined
+  const rawField = (typeof accessorKey === 'string' ? accessorKey : column.id) || column.id
+  
+  const backendField = normalizeField(rawField)
 
   useEffect(() => {
     const existing = state.filters.find(f => f.field === backendField)
 
     if (existing) {
-      console.log('existing', existing)
       setLocalValue(existing.value || '')
+    } else {
+      // Si no existe el filtro, limpiar el input (para cuando se limpia desde el botón)
+      setLocalValue('')
     }
   }, [state.filters, backendField])
 
-  // useDebounce ejecuta la función después de 2 segundos de que localValue deje de cambiar
+  // useDebounce ejecuta la función después de 500ms de que localValue deje de cambiar
   useDebounce(
     () => {
-      console.log('localValue', localValue)
       if (!localValue) return
 
       if (localValue.trim() === '') {
         state.removeFilter(backendField)
       } else {
-        console.log('adding filter', backendField, localValue.trim())
         state.addFilter({
           field: backendField,
           value: localValue.trim()
         })
       }
     },
-    500, // 1 segundos
+    500,
     [localValue, backendField]
   )
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-
     const value = e.target.value
 
     setLocalValue(value)
-    console.log('localValue', localValue)
   }
 
   return (

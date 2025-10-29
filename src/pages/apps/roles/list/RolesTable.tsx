@@ -1,5 +1,5 @@
 "use client"
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -72,6 +72,30 @@ const RolesTable = () => {
   const [open, setOpen] = useState(false)
   const [selectedRole, setSelectedRole] = useState<IUserGroup | null>(null)
 
+  // Crear el store una sola vez y mantenerlo entre renders
+  const tableStoreRef = useRef<ReturnType<typeof createTableStore<IUserGroup>> | null>(null)
+  
+  if (!tableStoreRef.current) {
+    tableStoreRef.current = createTableStore<IUserGroup>({
+      data: data,
+      loading: loading,
+      refresh: fetchData
+    })
+  }
+
+  const rolesTableStore = tableStoreRef.current
+
+  // Actualizar el store cuando cambien los datos o el loading del hook
+  useEffect(() => {
+    rolesTableStore.setState({
+      data: data.results || [],
+      loading: loading,
+      totalCount: data.count || 0,
+      totalPages: data.num_pages || 1,
+      pageIndex: (data.page_number || 1) - 1
+    })
+  }, [data, loading, rolesTableStore])
+
   const handleOpenDetail = (role: IUserGroup) => {
     setSelectedRole(role)
     setOpen(true)
@@ -104,17 +128,6 @@ const RolesTable = () => {
     })
   }
 
-  const useRolesTableStore = (
-    () =>
-      createTableStore<IUserGroup>({
-        data: data,
-        loading: loading,
-        refresh: fetchData
-      })
-  )
-
-  const rolesTableStore = useRolesTableStore()
-
   const actions: TableAction[] = [
     {
       label: 'Ver Permisos',
@@ -146,7 +159,10 @@ const RolesTable = () => {
         <Table columns={columns} state={rolesTableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar roles...'>
             <Box className='flex gap-4 w-full'>
-              <Button variant='outlined' size='small' onClick={() => rolesTableStore.getState().setFilters([])}>
+              <Button variant='outlined' size='small' onClick={() => {
+                rolesTableStore.getState().setFilters([])
+                rolesTableStore.getState().fetchData()
+              }}>
                 Limpiar filtros
               </Button>
               <Button

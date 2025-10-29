@@ -1,5 +1,5 @@
 "use client"
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 import { useRouter } from 'next/navigation'
 
@@ -89,6 +89,30 @@ const ClientsTable = () => {
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
   const { data, loading, fetchData, deleteData } = useClients()
 
+  // Crear el store una sola vez y mantenerlo entre renders
+  const tableStoreRef = useRef<ReturnType<typeof createTableStore<IClient>> | null>(null)
+  
+  if (!tableStoreRef.current) {
+    tableStoreRef.current = createTableStore<IClient>({
+      data: data,
+      loading: loading,
+      refresh: fetchData
+    })
+  }
+
+  const tableStore = tableStoreRef.current
+
+  // Actualizar el store cuando cambien los datos o el loading del hook
+  useEffect(() => {
+    tableStore.setState({
+      data: data.results || [],
+      loading: loading,
+      totalCount: data.count || 0,
+      totalPages: data.num_pages || 1,
+      pageIndex: (data.page_number || 1) - 1
+    })
+  }, [data, loading, tableStore])
+
   const handleDeleteClient = async (clientId: number) => {
     try {
       await deleteData(clientId)
@@ -119,15 +143,6 @@ const ClientsTable = () => {
     })
   }
 
-  const useClientsTableStore = (
-    () =>
-      createTableStore<IClient>({
-        data: data,
-        loading: loading,
-        refresh: fetchData
-      })
-  )
-
   const actions: TableAction[] = [
     {
       label: 'Editar',
@@ -145,16 +160,16 @@ const ClientsTable = () => {
     }
   ]
 
-
-  const tableStore = useClientsTableStore();
-
   return (
     <>
       <Grid container spacing={2}>
         <SectionHeader title='Clientes' subtitle='Listado de Clientes' />
         <Table columns={columns} state={tableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar clientes...'>
-            <Button variant='outlined' size='small' onClick={() => tableStore.getState().setFilters([])}>
+            <Button variant='outlined' size='small' onClick={() => {
+              tableStore.getState().setFilters([])
+              tableStore.getState().fetchData()
+            }}>
               Limpiar filtros
             </Button>
             <Button

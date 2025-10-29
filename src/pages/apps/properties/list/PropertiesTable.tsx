@@ -1,5 +1,5 @@
 'use client'
-import React, { useMemo, useState } from 'react'
+import React, { useRef, useEffect, useState } from 'react'
 
 import { useRouter } from 'next/navigation'
 
@@ -200,17 +200,29 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const { user } = useAuth()
 
-  // ✅ CAMBIO: Usar hook directamente
+  // Crear el store una sola vez y mantenerlo entre renders
+  const tableStoreRef = useRef<ReturnType<typeof createTableStore<IRealProperty>> | null>(null)
+  
+  if (!tableStoreRef.current) {
+    tableStoreRef.current = createTableStore<IRealProperty>({
+      data: properties,
+      loading: loading,
+      refresh: fetchProperties
+    })
+  }
 
-  const usePropertiesTableStore = useMemo(
-    () =>
-      createTableStore<IRealProperty>({
-        data: properties,
-        loading: loading,
-        refresh: fetchProperties
-      }),
-    [properties, loading, fetchProperties]
-  )
+  const tableStore = tableStoreRef.current
+
+  // Actualizar el store cuando cambien los datos o el loading
+  useEffect(() => {
+    tableStore.setState({
+      data: properties.results || [],
+      loading: loading,
+      totalCount: properties.count || 0,
+      totalPages: properties.num_pages || 1,
+      pageIndex: (properties.page_number || 1) - 1
+    })
+  }, [properties, loading, tableStore])
 
   const handleStatusChange = async (status: string) => {
     setStatusFilter(status)
@@ -238,15 +250,8 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
 
   const handleClearFilters = async () => {
     setStatusFilter(null)
-    const filters: FilterItem[] = []
-    const sorting: SortingItem[] = []
-
-    await fetchProperties({
-      filters,
-      page: 1,
-      pageSize: 10,
-      sorting
-    })
+    tableStore.getState().setFilters([])
+    tableStore.getState().fetchData()
   }
 
   // ✅ FUNCIONES DE ELIMINACIÓN
@@ -310,7 +315,6 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
     }
   ]
 
-  const tableStore = usePropertiesTableStore()
   const columns = getColumns(router)
 
   return (
@@ -323,14 +327,14 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
 
       <Grid container spacing={2}>
         <SectionHeader title='Propiedades' subtitle='Aquí puedes ver todas las propiedades disponibles' />
-        <Table columns={columns} state={tableStore} actions={actions}>
+        <Table columns={columns} state={tableStore.getState()} actions={actions}>
           <TableFilter placeholder='Buscar propiedades...'>
             <Box className='flex gap-4 w-full'>
               <Button
                 variant='outlined'
                 size='small'
                 onClick={handleClearFilters}
-                disabled={!statusFilter && tableStore.filters.length === 0}
+                disabled={!statusFilter && tableStore.getState().filters.length === 0}
               >
                 Limpiar filtros
               </Button>
