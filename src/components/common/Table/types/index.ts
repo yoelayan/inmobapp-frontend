@@ -61,3 +61,6 @@ export interface TableState<T> {
   addSorting: (sorting: SortingItem) => void
   fetchData: () => Promise<void>
 }
+
+// Type for the Zustand store hook
+export type TableStore<T> = () => TableState<T>

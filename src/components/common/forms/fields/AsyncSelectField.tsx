@@ -38,7 +38,7 @@ export const AsyncSelectField = <T extends FieldValues>({
     return filtersObject
   }
 
-  // Debounce de 2 segundos para evitar llamadas excesivas al backend
+  // Debounce de 1 segundos para evitar llamadas excesivas al backend
   const loadOptions = debounce(async (inputValue: string, callback: (options: any[]) => void) => {
     const response = await repository.getAll({
       page: 1,
