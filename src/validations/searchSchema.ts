@@ -14,18 +14,27 @@ const baseSearchSchema = z.object({
 
 // Schema for creating searches (cliente requerido)
 export const createSearchSchema = baseSearchSchema.extend({
-  client_id: asyncSelectValidation
+  client_id: asyncSelectValidation,
+  state_id: asyncSelectValidation.optional().nullable(),
+  municipality_id: asyncSelectValidation.optional().nullable(),
+  parish_id: asyncSelectValidation.optional().nullable()
 })
 
 // Schema for editing searches (todos los campos opcionales)
 export const editSearchSchema = baseSearchSchema.extend({
-  client_id: asyncSelectValidation
+  client_id: asyncSelectValidation,
+  state_id: asyncSelectValidation.optional().nullable(),
+  municipality_id: asyncSelectValidation.optional().nullable(),
+  parish_id: asyncSelectValidation.optional().nullable()
 })
 
 export const defaultSearchValues = {
   description: '',
   budget: 0.01,
-  client_id: undefined
+  client_id: undefined,
+  state_id: undefined,
+  municipality_id: undefined,
+  parish_id: undefined
 }
 
 // Types

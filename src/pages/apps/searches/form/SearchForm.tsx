@@ -32,7 +32,6 @@ import type { IClient } from '@/types/apps/ClientesTypes'
 import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
-import type { ISearch } from '@/types/apps/SearchTypes'
 
 
 // Components Imports
@@ -41,6 +40,9 @@ import  ClientForm  from '@/pages/apps/clients/form/ClientForm'
 // Repository Import
 import SearchesRepository from '@/services/repositories/crm/SearchesRepository'
 import ClientsRepository from '@/services/repositories/crm/ClientsRepository'
+import StatesRepository from '@/services/repositories/locations/StatesRepository'
+import MunicipalitiesRepository from '@/services/repositories/locations/MunicipalitiesRepository'
+import ParishesRepository from '@/services/repositories/locations/ParishesRepository'
 
 // Repositorio personalizado que intercepta los datos
 
@@ -56,7 +58,7 @@ import {
 // Component Props
 interface SearchFormProps {
   searchId?: string
-  onSuccess?: (data: ISearch) => void
+  onSuccess?: (data: CreateSearchFormData | EditSearchFormData) => void
   statuses?: ResponseAPI<IStatus> | null
   users?: ResponseAPI<IUser> | null
   franchises?: ResponseAPI<IFranchise> | null
@@ -65,7 +67,10 @@ interface SearchFormProps {
 // Component that contains form fields with access to form context
 const SearchFormFields: React.FC<{ mode: 'create' | 'edit' }> = ({ mode }) => {
   const [open, setOpen] = useState(false)
-  const { setValue } = useFormContext()
+  const { setValue, watch } = useFormContext()
+
+  const state = watch('state_id')
+  const municipality = watch('municipality_id')
 
   const handleButtonModal = () => {
     setOpen(!open)
@@ -139,6 +144,39 @@ const SearchFormFields: React.FC<{ mode: 'create' | 'edit' }> = ({ mode }) => {
             </Button>
           </Box>
         </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <FormField
+            name='state_id'
+            label='Estado'
+            type='async-select'
+            repository={StatesRepository}
+            onChange={() => {
+              setValue('municipality_id', undefined)
+              setValue('parish_id', undefined)
+            }}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <FormField
+            name='municipality_id'
+            label='Municipio'
+            type='async-select'
+            repository={MunicipalitiesRepository}
+            filters={state && (typeof state === 'object' ? state.value : state) ? [{ field: 'state', value: typeof state === 'object' ? state.value : state }] : []}
+            disabled={!state || !(typeof state === 'object' ? state.value : state)}
+            onChange={() => setValue('parish_id', undefined)}
+          />
+        </Grid>
+        <Grid size={{ xs: 12, md: 4 }}>
+          <FormField
+            name='parish_id'
+            label='Parroquia'
+            type='async-select'
+            repository={ParishesRepository}
+            filters={state && municipality ? [{ field: 'municipality', value: typeof municipality === 'object' ? municipality.value : municipality }] : []}
+            disabled={!state || !municipality}
+          />
+        </Grid>
         <Grid size={{ xs: 12 }}>
           <FormField
             fullWidth
@@ -195,14 +233,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       notify('Búsqueda creada exitosamente', 'success')
     }
 
-    const { client_id } = data
-
-    const formattedData = {
-      ...data,
-      client_id: client_id?.value
-    }
-
-    onSuccess?.(formattedData)
+    onSuccess?.(data)
 
   }
 
@@ -229,11 +260,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
   const formatData = (data: CreateSearchFormData | EditSearchFormData) => {
     console.log('🔧 formatData - Datos originales:', data)
 
-    const { client_id } = data
+    const { client_id, state_id, municipality_id, parish_id } = data
 
     const formattedData = {
       ...data,
-      client_id: client_id?.value
+      client_id: client_id?.value,
+      state_id: state_id?.value ?? null,
+      municipality_id: municipality_id?.value ?? null,
+      parish_id: parish_id?.value ?? null
     }
 
     console.log('🔧 formatData - Datos formateados:', formattedData)

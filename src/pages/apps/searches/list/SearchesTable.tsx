@@ -41,6 +41,8 @@ import { useNotification } from '@/hooks/useNotification';
 import useConfirmDialog from '@/hooks/useConfirmDialog';
 import type { ISearch } from '@/types/apps/SearchTypes';
 
+// Location repositories removed: column filters handle this now
+
 const columns: ColumnDef<ISearch>[] = [
   {
     accessorKey: 'client.name',
@@ -63,6 +65,24 @@ const columns: ColumnDef<ISearch>[] = [
 
       return budget ? `$${Number(budget).toLocaleString()}` : ''
     }
+  },
+  {
+    accessorKey: 'state_id',
+    header: 'Estado',
+    enableColumnFilter: true,
+    cell: ({ row, getValue }) => ((row.original as ISearch).state?.name ?? (getValue() ? String(getValue()) : ''))
+  },
+  {
+    accessorKey: 'municipality_id',
+    header: 'Municipio',
+    enableColumnFilter: true,
+    cell: ({ row, getValue }) => ((row.original as ISearch).municipality?.name ?? (getValue() ? String(getValue()) : ''))
+  },
+  {
+    accessorKey: 'parish_id',
+    header: 'Parroquia',
+    enableColumnFilter: true,
+    cell: ({ row, getValue }) => ((row.original as ISearch).parish?.name ?? (getValue() ? String(getValue()) : ''))
   },
   {
     accessorKey: 'characteristics',

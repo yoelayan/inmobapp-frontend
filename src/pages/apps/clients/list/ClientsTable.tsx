@@ -29,6 +29,7 @@ import useClients from '@/hooks/api/crm/useClients';
 import useConfirmDialog from '@/hooks/useConfirmDialog';
 import { useNotification } from '@/hooks/useNotification';
 import type { IClient } from '@/types/apps/ClientesTypes';
+import ClientSummaryModal from '../modals/ClientSummaryModal'
 
 const columns: ColumnDef<IClient>[] = [
   {
@@ -88,6 +89,8 @@ const ClientsTable = () => {
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
   const { data, loading, fetchData, deleteData } = useClients()
+  const [summaryOpen, setSummaryOpen] = React.useState(false)
+  const [summaryClientId, setSummaryClientId] = React.useState<number | null>(null)
 
   // Crear el store una sola vez y mantenerlo entre renders
   const tableStoreRef = useRef<ReturnType<typeof createTableStore<IClient>> | null>(null)
@@ -145,6 +148,14 @@ const ClientsTable = () => {
 
   const actions: TableAction[] = [
     {
+      label: 'Ver',
+      onClick: (row: Record<string, any>) => {
+        setSummaryClientId(row.id)
+        setSummaryOpen(true)
+      },
+      icon: <i className='tabler-eye' />
+    },
+    {
       label: 'Editar',
       onClick: (row: Record<string, any>) => {
         router.push(`/clientes/${row.id}/`)
@@ -193,10 +204,17 @@ const ClientsTable = () => {
 
           <TablePagination />
         </Table>
-        <ConfirmDialog />
+      <ConfirmDialog />
       </Grid>
 
-      <ConfirmDialog />
+    <ConfirmDialog />
+    {summaryOpen && summaryClientId !== null && (
+      <ClientSummaryModal
+        open={summaryOpen}
+        onClose={() => setSummaryOpen(false)}
+        clientId={summaryClientId}
+      />
+    )}
     </>
   )
 };
