@@ -31,6 +31,7 @@ export const TextField = <T extends FieldValues, V extends MUITextFieldProps>({
       render={({ field, fieldState: { error } }) => (
         <MUITextField
           {...field}
+          value={field.value ?? ''}
           label={label}
           type={type}
           placeholder={placeholder}

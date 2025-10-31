@@ -33,6 +33,7 @@ import DescriptionIcon from '@mui/icons-material/Description'
 import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary'
 import BuildIcon from '@mui/icons-material/Build'
 import SettingsIcon from '@mui/icons-material/Settings'
+import PhoneIcon from '@mui/icons-material/Phone'
 
 // Characteristic icons
 import BedIcon from '@mui/icons-material/Bed'
@@ -484,6 +485,34 @@ const PropertyProfile: React.FC<PropertyProfileProps> = ({ propertyId }) => {
                       </Typography>
                       <Typography variant='body1' className='font-medium'>
                         {property.assigned_to.email || property.assigned_to.name}
+                      </Typography>
+                    </div>
+                  </div>
+                )}
+
+                {property.assigned_contact_phone && (
+                  <div className='flex items-center gap-3'>
+                    <PhoneIcon className='text-xl' />
+                    <div>
+                      <Typography variant='caption' color="text.secondary">
+                        Teléfono de contacto
+                      </Typography>
+                      <Typography variant='body1' className='font-medium'>
+                        {property.assigned_contact_phone}
+                      </Typography>
+                    </div>
+                  </div>
+                )}
+
+                {property.assigned_fee_percentage != null && (
+                  <div className='flex items-center gap-3'>
+                    <PercentIcon className='text-xl' />
+                    <div>
+                      <Typography variant='caption' color="text.secondary">
+                        Comisión asignada (%)
+                      </Typography>
+                      <Typography variant='body1' className='font-medium'>
+                        {Number(property.assigned_fee_percentage)}%
                       </Typography>
                     </div>
                   </div>

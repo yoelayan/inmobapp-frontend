@@ -248,6 +248,51 @@ class ApiClient {
     return response.data
   }
 
+  public async patch<T>(url: string, data: Record<string, any>, files?: Record<string, File>): Promise<T> {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+
+    let requestData: any
+
+    // If there are files, use FormData and set proper content type
+    if (files) {
+      config.headers['Content-Type'] = 'multipart/form-data'
+      const formData = new FormData()
+
+      // Add data fields to FormData
+      for (const [key, value] of Object.entries(data)) {
+        if (value === null || value === undefined) {
+          formData.append(key, '')
+        } else if (Array.isArray(value)) {
+          value.forEach(item => {
+            formData.append(key, String(item))
+          })
+        } else if (typeof value === 'object') {
+          formData.append(key, JSON.stringify(value))
+        } else {
+          formData.append(key, String(value))
+        }
+      }
+
+      // Add files to FormData
+      for (const [key, file] of Object.entries(files)) {
+        formData.append(key, file)
+      }
+
+      requestData = formData
+    } else {
+      // Use regular JSON for requests without files
+      requestData = data
+    }
+
+    const response: AxiosResponse<T> = await this.axiosInstance.patch(url, requestData, config)
+
+    return response.data
+  }
+
   public async delete<T>(url: string, params?: Record<string, any>): Promise<T> {
     const queryString = this.buildGetParams(params || {})
     const response: AxiosResponse<T> = await this.axiosInstance.delete(`${url}${queryString}`)

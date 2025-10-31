@@ -33,16 +33,19 @@ import {
 
 import useFranchises from '@/hooks/api/realstate/useFranchises'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
+import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
 
 import { type FranchiseTypes, mappedFranchiseTypes } from '@/validations/franchiseSchema'
 import useConfirmDialog from '@/hooks/useConfirmDialog'
 import { useNotification } from '@/hooks/useNotification';
 import type { IUser } from '@/types/apps/UserTypes'
+import { useAuth } from '@/auth/hooks/useAuth'
 
 
 
 const FranchisesTable = () => {
   const router = useRouter()
+  const { user } = useAuth()
   const { notify } = useNotification()
   const { ConfirmDialog, showConfirmDialog } = useConfirmDialog()
   const { data, loading, fetchData, deleteData } = useFranchises()
@@ -50,6 +53,34 @@ const FranchisesTable = () => {
   const [selectedFranchise, setSelectedFranchise] = useState<IFranchise | null>(null)
   const [editParentOpen, setEditParentOpen] = useState(false)
   const [editParentFranchise, setEditParentFranchise] = useState<IFranchise | null>(null)
+  const [userFranchise, setUserFranchise] = useState<IFranchise | null>(null)
+
+  // Obtener la franquicia del usuario actual directamente del backend
+  useEffect(() => {
+    const fetchUserFranchise = async () => {
+      if (user?.franchise) {
+        try {
+          // Manejar el caso donde franchise puede ser un objeto o un número
+          const franchiseId = typeof user.franchise === 'object' 
+            ? (user.franchise as any).id 
+            : user.franchise
+
+          if (franchiseId) {
+            const franchise = await FranchisesRepository.get(franchiseId)
+
+            setUserFranchise(franchise)
+          }
+        } catch (error) {
+          console.error('Error fetching user franchise:', error)
+        }
+      }
+    }
+    
+    fetchUserFranchise()
+  }, [user?.franchise])
+
+  // Verificar si el usuario es de franquicia PERSONAL
+  const isPersonalFranchiseUser = userFranchise?.franchise_type === 'PERSONAL'
 
   // Crear el store una sola vez y mantenerlo entre renders
   const tableStoreRef = useRef<ReturnType<typeof createTableStore<IFranchise>> | null>(null)
@@ -254,15 +285,17 @@ const columns: ColumnDef<IFranchise>[] = [
               >
                 Actualizar
               </Button>
-              <Button
-                key='add'
-                startIcon={<AddIcon />}
-                variant='contained'
-                color='primary'
-                onClick={() => router.push('/franquicias/agregar/')}
-              >
-                Agregar
-              </Button>
+              {!isPersonalFranchiseUser && (
+                <Button
+                  key='add'
+                  startIcon={<AddIcon />}
+                  variant='contained'
+                  color='primary'
+                  onClick={() => router.push('/franquicias/agregar/')}
+                >
+                  Agregar
+                </Button>
+              )}
             </Box>
           </TableFilter>
 

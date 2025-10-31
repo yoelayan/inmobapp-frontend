@@ -83,26 +83,43 @@ export const Form = <T extends FieldValues>({
 
   // Manejar errores de validación del backend
   useEffect(() => {
-    if (error && error.status === 400 && error.response.data) {
-      const validationErrors = error.response.data
+    const status = error?.response?.status
+    const payload = error?.response?.data
 
+    if (error && payload && [400, 401, 403, 404, 422].includes(status)) {
       // Limpiar errores previos
       methods.clearErrors()
 
-      // Establecer errores para cada campo que tenga errores de validación
-      Object.keys(validationErrors).forEach(fieldName => {
-        const fieldErrors = validationErrors[fieldName]
+      // 1) detail (general)
+      if (typeof payload?.detail === 'string') {
+        methods.setError('root.server' as Path<T>, {
+          type: 'server',
+          message: payload.detail
+        })
+      }
 
-        if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
-          // Concatenar todos los errores del array
-          const allErrors = fieldErrors.join(', ')
+      // 2) non_field_errors
+      if (Array.isArray(payload?.non_field_errors) && payload.non_field_errors.length > 0) {
+        methods.setError('root.server' as Path<T>, {
+          type: 'server',
+          message: payload.non_field_errors.join(', ')
+        })
+      }
 
-          methods.setError(fieldName as Path<T>, {
-            type: 'server',
-            message: allErrors
-          })
-        }
-      })
+      // 3) Errores por campo: dict campo -> [mensajes]
+      if (payload && typeof payload === 'object') {
+        Object.keys(payload).forEach(fieldName => {
+          if (fieldName === 'detail' || fieldName === 'non_field_errors') return
+          const fieldErrors = (payload as any)[fieldName]
+          if (Array.isArray(fieldErrors) && fieldErrors.length > 0) {
+            const allErrors = fieldErrors.join(', ')
+            methods.setError(fieldName as Path<T>, {
+              type: 'server',
+              message: allErrors
+            })
+          }
+        })
+      }
     }
   }, [error, methods])
 

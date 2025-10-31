@@ -171,9 +171,11 @@ const SearchesTable = () => {
     try {
       await deleteData(searchId)
       notify('Búsqueda eliminada correctamente', 'success')
-      refreshData()
     } catch (error) {
       notify('Error al eliminar la búsqueda', 'error')
+    } finally {
+      // Refrescar desde el store para respetar filtros/paginación y manejar loading
+      tableStore.getState().fetchData()
     }
   }
 
@@ -257,9 +259,7 @@ const SearchesTable = () => {
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => {
-                  fetchData()
-                }}
+                onClick={() => tableStore.getState().fetchData()}
               >
                 Actualizar
               </Button>

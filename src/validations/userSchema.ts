@@ -56,6 +56,20 @@ const baseUserSchema = z.object({
       message: 'Debe seleccionar al menos un permiso'
     }
   )
+  ,
+  
+  // Optional member fields
+  contact_phone: z
+    .string()
+    .trim()
+    .max(32, { message: 'El teléfono debe tener hasta 32 caracteres' })
+    .optional(),
+  fee_percentage: z
+    .coerce.number()
+    .optional()
+    .refine(val => val === undefined || (!Number.isNaN(val) && val >= 0), {
+      message: 'Debe ser un número positivo'
+    })
 })
 
 // Schema for creating users (passwords required)

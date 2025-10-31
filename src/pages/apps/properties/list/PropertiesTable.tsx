@@ -259,10 +259,11 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
     try {
       await deleteProperty(propertyId)
       notify('Propiedad eliminada correctamente', 'success')
-      fetchProperties()
     } catch (error) {
       notify('Error al eliminar la propiedad', 'error')
       console.error('Error deleting property:', error)
+    } finally {
+      tableStore.getState().fetchData()
     }
   }
 
@@ -344,7 +345,7 @@ const PropertiesTable = ({ properties, loading, fetchProperties, deleteProperty,
                 startIcon={<RefreshIcon />}
                 variant='contained'
                 color='primary'
-                onClick={() => fetchProperties()}
+                onClick={() => tableStore.getState().fetchData()}
               >
                 Actualizar
               </Button>

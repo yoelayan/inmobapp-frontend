@@ -1,7 +1,8 @@
 import React from 'react'
 
-import { Grid2 } from '@mui/material'
+import { Alert, Grid2 } from '@mui/material'
 import type { UseFormReturn } from 'react-hook-form'
+import { useFormContext } from 'react-hook-form'
 
 import { Form, PageContainer, SelectField, TextField } from '@/components/common/forms/Form'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
@@ -24,7 +25,7 @@ type FranchiseFormProps = {
 }
 
 const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFormProps) => {
-
+  const [initialType, setInitialType] = React.useState<'COMMERCIAL' | 'PERSONAL' | 'MASTER' | undefined>(undefined)
   const schema = mode === 'edit' ? editFranchiseSchema : createFranchiseSchema
 
   const typeOptions = Object.entries(mappedFranchiseTypes)
@@ -56,6 +57,28 @@ const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFor
     }
 
     methods.reset(formData)
+    setInitialType(data.franchise_type)
+  }
+
+  const FranchiseTypeWarning: React.FC = () => {
+    // Only render in edit mode
+    if (mode !== 'edit') return null
+
+    // Access form values
+    const { watch } = useFormContext<EditFranchiseFormData>()
+    const currentType = watch('franchise_type')
+
+    const showWarning = initialType === 'COMMERCIAL' && currentType === 'PERSONAL'
+
+    if (!showWarning) return null
+
+    return (
+      <Alert severity='warning'>
+        Estás cambiando esta franquicia de Comercial a Personal. Esta acción puede afectar elementos
+        relacionados con esta franquicia (por ejemplo: propiedades, clientes, usuarios, asignaciones y
+        reportes). Verifica las implicaciones antes de guardar.
+      </Alert>
+    )
   }
 
   return (
@@ -82,6 +105,9 @@ const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFor
               fullWidth
               required
             />
+          </Grid2>
+          <Grid2 size={{ xs: 12 }}>
+            <FranchiseTypeWarning />
           </Grid2>
         </Grid2>
       </Form>

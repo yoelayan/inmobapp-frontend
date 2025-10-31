@@ -123,10 +123,12 @@ const UsersTable = () => {
     try {
       await deleteData(userId)
       notify('Usuario eliminado correctamente', 'success')
-      fetchData()
     } catch (error) {
       notify('Error al eliminar el usuario', 'error')
       console.error('Error deleting user:', error)
+    } finally {
+      // Usar el store para refrescar respetando paginación/filtros y resetear loading
+      tableStore.getState().fetchData()
     }
   }
 

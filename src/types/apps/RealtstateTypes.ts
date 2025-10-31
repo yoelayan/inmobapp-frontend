@@ -21,6 +21,8 @@ export interface IRealProperty {
   address: string
   images: IImage[]
   first_image_url: string
+  assigned_contact_phone: string
+  assigned_fee_percentage: number
   type_negotiation: IStatus
   type_property: IStatus
   state: IGeoItem

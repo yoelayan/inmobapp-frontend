@@ -236,7 +236,7 @@ const Step2Content = memo(({ negotiations, setIsClientModalOpen, newlyCreatedCli
   // Manejar cliente recién creado
   useEffect(() => {
     if (newlyCreatedClient) {
-      setValue('owner_id', newlyCreatedClient.id)
+      setValue('owner_id', { value: newlyCreatedClient.id, label: newlyCreatedClient.name })
       setNewlyCreatedClient(null)
     }
   }, [newlyCreatedClient, setValue, setNewlyCreatedClient])
