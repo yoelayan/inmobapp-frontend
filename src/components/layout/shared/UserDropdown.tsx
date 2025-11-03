@@ -18,6 +18,7 @@ import ClickAwayListener from '@mui/material/ClickAwayListener'
 import MenuList from '@mui/material/MenuList'
 import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
+import Button from '@mui/material/Button'
 
 // Custom Imports
 import LogoutButton from '@auth/components/LogoutButton'
@@ -63,6 +64,14 @@ const UserDropdown = () => {
       return
     }
 
+    setOpen(false)
+  }
+
+  const handleGoToProfile = () => {
+    if (user?.id) {
+      router.push(`/usuarios/${user.id}/editar/`)
+    }
+    
     setOpen(false)
   }
 
@@ -112,6 +121,20 @@ const UserDropdown = () => {
                     </div>
                   </div>
                   <Divider className='mlb-1' />
+
+                  <div className='flex items-center plb-2 pli-3'>
+                    <Button
+                      fullWidth
+                      variant='contained'
+                      color='primary'
+                      size='small'
+                      endIcon={<i className='tabler-user-cog' />}
+                      onClick={handleGoToProfile}
+                      sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
+                    >
+                      Mi perfil
+                    </Button>
+                  </div>
 
                   <div className='flex items-center plb-2 pli-3'>
                     <LogoutButton />
