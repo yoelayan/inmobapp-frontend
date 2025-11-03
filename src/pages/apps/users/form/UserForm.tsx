@@ -14,7 +14,6 @@ import { Form, FormField, PageContainer } from '@components/common/forms/Form'
 import PermissionsField from '@/components/forms/PermissionsField'
 
 import UsersRepository from '@services/repositories/users/UsersRepository'
-import MembershipsRepository from '@/services/repositories/membership/MembershipsRepository'
 
 import { userSchema, editUserSchema, type CreateUserFormData, type EditUserFormData } from '@/validations/userSchema'
 
@@ -129,7 +128,6 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
 
     Object.entries(data).forEach(([key, value]) => {
       // Evitar pisar con null estos campos: se manejarán después
-      if (key === 'contact_phone' || key === 'fee_percentage') return
 
       // For image field, store the URL but don't set it in the form
       if (key === 'image' && typeof value === 'string') {
@@ -151,46 +149,11 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
         groupIds = value.map((group: any) => group.id)
         console.log('Setting groups:', groupIds)
         methods.setValue(key, groupIds)
-      } else {
+      }
+      else {
         methods.setValue(key, value)
       }
     })
-
-    // Mapear campos opcionales que pueden venir anidados en membership
-    if (data) {
-      // Mapeo opcional desde user o membership embebida
-      const contactPhone = (data?.contact_phone ?? undefined) ?? (data?.membership?.contact_phone ?? undefined)
-      const feePercentage = (data?.fee_percentage ?? undefined) ?? (data?.membership?.fee_percentage ?? undefined)
-
-      if (contactPhone !== undefined && contactPhone !== null) {
-        methods.setValue('contact_phone', contactPhone)
-      }
-
-      if (feePercentage !== undefined && feePercentage !== null) {
-        methods.setValue('fee_percentage', Number(feePercentage))
-      }
-    }
-
-    // Si no vino embebido, intentar obtener la membresía por ID
-    if ((data?.contact_phone == null || data?.fee_percentage == null) && data?.membership_id) {
-      (async () => {
-        try {
-          const membership = await MembershipsRepository.get(data.membership_id)
-
-          if (membership?.contact_phone != null) {
-            methods.setValue('contact_phone', membership.contact_phone)
-          }
-
-          if (membership?.fee_percentage != null) {
-            methods.setValue('fee_percentage', Number(membership.fee_percentage))
-          }
-        } catch (e) {
-          console.error('Error fetching membership for user form:', e)
-        }
-      })()
-    }
-
-    // Nota: no llamar a reset aquí; puede sobrescribir valores recién seteados
 
     // Sincronizar permisos cuando se cargan los roles (después de procesar todos los datos)
     if (groups?.data?.results && groupIds.length > 0) {
@@ -236,13 +199,6 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
       console.log('Image field not a File, removing from submission to preserve existing image')
     }
 
-    // Normalize fee_percentage to number if provided as string
-    if (formattedData.fee_percentage === '') {
-      delete formattedData.fee_percentage
-    } else if (formattedData.fee_percentage !== undefined && formattedData.fee_percentage !== null) {
-      formattedData.fee_percentage = Number(formattedData.fee_percentage)
-    }
-
     // In edit mode, avoid sending null/undefined and empty passwords
     if (mode === 'edit') {
       if (!formattedData.password) delete formattedData.password
@@ -277,7 +233,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
     groups: [] as number[],
     user_permissions: [] as string[],
     contact_phone: '',
-    fee_percentage: '' as any
+    fee_percentage: NaN
   }
 
   // Use appropriate schema based on mode
@@ -314,7 +270,7 @@ const UserForm = ({ mode = 'create', userId, onSuccess }: UserFormProps) => {
                 <FormField name='contact_phone' label='Teléfono de contacto' fullWidth />
               </Grid2>
               <Grid2 size={{ xs: 12, md: 6 }}>
-                <FormField name='fee_percentage' label='Porcentaje comisión (%)' fullWidth />
+                <FormField name='fee_percentage' label='Porcentaje comisión (%)' fullWidth type='number' />
               </Grid2>
               <Grid2 size={{ xs: 12, md: 6 }}>
                 <FormField name='password' type='password' label='Contraseña' required={mode === 'create'} fullWidth />
