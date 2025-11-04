@@ -33,7 +33,6 @@ import type { IStatus } from '@/types/apps/CatalogTypes'
 import type { IFranchise } from '@/types/apps/FranquiciaTypes'
 import type { IUser } from '@/types/apps/UserTypes'
 
-
 // Components Imports
 import  ClientForm  from '@/pages/apps/clients/form/ClientForm'
 
@@ -58,7 +57,7 @@ import {
 // Component Props
 interface SearchFormProps {
   searchId?: string
-  onSuccess?: (data: CreateSearchFormData | EditSearchFormData) => void
+  onSuccess?: (response: CreateSearchFormData | EditSearchFormData) => void
   statuses?: ResponseAPI<IStatus> | null
   users?: ResponseAPI<IUser> | null
   franchises?: ResponseAPI<IFranchise> | null
