@@ -11,7 +11,7 @@ export interface TableAction {
   label?: string
   icon?: React.ReactNode
   disabled?: boolean | ((row: Record<string, any>) => boolean)
-  tooltip?: string
+  tooltip?: string | ((row: Record<string, any>) => string | undefined)
   variant?: 'text' | 'outlined' | 'contained'
   size?: 'small' | 'medium' | 'large'
   className?: string

@@ -6,6 +6,7 @@ import { useFormContext } from 'react-hook-form'
 
 import { Form, PageContainer, SelectField, TextField } from '@/components/common/forms/Form'
 import FranchisesRepository from '@/services/repositories/realstate/FranchisesRepository'
+import { useNotification } from '@/hooks/useNotification'
 
 import {
   createFranchiseSchema, mappedFranchiseTypes, editFranchiseSchema,
@@ -25,6 +26,7 @@ type FranchiseFormProps = {
 }
 
 const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFormProps) => {
+  const { notify } = useNotification()
   const [initialType, setInitialType] = React.useState<'COMMERCIAL' | 'PERSONAL' | 'MASTER' | undefined>(undefined)
   const schema = mode === 'edit' ? editFranchiseSchema : createFranchiseSchema
 
@@ -48,6 +50,9 @@ const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFor
 
   const handleError = (error: any) => {
     console.error(error)
+    const errorMessage = error?.response?.data?.detail || error?.message || 'Error al guardar la franquicia'
+    
+    notify(errorMessage, 'error')
   }
 
   const setFormData = (data: IFranchise, methods: UseFormReturn<EditFranchiseFormData>) => {

@@ -70,11 +70,16 @@ const TableActions = ({ row, actions }: TableActionsProps) => {
             ? action.disabled(row)
             : action.disabled
 
-          return (
+          const tooltipText = typeof action.tooltip === 'function'
+            ? action.tooltip(row)
+            : action.tooltip
+
+          const menuItem = (
             <MenuItem
               key={action.label || index}
-              onClick={() => handleActionClick(action)}
+              onClick={() => !isDisabled && handleActionClick(action)}
               disabled={isDisabled}
+              title={isDisabled && tooltipText ? tooltipText : undefined}
               sx={{
                 minHeight: 40,
                 gap: 1,
@@ -87,6 +92,9 @@ const TableActions = ({ row, actions }: TableActionsProps) => {
               {action.component && action.component}
             </MenuItem>
           )
+
+          // Para elementos deshabilitados, usar title nativo ya que Tooltip no funciona bien con elementos disabled
+          return menuItem
         })}
       </Menu>
     </>

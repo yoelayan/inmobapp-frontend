@@ -251,7 +251,19 @@ const columns: ColumnDef<IFranchise>[] = [
       onClick: (row: Record<string, any>) => {
         router.push(`/franquicias/${row.id}/editar/`)
       },
-      icon: <EditIcon fontSize='small' />
+      icon: <EditIcon fontSize='small' />,
+      disabled: (row: Record<string, any>) => {
+        const franchise = row as IFranchise
+        
+        return franchise.franchise_type === 'MASTER'
+      },
+      tooltip: (row: Record<string, any>) => {
+        const franchise = row as IFranchise
+        
+        return franchise.franchise_type === 'MASTER' 
+          ? 'No se puede editar una franquicia MASTER' 
+          : undefined
+      }
     },
     {
       label: 'Eliminar',

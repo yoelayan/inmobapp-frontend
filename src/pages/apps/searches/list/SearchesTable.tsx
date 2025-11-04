@@ -108,7 +108,7 @@ const SearchesTable = () => {
   const [selectedSearchId, setSelectedSearchId] = useState<number | null>(null)
   const [selectedSearch, setSelectedSearch] = useState<any>(null)
 
-  const { data, loading, fetchData, refreshData, deleteData } = useSearches()
+  const { data, loading, fetchData, deleteData } = useSearches()
 
   // Crear el store una sola vez y mantenerlo entre renders
   const tableStoreRef = useRef<ReturnType<typeof createTableStore<ISearch>> | null>(null)
@@ -164,20 +164,20 @@ const SearchesTable = () => {
   }
 
   const handleObservationAdded = () => {
-    refreshData()
+    tableStore.getState().fetchData()
   }
 
   const handleCharacteristicAdded = () => {
-    refreshData()
+    tableStore.getState().fetchData()
   }
 
   const handleObservationsLogAdded = async () => {
     notify('Observación eliminada correctamente', 'success')
-    await refreshData()
+    await tableStore.getState().fetchData()
 
     // Si el modal de observaciones sigue abierto, actualizar los datos del search seleccionado
     if (observationsLogModalOpen && selectedSearchId) {
-      const updatedData = data?.results || []
+      const updatedData = tableStore.getState().data || []
       const updatedSearch = updatedData.find((search: any) => search.id === selectedSearchId)
 
       if (updatedSearch) {
