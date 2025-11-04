@@ -51,7 +51,7 @@ const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFor
   const handleError = (error: any) => {
     console.error(error)
     const errorMessage = error?.response?.data?.detail || error?.message || 'Error al guardar la franquicia'
-    
+
     notify(errorMessage, 'error')
   }
 
@@ -66,9 +66,6 @@ const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFor
   }
 
   const FranchiseTypeWarning: React.FC = () => {
-    // Only render in edit mode
-    if (mode !== 'edit') return null
-
     // Access form values
     const { watch } = useFormContext<EditFranchiseFormData>()
     const currentType = watch('franchise_type')
@@ -111,9 +108,11 @@ const FranchiseForm = ({ mode = 'create', franchiseId, onSuccess }: FranchiseFor
               required
             />
           </Grid2>
+          {mode === 'edit' && (
           <Grid2 size={{ xs: 12 }}>
             <FranchiseTypeWarning />
-          </Grid2>
+            </Grid2>
+          )}
         </Grid2>
       </Form>
     </PageContainer>
